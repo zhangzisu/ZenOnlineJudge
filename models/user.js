@@ -37,7 +37,6 @@ let model = db.define('user', {
 	email: { type: Sequelize.STRING(120) },
 	password: { type: Sequelize.STRING(120) },
 	nickname: { type: Sequelize.STRING(80) },
-	nameplate: { type: Sequelize.TEXT },
 	information: { type: Sequelize.TEXT },
 	ac_num: { type: Sequelize.INTEGER },
 	submit_num: { type: Sequelize.INTEGER },

@@ -51,7 +51,7 @@
               <div class="ui simple dropdown item">
                 <i class="power icon"></i>
                 <div class="menu">
-                  <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id]) %>"><i class="user circle outline icon"></i><%= user.username %><% if (user.nameplate) { %><%- user.nameplate %><% } %></a>
+                  <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id]) %>"><i class="user circle outline icon"></i><%= user.username %></a>
                   <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id, 'edit']) %>"><i class="edit icon"></i>Edit profile</a>
                   <a class="item" href="<%= zoj.utils.makeUrl(['blogs', 'user', user.id]) %>"><i class="coffee icon"></i>Blog</a>
                   <% if (user.admin >= 4) { %>

@@ -232,7 +232,7 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
 
-		if (judge.pending && !(res.locals.user && await res.locals.user.admin >= 3)) throw new ErrorMessage('无法重新评测一个评测中的提交。');
+		if (judge.pending && !(res.locals.user && await res.locals.user.admin >= 3)) throw new ErrorMessage('The submittion is judging.');
 
 		await judge.loadRelationships();
 

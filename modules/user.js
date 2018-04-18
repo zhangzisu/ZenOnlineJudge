@@ -177,7 +177,7 @@ app.post('/user/:id/edit', async (req, res) => {
 			throw new ErrorMessage('You do not have permission to do this.');
 
 		if (req.body.old_password && req.body.new_password) {
-			if (user.password !== req.body.old_password && !await res.locals.user.admin >= 3) throw new ErrorMessage('旧密码错误。');
+			if (user.password !== req.body.old_password && !await res.locals.user.admin >= 3) throw new ErrorMessage('Password error.');
 			user.password = req.body.new_password;
 		}
 
