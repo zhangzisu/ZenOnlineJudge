@@ -1,4 +1,4 @@
-<% this.title = '排名 - ' + contest.title %>
+<% this.title = 'Ranklist - ' + contest.title %>
 <% include header %>
 <style>
 .submit_time {
@@ -12,10 +12,10 @@
             <thead>
             <tr>
                 <th>#</th>
-                <th>用户名</th>
+                <th>Username</th>
                 <% if (contest.type === 'acm') { %>
-                  <th>通过数量</th>
-                  <th>罚时</th>
+                  <th>AC Number</th>
+                  <th>Time</th>
                 <% } %>
                 <% for (let i = 0; i < problems.length; i++) { %>
                 <th>
@@ -25,7 +25,7 @@
                 </th>
                 <% } %>
                 <% if (contest.type === 'noi' || contest.type === 'ioi') { %>
-                  <th>总分</th>
+                  <th>Total score</th>
                 <% } %>
             </tr>
             </thead>
@@ -80,7 +80,7 @@
                   <%= rank %>
                   </div>
                 </td>
-                <td><a href="<%= zoj.utils.makeUrl(['user', item.user.id]) %>"><%= item.user.username %></a><% if (item.user.nameplate) { %><%- item.user.nameplate %><% } %></td>
+                <td><a href="<%= zoj.utils.makeUrl(['user', item.user.id]) %>"><%= item.user.username %></a></td>
                 <% if (contest.type === 'acm') { %>
                   <td>
                     <span class="score score_<%= parseInt((item.player.score / ranklist[0].player.score * 10) || 0) %>">
