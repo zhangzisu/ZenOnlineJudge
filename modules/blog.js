@@ -52,7 +52,7 @@ app.get('/blogs/user/:id', async (req, res) => {
     try {
         let id = parseInt(req.params.id);
         let user = await User.fromID(id);
-        if (!user) throw new ErrorMessage('无此用户。');
+        if (!user) throw new ErrorMessage('No such user.');
         let where = {};
         if (!res.locals.user) {
             where = {

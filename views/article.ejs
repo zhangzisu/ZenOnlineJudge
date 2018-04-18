@@ -19,7 +19,7 @@
   </div>
   <h1><%= article.title %></h1>
  	<p style="font-size: 0.7em"><img style="vertical-align: middle;" src="<%= zoj.utils.gravatar(article.user.email, 64) %>" width="32" height="32">
- 		<a href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>"><%= article.user.username %></a><% if (article.user.nameplate) { %><%- article.user.nameplate %><% } %> 于 <%= zoj.utils.formatDate(article.public_time) %> 发表，<%= zoj.utils.formatDate(article.update_time) %> 最后更新
+ 		<a href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>">Posted by <%= article.user.username %></a> at <%= zoj.utils.formatDate(article.public_time) %> updated at<%= zoj.utils.formatDate(article.update_time) %> 
         <% if (article.allowedEdit) { %>
         <a class="ui mini red button" onclick="$('#modal-delete').modal('show')">Delete This Article</a>
         <a class="ui mini button" href="<%= zoj.utils.makeUrl(['article', article.id, 'edit']) %>">Edit This Artice</a>
@@ -56,7 +56,7 @@
           <img src="<%= zoj.utils.gravatar(comment.user.email, 120) %>">
         </a>
         <div class="content">
-          <a class="author" href="<%= zoj.utils.makeUrl(['user', comment.user_id]) %>"><%= comment.user.username %></a><% if (comment.user.nameplate) { %><%- comment.user.nameplate %><% } %>
+          <a class="author" href="<%= zoj.utils.makeUrl(['user', comment.user_id]) %>"><%= comment.user.username %></a>
           <div class="metadata">
             <span class="date"><%= zoj.utils.formatDate(comment.public_time) %></span>
           </div>

@@ -30,9 +30,6 @@ padding-top: 100%;
 <div class="content">
 <div class="header">
 <%= show_user.username %>
-<% if (show_user.nameplate) { %>
-<%- show_user.nameplate %>
-<% } %>
 <% if (show_user.sex == 1) { %>
 <i class="man icon"></i>
 <% } else if (show_user.sex == -1) { %>
@@ -61,9 +58,6 @@ padding-top: 100%;
 <h4 class="ui top attached block header">User Name</h4>
 <div class="ui bottom attached segment">
 <%= show_user.username %>
-<% if (show_user.nameplate) { %>
-<%- show_user.nameplate %>
-<% } %>
 </div>
 </div>
 </div>

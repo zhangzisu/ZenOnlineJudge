@@ -132,7 +132,7 @@ app.get('/api/forget_confirm', async (req, res) => {
 		try {
 			WebToken.verify(req.query.token, zoj.config.session_secret, { subject: 'forget' });
 		} catch (e) {
-			throw new ErrorMessage("Token incorrect。");
+			throw new ErrorMessage("Token incorrect.");
 		}
 		res.render('forget_confirm', {
 			token: req.query.token
