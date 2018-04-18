@@ -1,0 +1,135 @@
+<% this.title = 'Manage Problem'; %>
+<% include header %>
+<div class="padding">
+    <div class="ui grid">
+    <div class="row">
+      <div class="seven wide column">
+        <% include problem_testcases %>
+      </div>
+      <div class="nine wide column">
+        <form class="ui form" method="post" enctype="multipart/form-data" onsubmit="return checkSubmit()">
+          <input type="hidden" name="type" value="<%= problem.type %>">
+          <div class="ui pointing secondary menu" id="problem-type-tab" style="margin-top: -10px; ">
+            <a class="<%= problem.type === 'traditional' ? 'active ' : '' %>item" data-tab="traditional">Traditional</a>
+            <a class="<%= problem.type === 'submit-answer' ? 'active ' : '' %>item" data-tab="submit-answer">Submit Answer</a>
+          </div>
+          <div class="ui <%= problem.type !== 'submit-answer' ? 'active ' : '' %>tab" data-tab="traditional">
+            <div class="two fields">
+              <div class="field">
+                <label for="doc-ds-ipt-1">Time Limit(ms)</label>
+                <input type="number" name="time_limit" value="<%= problem.time_limit %>">
+              </div>
+              <div class="field">
+                <label for="doc-ds-ipt-1">Memory Limit(MiB)</label>
+                <input type="number" name="memory_limit" value="<%= problem.memory_limit %>">
+              </div>
+            </div>
+            <div id="io-type">
+              <% if (!problem.file_io) { %>
+              <div class="inline fields">
+                <label>IO Mode</label>
+                <div class="field">
+                  <div class="ui radio checkbox">
+                    <input name="io_method" value="std-io" id="std-io" type="radio" onclick="goDisable()" checked>
+                    <label for="std-io">Standard IO</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="ui radio checkbox">
+                    <input name="io_method" value="file-io" id="file-io" type="radio" onclick="goEnable()">
+                    <label for="file-io">File IO</label>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label for="file_io_input_name">Input File Name</label>
+                  <input type="text" id="file-io-input-name" name="file_io_input_name" value="<%= problem.file_io_input_name %>" disabled>
+                </div>
+                <div class="field">
+                  <label for="file_io_output_name">Output File Name</label>
+                  <input type="text" id="file-io-output-name" name="file_io_output_name" value="<%= problem.file_io_output_name %>" disabled>
+                </div>
+              </div>
+              <% } else { %>
+              <div class="inline fields">
+                <label>IO Mode</label>
+                <div class="field">
+                  <div class="ui radio checkbox" id="std-io-div">
+                    <input name="io_method" value="std-io" id="std-io" type="radio" onclick="goDisable()">
+                    <label for="std-io">Standard IO</label>
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="ui radio checkbox">
+                    <input name="io_method" value="file-io" id="file-io" type="radio" onclick="goEnable()" checked>
+                    <label for="file-io">File IO</label>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label for="file_io_input_name">Input File Name</label>
+                  <input type="text" id="file-io-input-name" name="file_io_input_name" value="<%= problem.file_io_input_name %>">
+                </div>
+                <div class="field">
+                  <label for="file_io_output_name">Ouput File Name</label>
+                  <input type="text" id="file-io-output-name" name="file_io_output_name" value="<%= problem.file_io_output_name %>">
+                </div>
+              </div>
+              <% } %>
+            </div>
+          </div>
+          <div class="ui <%= problem.type === 'submit-answer' ? 'active ' : '' %>tab" data-tab="submit-answer" style="margin-bottom: 10px; ">
+            <b>In order to avoid system errors, existing submissions are not allowed to change between submit-answer and not submit-answer.</b><br>
+            Submit-answer problems don't need to set the time limit,memory limit and IO mode.<br>
+            The third column in the table on the left shows the name of the file the player should submit.
+          </div>
+          <div class="field">
+            <label for="testdata">Upload Testdata(Please use ZIP)</label>
+            <input type="file" id="testdata" name="testdata">
+          </div>
+          <div class="field">
+            <label for="additional_file">Upload Additional Files(Please use ZIP)</label>
+            <input type="file" id="additional_file" name="additional_file">
+          </div>
+          <button type="submit" class="ui button">Submit</button>
+          <a href="<%= zoj.utils.makeUrl(['problem', problem.id]) %>" class="ui blue button">Return to the Problem</a>
+        </form>
+      </div>
+  </div>
+<div>
+<script>
+function goEnable() {
+  document.getElementById('file-io-input-name').disabled = false;
+  document.getElementById('file-io-output-name').disabled = false;
+}
+function goDisable() {
+  document.getElementById('file-io-input-name').disabled = true;
+  document.getElementById('file-io-output-name').disabled = true;
+}
+
+$(function () {
+  $('#file-io-input-name').on('input keyup change', function (e) {
+    var prob = $('#file-io-input-name').val();
+    if (prob.lastIndexOf('.') !== -1) prob = prob.substring(0, prob.lastIndexOf('.'));
+    $('#file-io-output-name').attr('placeholder', prob + '.out');
+  });
+  $('#file-io-output-name').focus(function (e) {
+    if (!$('#file-io-output-name').val()) {
+      $('#file-io-output-name').val($('#file-io-output-name').attr('placeholder'));
+    }
+  });
+
+  $('#problem-type-tab .item').tab();
+
+  $('a[data-tab="submit-answer"]').click(function () {
+    $('input[name=type]').val('submit-answer');
+  });
+});
+
+function checkSubmit() {
+  ;
+}
+</script>
+<% include footer %>

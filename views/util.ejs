@@ -1,0 +1,63 @@
+<%
+this.getStatusMeta = (status) => {
+  if (status.startsWith('Running')) return 'Running';
+  else return status;
+};
+
+const getOrderString = function(order) {
+  return order ? 'asc' : 'desc';
+}
+
+this.createSortableTitle = function(item, display, defaultOrder) {
+  const isCurrent = curSort === item;
+  const url = zoj.utils.makeUrl(req, 
+    Object.assign({}, req.query, { 
+      sort: item, 
+      order: getOrderString(isCurrent ? (!curOrder) : defaultOrder)
+    }));
+  const triangle = isCurrent ? `<i class="${curOrder ? "angle up" : "angle down"} icon"></i>` : "";
+  return `<a href="${url}">${display}${triangle}</a>`;
+}
+
+this.isPending = (status) => {
+  let pending = [
+    'Testdata downloading',
+    'Waiting',
+    'Compiling',
+    'Running',
+    'Fetched'
+  ];
+  return pending.includes(this.getStatusMeta(status));
+};
+
+this.alpha = number => {
+  if (number && parseInt(number) == number && parseInt(number) > 0) return String.fromCharCode('A'.charCodeAt(0) + parseInt(number) - 1);
+};
+
+this.icon = {
+  'Accepted': 'checkmark',
+  'Wrong Answer': 'remove',
+  'Runtime Error': 'bomb',
+  'Invalid Interaction': 'ban',
+  'Time Limit Exceeded': 'clock',
+  'Memory Limit Exceeded': 'microchip',
+  'Output Limit Exceeded': 'print',
+  'File Error': 'file outline',
+  'Testdata downloading': 'cloud download alternate',
+  'Waiting': 'hourglass half',
+  'Running': 'spinner',
+  'Compiling': 'spinner',
+  'Fetched': 'spinner',
+  'Compile Error': 'code',
+  'Submitted': 'checkmark', // NOI contests
+  'System Error': 'server',
+  'No Testdata': 'folder open outline',
+  'Partially Correct': 'minus',
+  'Judgement Failed': 'server',
+  'Skipped': 'ban'
+};
+
+this.iconHidden = [
+  'Submitted'
+];
+%>

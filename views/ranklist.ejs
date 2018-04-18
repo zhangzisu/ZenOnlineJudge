@@ -1,0 +1,47 @@
+<% this.title = 'Ranklist' %>
+<% include header %>
+<div class="padding">
+  <form action="<%= zoj.utils.makeUrl(['find_user']) %>" class="ui mini form" method="get" role="form" style="margin-bottom: 25px; text-align: right; ">
+    <div class="ui action left icon input inline" style="width: 180px; margin-right: 77px; ">
+      <i class="search icon"></i><input name="nickname" placeholder="User Name" type="text">
+      <button class="ui mini button" type="submit">Search</button>
+    </div>
+  </form>
+	    <table class="ui very basic center aligned table" style="table-layout: fixed; ">
+	        <thead>
+	        <tr>
+	            <th style="width: 80px; ">#</th>
+	            <th style="width: 170px; "><%- createSortableTitle('username', 'User Name', true) %></th>
+	            <th>Motto</th>
+              <th style="width: 100px; "><%- createSortableTitle('ac_num', 'AC Count', false) %></th>
+              <th style="width: 100px; "><%- createSortableTitle('rating', 'Rating', false) %></th>
+              <% if(privilege) {%>
+                <th style="width: 80px; "><%- createSortableTitle('admin', 'Privilege', false) %></th>
+                <th style="width: 80px; "><%- createSortableTitle('is_show', 'Allow', false) %></th>
+              <% } %>
+	        </tr>
+	        </thead>
+	        <tbody>
+	        <%
+            let i = (paginate.currPage - 1) * paginate.perPage;
+            for (let user of ranklist) {
+              ++i;
+            %>
+            <tr>
+		        	<td><%= i %></td>
+		        	<td><a href="<%= zoj.utils.makeUrl(['user', user.id]) %>"><%= user.username %></a><% if (user.nameplate) { %><%- user.nameplate %><% } %></td>
+              <td><%= user.information %></td>
+              <td><%= user.ac_num %></td>
+              <td><%= user.rating %></td>
+              <% if(privilege) {%>
+                <td><%= user.admin %></td>
+                <td><%= user.is_show %></td>
+              <% } %>
+		        </tr>
+		    <% } %>
+	        </tbody>
+	    </table>
+    <br>
+<% include page %>
+</div>
+<% include footer %>

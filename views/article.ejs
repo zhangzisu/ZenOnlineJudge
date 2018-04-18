@@ -1,0 +1,105 @@
+<% this.title = article.title + ' - Article'; %>
+<% include header %>
+<style type="text/css" xmlns:style="http://www.w3.org/1999/xhtml">
+.small{
+  font-size: 0.7em;
+}
+</style>
+<div class="padding">
+  <div class="ui breadcrumb">
+    <div class="section">Discussion</div>
+    <i class="right angle icon divider"></i>
+    <% if (problem) { %>
+      <div class="section">Problem</div>
+      <i class="right angle icon divider"></i>
+      <a href="<%= zoj.utils.makeUrl(['problem', problem.id, 'discussion']) %>" class="active section"><%= problem.title %></a>
+    <% } else { %>
+      <a href="<%= zoj.utils.makeUrl(['discussion']) %>" class="section">Global Plate</a>
+    <% } %>
+  </div>
+  <h1><%= article.title %></h1>
+ 	<p style="font-size: 0.7em"><img style="vertical-align: middle;" src="<%= zoj.utils.gravatar(article.user.email, 64) %>" width="32" height="32">
+ 		<a href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>"><%= article.user.username %></a><% if (article.user.nameplate) { %><%- article.user.nameplate %><% } %> 于 <%= zoj.utils.formatDate(article.public_time) %> 发表，<%= zoj.utils.formatDate(article.update_time) %> 最后更新
+        <% if (article.allowedEdit) { %>
+        <a class="ui mini red button" onclick="$('#modal-delete').modal('show')">Delete This Article</a>
+        <a class="ui mini button" href="<%= zoj.utils.makeUrl(['article', article.id, 'edit']) %>">Edit This Artice</a>
+        <div class="ui basic modal" id="modal-delete">
+          <div class="ui icon header">
+            <i class="trash icon"></i>
+            <p style="margin-top: 15px; ">Delete This Article</p>
+          </div>
+          <div class="content" style="text-align: center; ">
+            <p>Are you sure to delete this?</p>
+          </div>
+          <div class="actions">
+            <div class="ui red basic cancel inverted button">
+              <i class="remove icon"></i>
+              No
+            </div>
+            <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['article', article.id, 'delete']) %>">
+              <i class="checkmark icon"></i>
+              Yes
+            </a>
+          </div>
+        </div>
+        <% } %>
+ 	</p>
+  <div class="ui existing segment">
+	  <div id="content" class="font-content"><%- article.content %></div>
+  </div>
+  <% if (comments.length) { %>
+  <div class="ui comments" style="max-width: none;">
+    <h3 class="ui dividing header">There is(are) <%= commentsCount %> reply(replies).</h3>
+    <% for (let comment of comments) { %>
+      <div class="comment">
+        <a class="avatar">
+          <img src="<%= zoj.utils.gravatar(comment.user.email, 120) %>">
+        </a>
+        <div class="content">
+          <a class="author" href="<%= zoj.utils.makeUrl(['user', comment.user_id]) %>"><%= comment.user.username %></a><% if (comment.user.nameplate) { %><%- comment.user.nameplate %><% } %>
+          <div class="metadata">
+            <span class="date"><%= zoj.utils.formatDate(comment.public_time) %></span>
+          </div>
+          <div class="text font-content"><%- comment.content %></div>
+          <% if (comment.allowedEdit) { %>
+            <div class="actions"><a onclick="$('#modal-delete-<%= comment.id %>').modal('show')">Delete</a></div>
+            <div class="ui basic modal" id="modal-delete-<%= comment.id %>">
+              <div class="ui icon header">
+                <i class="trash icon"></i>
+                <p style="margin-top: 15px; ">Delete This Comment</p>
+              </div>
+              <div class="content" style="text-align: center; ">
+                <p>Are you sure to delete this?</p>
+              </div>
+              <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                  <i class="remove icon"></i>
+                  No
+                </div>
+                <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['article', article.id, 'comment', comment.id, 'delete']) %>">
+                  <i class="checkmark icon"></i>
+                  Yes
+                </a>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+  <div style="margin-bottom: 50px; ">
+    <% include page %>
+  </div>
+  <% } %>
+   <% if (article.allowedComment) { %>
+   <form class="ui reply form" method="post" action="<%= zoj.utils.makeUrl(['article', article.id, 'comment']) %>">
+      <div class="field">
+        <textarea name="comment"></textarea>
+      </div>
+      <button type="submit" class="ui labeled submit icon button">
+        <i class="icon edit"></i> Reply
+      </button>
+   </form>
+   <% } %>
+</div>
+<% include footer %>

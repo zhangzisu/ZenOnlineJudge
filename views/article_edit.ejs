@@ -1,0 +1,57 @@
+<% this.title = article.id ? 'Edit Discussion' : 'Post Discussion'; %>
+<% include header %>
+<style type="text/css">
+    .am-panel-title{
+    font-size: 1.6em;
+    }
+</style>
+<div class="padding">
+  <form class="ui form" method="post">
+    <div class="ui top attached tabular menu">
+      <a class="item active" data-tab="edit">Edit</a>
+      <a class="item" data-tab="preview" id="preview_tab">Preview</a>
+    </div>
+    <div class="ui bottom attached tab segment active" data-tab="edit">
+      <div class="field">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" value="<%= article.title %>">
+        <label for="content">Content<i class="mega-octicon octicon-markdown"></i></label>
+        <textarea rows="15" id="content" name="content" class="font-content"><%= article.content %></textarea>
+        <% if (user && user.admin >= 2) { %>
+          <div class="ui <% if (article.is_notice) { %>checked <% } %>checkbox" style="margin-top: 15px; ">
+            <input <% if (article.is_notice) { %>checked=""<% } %> name="is_notice" type="checkbox">
+            <label><strong>Bulletin</strong></label>
+            <p style="margin-top: 5px; ">This article will be shown in the bulletin board of the home page after choose it.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="preview">
+      <div class="ui header" id="pv-title"></div>
+      <div id="pv-content" class="font-content"></div>
+    </div>
+    <!--<button type="submit" class="ui labeled submit icon button">
+      <i class="icon edit"></i> -->
+      <button type="submit" class="ui button">
+      Submit
+    </button>
+  </form>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    function render(output, input) {
+      $.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
+        // console.log(s);
+        output.html(s);
+      });
+    }
+    $("#preview_tab").click(function () {
+      $("#pv-title").text($("#title").val());
+      $("#pv-content").text('Loading...');
+      render($("#pv-content"), $("#content"));
+    });
+    $('.tabular.menu .item').tab();
+})
+</script>
+<% include footer %>

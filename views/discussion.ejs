@@ -1,0 +1,54 @@
+<% this.title = 'Discussion' %>
+<% include header %>
+<div class="padding">
+  <div class="ui grid">
+    <div class="row">
+      <div class="ten wide column">
+        <div class="ui breadcrumb">
+          <div class="section">Discussion</div>
+          <i class="right angle icon divider"></i>
+          <% if (problem) { %>
+            <div class="section">Problem</div>
+            <i class="right angle icon divider"></i>
+            <div class="active section"><%= problem.title %></div>
+          <% } else { %>
+            <div class="section">Global Plate</div>
+          <% } %>
+        </div>
+      </div>
+      <div class="six wide right aligned column">
+        <% if (problem) { %>
+          <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['problem', problem.id]) %>" class="ui labeled icon mini blue button">
+            <i class="arrow left icon"></i>
+            Return to the Problem
+          </a>
+        <% } %>
+        <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['article', 0, 'edit'], problem ? { problem_id: problem.id } : null) %>" class="ui labeled icon mini button">
+            <i class="write icon"></i>
+            New Post
+        </a>
+      </div>
+    </div>
+  </div>
+  <table class="ui very basic center aligned table">
+    <thead>
+      <tr>
+        <th class="left aligned" style="width: 65%; ">Title</th>
+        <th style="width: 15%; ">Author</th>
+        <th style="width: 20%; ">Post Time</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% for (let article of articles) { %>
+        <tr>
+            <td class="left aligned"><a href="<%= zoj.utils.makeUrl(['article', article.id]) %>"><%= article.title %></a></td>
+            <td><a href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>"><%= article.user.username %></a><% if (article.user.nameplate) { %><%- article.user.nameplate %><% } %></td>
+            <td><%= zoj.utils.formatDate(article.public_time) %></td>
+        </tr>
+    <% } %>
+    </tbody>
+  </table>
+  <br>
+    <% include page %>
+</div>
+<% include footer %>

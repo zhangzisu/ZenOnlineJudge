@@ -1,0 +1,125 @@
+<% this.title = 'Register' %>
+<% include header %>
+<div class="padding">
+  <h1>Register</h1>
+  <div class="ui error message" id="error" data-am-alert hidden>
+    <p id="error_info"></p>
+  </div>
+          <form class="ui form">
+                <div class="field">
+                    <label for="username">User Name</label>
+                    <input type="text" placeholder="" id="username" onKeyDown="KeyDown(event)">
+                </div>
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input type="email" placeholder="" id="email" onKeyDown="KeyDown(event)">
+                </div>
+                <div class="two fields">
+                    <div class="field">
+                    <label class="ui header">Password</label>
+                      <input type="password" placeholder="" id="password1" onKeyDown="KeyDown(event)">
+                    </div>
+                    <div class="field">
+                      <label class="ui header">Repeat the Password</label>
+                      <input type="password" placeholder="" id="password2" onKeyDown="KeyDown(event)">
+                    </div>
+                </div>
+                <a id="sign_up" class="ui button" href="javascript:submit();">Register</a>
+            </form>
+</div>
+<script src="/libs/blueimp-md5/js/md5.min.js"></script>
+<script type="text/javascript">
+    function KeyDown(event) {
+        if (event.keyCode == 13) {
+            submit();
+        }
+    }
+    function show_error(error) {
+        $("#error_info").text(error);
+        $("#error").show();
+    }
+
+    function success() {
+        alert("Register successfully!");
+        window.location.href = <%- JSON.stringify(req.query.url || '/') %>;
+    }
+
+    function mail_required() {
+        alert("Registration confirmation mail has been sent to your email, click the link in the mail to complete the registration.");
+        var s = $("#email").val();
+        var mailWebsite = 'https://mail.' + s.substring(s.indexOf('@') + 1, s.length);
+        if (mailWebsite === 'https://mail.gmail.com') mailWebsite = 'https://mail.google.com';
+        window.location.href = mailWebsite;
+    }
+
+    function submit() {
+        if ($("#password1").val() != $("#password2").val()) {
+            show_error("The two passwords are not the same!");
+            return;
+        }
+        if($("#password1").val().length < 6){
+            show_error("Your password is too short!");
+            return;
+        }
+        password = md5($("#password1").val())
+        $("#sign_up").fadeOut(0);
+        show_error("Submitting request,please wait...");
+        $.ajax({
+            url: '/api/sign_up',
+            type: 'POST',
+            async: true,
+            data: {
+            username: $("#username").val(),
+            password: password,
+            email: $("#email").val(),
+            prevUrl: <%- JSON.stringify(req.query.url || '/') %>,
+            _csrf: document.head.getAttribute('data-csrf-token')
+            },
+            success: function(data) {
+                error_code = data.error_code;
+                switch(error_code){
+                    case 2001:
+                        show_error("The server did not receive the data.");
+                        break;
+                    case 2005:
+                    case 2002:
+                        show_error("Username must be greater than 3 characters and less than 16 characters,allowing only alphanumeric and underscore!");
+                        break;
+                    case 2007:
+                    case 2003:
+                        show_error("Password can not be empty!");
+                        break;
+                    case 2004:
+                    case 2006:
+                        show_error("Please enter vaild email!");
+                        break;
+                    case 2008:
+                        show_error("Already used this username!");
+                        break;
+                    case 2009:
+                        show_error("Email address has been occupied");
+                        break;
+                    case 2010:
+                        show_error("Verification mail sent failed:\n" + data.message);
+                        break;
+                    case 1:
+                        success();
+                        break;
+                    case 2:
+                        mail_required();
+                        break;
+                    default:
+                        show_error("Unknown Error:" + JSON.stringify(data));
+                        break;
+                }
+                $("#sign_up").fadeIn(0);
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(XMLHttpRequest.responseText);
+                show_error("Unknown Error");
+                $("#sign_up").fadeIn(0);
+            }
+        });
+    }
+</script>
+<% include footer %>

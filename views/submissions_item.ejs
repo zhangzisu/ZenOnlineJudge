@@ -1,0 +1,39 @@
+<% include util %>
+<%
+let problemUrl;
+if (typeof contest !== 'undefined' && contest) problemUrl = zoj.utils.makeUrl(['contest', contest.id, judge.problem_id]);
+else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
+%>
+<td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>">#<%= judge.id %></a></td>
+<td><a style="width: 230px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-p-<%= judge.id %>" href="<%= problemUrl %>"><%= (typeof contest !== 'undefined' && contest) ? this.alpha(judge.problem_id) : ('#' + judge.problem_id) %>. <%= judge.problem.title %></a></td>
+<td><a style="width: 150px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-s-<%= judge.id %>" href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>">
+    <span class="status <%= getStatusMeta(judge.status).toLowerCase().split(' ').join('_') %>">
+    <i class="<%= icon[getStatusMeta(judge.status)] || 'remove' %> icon"></i>
+    <%= judge.status %>
+    </span>
+</a></td>
+<script>
+  var p = document.getElementById('text-fit-p-<%= judge.id %>');
+  var s = document.getElementById('text-fit-p-<%= judge.id %>');
+  textFit(p, { maxFontSize: 14 });
+  textFit(s, { maxFontSize: 14 });
+</script>
+<% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && (contest.type === 'acm' || contest.type === 'noi'))) { %>
+  <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><span class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></span></a></td>
+  <% if (judge.problem.type !== 'submit-answer') { %>
+    <td><%= judge.result.total_time %> ms</td>
+    <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
+    <% if (judge.allowedSeeCode) { %>
+      <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / <%= zoj.utils.formatSize(judge.code.length) %></td>
+    <% } else { %>
+      <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / Hide</td>
+    <% } %>
+  <% } else { %>
+    <td>-</td><td>-</td>
+    <td><%= zoj.utils.formatSize(judge.max_memory) %></td>
+  <% } %>
+<% } %>
+<td><a href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a><% if (judge.user.nameplate) { %><%- judge.user.nameplate %><% } %></td>
+<td><%= zoj.utils.formatDate(judge.submit_time) %>
+</td>
+<td><%= judge.result.judger %></td>

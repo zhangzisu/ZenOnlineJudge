@@ -1,0 +1,79 @@
+<% include util %>
+<!DOCTYPE html>
+<html lang="zh-CN" <% if(user && user.theme == 'dark'){ %> style="filter: invert(1);background: black;" <% } %>>
+<head data-csrf-token="<%= req.csrfToken() %>">
+    <meta charset="utf-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <title><%= title %> - <%= zoj.config.title %></title>
+    <style>
+        a.link:hover{
+            text-decoration:underline
+        }
+    </style>
+    <link rel="stylesheet" href="/semantic-ui/semantic.min.css">
+    <link rel="stylesheet" href="/tomorrow.css">
+    <link rel="stylesheet" href="/mathjax.css">
+    <link rel="stylesheet" href="/libs/KaTeX/katex.min.css">
+    <link rel="stylesheet" href="/libs/morris.js/morris.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/octicons.css">
+    <script src="/libs/jquery/jquery.min.js"></script>
+    <link rel="icon" href="https://zhangzisu.cn/wp-content/uploads/2017/08/cropped-site-icon-32x32.png" sizes="32x32">
+    <link rel="icon" href="https://zhangzisu.cn/wp-content/uploads/2017/08/cropped-site-icon-192x192.png" sizes="192x192">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= zoj.config.google_publisher_id %>"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<%= zoj.config.google_publisher_id %>');
+    </script>
+    <% if(user && user.theme == 'dark'){ %> 
+        <script>$('img').css('filter', 'invert(1)');</script>
+    <% } %>
+</head>
+<body>
+    <div class="ui fixed borderless menu" style="position: fixed; ">
+        <div class="ui container">
+            <a title="Index" class="header item" href="/"><span style="font-family: Raleway; font-size: 1.5em; font-weight: 300; "><%= zoj.config.title %></span></a>
+            <a title="Problems" class="item<% if (active.startsWith('problem')) { %> active<% } %>" href="/problems"><i class="list icon"></i></a>
+            <a title="Contests" class="item<% if (active.startsWith('contest')) { %> active<% } %>" href="/contests"><i class="calendar icon"></i></a>
+            <a title="Submissions" class="item<% if (active.startsWith('submission')) { %> active<% } %>" href="/submissions"><i class="tasks icon"></i></a>
+            <a title="Ranklist" class="item<% if (active.startsWith('ranklist')) { %> active<% } %>" href="/ranklist"><i class="signal icon"></i></a>
+            <a title="Discussion" class="item<% if (active.startsWith('discussion') || active.startsWith('article')) { %> active<% } %>" href="/discussion"><i class="comments icon"></i></a>
+            <a title="Blog" class="item<% if (active.startsWith('blog')) { %> active<% } %>" href="/blogs"><i class="coffee icon"></i></a>
+            <a title="Help" class="item<% if (active.startsWith('help')) { %> active<% } %>" href="/help"><i class="help circle icon"></i></a>
+            <% if (typeof contest !== 'undefined' && contest && contest.id) { %>
+              <a id="back_to_contest" class="item" href="<%= zoj.utils.makeUrl(['contest', contest.id]) %>"><i class="arrow left icon"></i></a>
+            <% } %>
+            <div class="right menu">
+              <% if (user) { %>
+              <div class="ui simple dropdown item">
+                <i class="power icon"></i>
+                <div class="menu">
+                  <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id]) %>"><i class="user circle outline icon"></i><%= user.username %><% if (user.nameplate) { %><%- user.nameplate %><% } %></a>
+                  <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id, 'edit']) %>"><i class="edit icon"></i>Edit profile</a>
+                  <a class="item" href="<%= zoj.utils.makeUrl(['blogs', 'user', user.id]) %>"><i class="coffee icon"></i>Blog</a>
+                  <% if (user.admin >= 4) { %>
+                    <a class="item" href="<%= zoj.utils.makeUrl(['admin', 'info']) %>"><i class="settings icon"></i>Console</a>
+                  <% } else if(user.admin >= 3){ %>
+                    <a class="item" href="<%= zoj.utils.makeUrl(['admin', 'rating']) %>"><i class="settings icon"></i>Rating management</a>
+                  <% } %>
+                  <a class="item" href="<%= zoj.utils.makeUrl(['logout']) %>"><i class="sign out alternate icon"></i>Logout</a>
+                </div>
+              </div>
+              </a>
+                <% } else { %>
+                <div class="item">
+                    <a class="ui button" style="margin-right: 0.5em; " href="<%= zoj.utils.makeUrl(['login'], { url: req.originalUrl }) %>">
+                        Login
+                    </a>
+                    <a class="ui primary button" href="<%= zoj.utils.makeUrl(['sign_up'], { url: req.originalUrl }) %>">
+                        Register
+                    </a>
+                </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+    <div class="ui main container">

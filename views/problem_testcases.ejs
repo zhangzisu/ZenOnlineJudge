@@ -1,0 +1,50 @@
+<%
+let subtaskType = {
+  sum: 'The total score will be the average value of all the subtasks.',
+  mul: 'The total score will be the product of all the subtasks.',
+  min: 'The total score will be the mininum value of all the subtasks.'
+};
+%>
+<% if (testcases && testcases.error) { %>
+  <h4>Testdata Package Error:<%= testcases.error %></h4>
+<%
+} else if (testcases) {
+%>
+  <% if (testcases.spj) { %>
+    <p>Judge method：Special Judge</p>
+  <% } else { %>
+    <p>Judge method：Compare Texts</p>
+  <% } %>
+  <table class="ui celled table">
+    <tbody>
+      <% let i = 0; %>
+      <% for (let subtask of testcases) { %>
+        <% if (testcases.length !== 1) { %>
+          <tr>
+            <td style="background-color: #F9FAFB" colspan="<%= problem.type === 'submit-answer' ? 3 : 2 %>"><h4 style="margin-bottom: 3px; ">Subtasks <%= ++i %></h4><span style="font-weight: normal; "><%= subtaskType[subtask.type] %>，Total Score <%= subtask.score %></span></th>
+          </tr>
+        <% } else { %>
+          <tr>
+            <td style="background-color: #F9FAFB" colspan="<%= problem.type === 'submit-answer' ? 3 : 2 %>"><h4 style="margin-bottom: 3px; ">Single Subtask</h4><span style="font-weight: normal; "><%= subtaskType[subtask.type] %></span></th>
+          </tr>
+        <% } %>
+          <% for (let testcase of subtask.cases) { %>
+            <% if (problem.type === 'submit-answer') { %>
+              <tr class="center aligned">
+                <td style="width: 33%; "><%= testcase.input || '-' %></td>
+                <td style="width: 33%; "><%= testcase.output || '-' %></td>
+                <td style="width: 33%; "><%= testcase.answer || '-' %></td>
+              </tr>
+            <% } else { %>
+              <tr class="center aligned">
+                <td style="width: 50%; "><%= testcase.input || '-' %></td>
+                <td style="width: 50%; "><%= testcase.output || '-' %></td>
+              </tr>
+            <% } %>
+          <% } %>
+      <% } %>
+    </tbody>
+  </table>
+<% } else { %>
+  <h4 style="text-align: center; ">No Testdata</h4>
+<% } %>

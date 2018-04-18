@@ -1,0 +1,396 @@
+<% include util %>
+<%
+if (typeof contest === 'undefined') contest = null;
+if (contest) {
+  this.title = this.alpha(pid) + '. ' + zoj.utils.removeTitleTag(problem.title) + ' - ' + contest.title + ' - Contest';
+} else {
+  this.title = problem.title + ' - Problem';
+}
+%>
+<% include header %>
+<style>
+.ace_cursor {
+  border-left-width: 1px !important;
+  color: #000 !important;
+}
+
+#languages-menu::-webkit-scrollbar, #testcase-menu::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+div[class*=ace_br] {
+    border-radius: 0 !important;
+}
+</style>
+<script src="/libs/ace/ace.js"></script>
+<div class="ui center aligned grid">
+    <div class="row">
+      <h1 class="ui header">
+        <% if (contest) { %>
+          <%= this.alpha(pid) %>. <%= zoj.utils.removeTitleTag(problem.title) %>
+        <% } else { %>
+          #<%= problem.id %>. <%= problem.title %><% if (problem.allowedEdit) { if (!problem.is_public) {%><span class="ui tiny red label">U</span><% } if(problem.is_protected) { %> <span class="ui tiny green label">P</span> <% } } %>
+        <% } %>
+      </h1>
+    </div>
+    <% if (problem.type !== 'submit-answer') { %>
+      <div class="row" style="margin-top: -15px">
+          <span class="ui label">Memory Limit：<%= problem.memory_limit %> MiB</span>
+          <span class="ui label">Time Limit：<%= problem.time_limit %> ms</span>
+          <% if (problem.file_io) { %>
+            <span class="ui label">Input File: <%= problem.file_io_input_name %></span>
+            <span class="ui label">Output File: <%= problem.file_io_output_name %></span>
+          <% } else { %>
+            <span class="ui label">Standard IO</span>
+          <% } %>
+      </div>
+    <% } %>
+    <div class="row" style="margin-top: -<%= problem.type === 'submit-answer' ? 15 : 23 %>px">
+        <span class="ui label">Problem Type：<%= { 'submit-answer': 'Submit Answer', 'traditional': 'Traditional' }[problem.type] %></span>
+        <span class="ui label">Judge method：<%= (testcases && !testcases.error) ? (testcases.spj ? 'Special Judge' : 'Compare Texts') : 'No Testdata' %></span>
+    </div>
+    <% if (!contest) { %>
+        <div class="row" style="margin-top: -23px">
+            <span class="ui label">Uploaded by：
+            <% if (problem.is_anonymous && !problem.allowedManage) { %>
+              Anonymous
+            <% } else { %>
+              <a href="<%= zoj.utils.makeUrl(['user', problem.user_id]) %>"><%= problem.user.username %></a>
+            <% } %>
+            </span>
+            <% if (problem.allowedManage) { %>
+                <span class="ui label">Published by:
+                <% if (problem.publicizer) { %>
+                  <a href="<%= zoj.utils.makeUrl(['user', problem.publicizer_id]) %>"><%= problem.publicizer.username %></a>
+                <% } else { %>
+                  Unknown
+                <% } %>
+                </span>
+            <% } %>
+        </div>
+    <% } %>
+</div>
+<div class="ui grid">
+  <div class="row">
+    <div class="column">
+      <div class="ui buttons">
+        <% if (typeof contest !== 'undefined' && contest) { %>
+          <% if (!contest.ended) { %>
+            <a class="small ui primary button" href="#submit_code">Submit</a>
+          <% } else { %>
+            <a class="small ui primary button" href="<%= zoj.utils.makeUrl(['problem', problem.id]) %>">Go to Problems</a>
+          <% } %>
+          <a class="small ui positive button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: pid }) %>">Submissions</a>
+          <% if (problem.additional_file) { %>
+            <a class="small ui teal button" href="<%= zoj.utils.makeUrl(['contest', contest.id, pid, 'download', 'additional_file']) %>">Additional Files</a>
+          <% } %>
+          <a href="<%= zoj.utils.makeUrl(['contest', contest.id]) %>" class="ui orange button">Return to the Contest</a>
+        <% } else { %>
+          <% if (testcases && !testcases.error) { %>
+            <a class="small ui primary button" href="#submit_code">Submit</a>
+          <% } %>
+          <a class="small ui positive button" href="<%= zoj.utils.makeUrl(['submissions'], { problem_id: problem.id }) %>">Submissions</a>
+          <a class="small ui orange button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'statistics', problem.type === 'submit-answer' ? 'min' : 'fastest']) %>">Statistics</a>
+          <a class="small ui brown button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'discussion']) %>" style="position: relative; ">
+            Discussion
+            <% if (discussionCount) { %>
+              <div class="floating ui red tiny circular label"><%= discussionCount %></div>
+            <% } %>
+          </a>
+          <a class="small ui yellow button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'testdata']) %>">Testdata</a>
+          <% if (problem.additional_file) { %>
+            <a class="small ui teal button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'download', 'additional_file']) %>">Additional Files</a>
+          <% } %>
+        <% } %>
+      </div>
+      <% if (!contest) { %>
+        <div class="ui buttons right floated">
+          <% if (problem.allowedEdit) { %>
+            <a class="small ui button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'edit']) %>">Edit</a>
+            <a class="small ui button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'manage']) %>">Manage</a>
+          <% } %>
+          <% if (problem.allowedManage) { %>
+            <% if (problem.is_public) {  %>
+              <a class="small ui button" id="dis_public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'dis_public']) %>">Unpublish</a>
+            <% } else { %>
+              <a class="small ui button" id="public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'public']) %>">Publish</a>
+            <% } %>
+            <% if (problem.is_protected) {  %>
+              <a class="small ui button" id="dis_public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'dis_protect']) %>">Unprotect</a>
+            <% } else { %>
+              <a class="small ui button" id="public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'protect']) %>">Protect</a>
+            <% } %>
+            <div class="ui basic modal" id="modal-delete">
+              <div class="ui icon header">
+                <i class="trash icon"></i>
+                <p style="margin-top: 15px; ">Delete this Problem</p>
+              </div>
+              <div class="content" style="text-align: center; ">
+                <p>Are you sure to delete this problem? Submissions,discussions and test data will be deleted.<br>
+                  Delete the problem may take some time to modify the user submissions and the accepted number.</p>
+                <b>WARNING: Deleting a problem from a contest can cause system confusion! Please confirm that there is no contest that have this problem.</b>
+              </div>
+              <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                  <i class="remove icon"></i>
+                  No
+                </div>
+                <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'delete']) %>">
+                  <i class="checkmark icon"></i>
+                  Yes
+                </a>
+              </div>
+            </div>
+            <div class="small ui red button" onclick="$('#modal-delete').modal('show')">Delete</div>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+  </div>
+  <% if (problem.description) { %>
+  <div class="row">
+    <div class="column">
+      <h4 class="ui top attached block header">Description</h4>
+      <div class="ui bottom attached segment font-content"><%- problem.description %></div>
+    </div>
+  </div>
+  <% } %>
+  <% if (problem.input_format) { %>
+  <div class="row">
+    <div class="column">
+        <h4 class="ui top attached block header">Input</h4>
+        <div class="ui bottom attached segment font-content"><%- problem.input_format %></div>
+    </div>
+  </div>
+  <% } %>
+  <% if (problem.output_format) { %>
+    <div class="row">
+        <div class="column">
+          <h4 class="ui top attached block header">Output</h4>
+          <div class="ui bottom attached segment font-content"><%- problem.output_format %></div>
+        </div>
+    </div>
+  <% } %>
+  <% if (problem.example) { %>
+    <div class="row">
+        <div class="column">
+          <h4 class="ui top attached block header">Example</h4>
+          <div class="ui bottom attached segment font-content"><%- problem.example %></div>
+        </div>
+    </div>
+  <% } %>
+  <% if (problem.limit_and_hint) { %>
+    <div class="row">
+        <div class="column">
+          <h4 class="ui top attached block header">Limits and Hints</h4>
+          <div class="ui bottom attached segment font-content"><%- problem.limit_and_hint %></div>
+        </div>
+    </div>
+  <% } %>
+  <% if (problem.tags && problem.tags.length && (typeof contest === 'undefined' || !contest)) { %>
+    <div class="row">
+      <div class="column">
+        <h4 class="ui block header" id="show_tag_title_div" style="margin-bottom: 0; margin-left: -1px; margin-right: -1px; "><a href="#" id="show_tag_button" style="color: #000; ">Show Tags</a></h4>
+        <div class="ui bottom attached segment" style="display: none; " id="show_tag_div">
+          <% for (let tag of problem.tags) { %>
+            <a href="<%= zoj.utils.makeUrl(['problems', 'tag', tag.id]) %>" class="ui medium <%= tag.color %> label">
+              <%= tag.name %>
+            </a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    <script>
+    $(function () {
+      $('#show_tag_button').click(function (e) {
+        e.preventDefault();
+        $('#show_tag_title_div').addClass('top');
+        $('#show_tag_title_div').addClass('top attached');
+        $('#show_tag_title_div').text('Tags');
+        $('#show_tag_div').css('display', '');
+      })
+    });
+    </script>
+  <% } %>
+    <% let noSubmit = false; %>
+    <%
+    if (typeof contest !== 'undefined' && contest && contest.ended || (!testcases || testcases.error)) {
+      noSubmit = true;
+    }
+    %>
+    <% if (!noSubmit) { %>
+    <div class="row">
+        <div class="column">
+          <%
+          let formUrl;
+          if (contest) formUrl = zoj.utils.makeUrl(['problem', problem.id, 'submit'], { contest_id: contest.id });
+          else formUrl = zoj.utils.makeUrl(['problem', problem.id, 'submit']);
+          %>
+          <form class="ui form" action="<%= formUrl %>" method="post" onsubmit="return submit_code()" id="submit_code" enctype="multipart/form-data">
+            <% if (problem.type === 'submit-answer') { %>
+              <%
+              let cases = [];
+              if (testcases && !testcases.error) {
+                for (let subtasks of testcases) {
+                  for (let testcase of subtasks.cases) {
+                    cases.push(testcase.answer);
+                  }
+                }
+              }
+              %>
+              <script>
+              var cases = <%- JSON.stringify(cases) %>, currCase = 0;
+              </script>
+              <div class="ui grid">
+                <% if (testcases) { %>
+                <div class="four wide column" style="margin-right: -25px; ">
+                  <div class="ui attached vertical fluid pointing menu" id="testcase-menu" style="height: 370px; overflow-y: scroll; overflow-x: hidden; ">
+                    <% for (let i = 0; i < cases.length; i++) { %>
+                      <a class="item<%= i === 0 ? ' active' : '' %>" data-value="<%= i %>">
+                        <%= cases[i] %>
+                      </a>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="twelve wide stretched column" style="position: relative; padding-left: 0; margin-left: calc(-1rem - 1px); width: calc(75% + 1rem + 12px) !important; ">
+                  <% for (let i = 0; i < cases.length; i++) { %>
+                    <div id="editor-<%= i %>" style="position: absolute; width: 100%; height: calc(100% - 28px); border: 1px solid #D4D4D5; <%= i === 0 ? '' : 'visibility: hidden; ' %>"></div>
+                  <% } %>
+                </div>
+                <% } %>
+                <input id="answer_by_editor" name="answer_by_editor" type="hidden">
+                <script>
+                var editors = [];
+                for (var i = 0; i < cases.length; i++) {
+                  var editor = ace.edit("editor-" + i);
+                  var lastSubmitted = '';
+
+                  editor.setTheme("ace/theme/tomorrow");
+                  // editor.getSession().setMode("ace/mode/" + $('#languages-menu .item.active').data('mode'));
+                  editor.getSession().setUseSoftTabs(false);
+
+                  editor.container.style.lineHeight = 1.6;
+                  editor.container.style.fontSize = '14px';
+                  editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+                  editor.setShowPrintMargin(false);
+                  editor.renderer.updateFontSize();
+
+                  editors[i] = editor;
+                }
+
+                $(function () {
+                  $('#testcase-menu .item').click(function() {
+                    $(this)
+                      .addClass('active')
+                      .closest('.ui.menu')
+                      .find('.item')
+                        .not($(this))
+                        .removeClass('active')
+                    ;
+
+                    var x = $(this).attr('data-value');
+                    if (currCase != x) {
+                      $('#editor-' + currCase).css('visibility', 'hidden');
+                      $('#editor-' + x).css('visibility', 'visible');
+                      currCase = x;
+                    }
+                  });
+                });
+                </script>
+                <div class="inline fields" style="width: 100%; ">
+              </div>
+              </div>
+              <div class="ui center aligned vertical segment" style="padding-bottom: 0; "><button id="submit" type="submit" class="ui button">Submit</button></div>
+            <% } else { %>
+              <input name="language" type="hidden" id="form">
+              <input name="code" type="hidden">
+              <div class="ui grid">
+                <div class="four wide column" style="margin-right: -25px; ">
+                  <div class="ui attached vertical fluid pointing menu" id="languages-menu" style="height: 370px; overflow-y: scroll; overflow-x: hidden; ">
+                    <%
+                    let language = Object.getOwnPropertyNames(zoj.config.languages).shift();
+                    if (state) {
+                      language = state.language;
+                    } else if (lastLanguage) language = lastLanguage;
+                    %>
+                    <% for (lang in zoj.config.languages) { %>
+                      <a class="item<%= lang === language ? ' active' : '' %>" data-value="<%= lang %>" data-mode="<%= zoj.config.languages[lang].editor %>">
+                        <%= zoj.config.languages[lang].show %>
+                        <div class="ui right floated" style="opacity: 0.4; margin-top: 8px; font-size: 0.7em; "><%= zoj.config.languages[lang].version %></div>
+                      </a>
+                    <% } %>
+                  </div>
+                </div>
+                <div class="twelve wide stretched column" style="padding-left: 0; margin-left: calc(-1rem - 1px); width: calc(75% + 1rem + 1px + 25px) !important; ">
+                  <div id="editor" style="border: 1px solid #D4D4D5; "><% if (state) { %><%= state.code %><% } %></div>
+                </div>
+                <div class="inline fields" style="width: 100%; ">
+              </div>
+              </div>
+              <div class="ui center aligned vertical segment" style="padding-bottom: 0; ">
+                <button id="submit" type="submit" class="ui button">Submit</button>
+              </div>
+            <% } %>
+          </form>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<% if (problem.type !== 'submit-answer') { %>
+  <script type="text/javascript">
+  var editor = ace.edit("editor");
+  var lastSubmitted = '';
+
+  editor.setTheme("ace/theme/tomorrow");
+  editor.getSession().setMode("ace/mode/" + $('#languages-menu .item.active').data('mode'));
+  editor.getSession().setUseSoftTabs(false);
+
+  editor.container.style.lineHeight = 1.6;
+  editor.container.style.fontSize = '14px';
+  editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+  editor.setShowPrintMargin(false);
+  editor.renderer.updateFontSize();
+
+  function submit_code() {
+    if (!editor.getValue().trim()) return false;
+    $('#submit_code input[name=language]').val($('#languages-menu .item.active').data('value'));
+    lastSubmitted = editor.getValue();
+    $('#submit_code input[name=code]').val(editor.getValue());
+    $('#submit').remove();
+    return true;
+  }
+
+  $('#languages-menu')[0].scrollTop = $('#languages-menu .active')[0].offsetTop - $('#languages-menu')[0].firstElementChild.offsetTop;
+
+  $(function () {
+    $('#languages-menu .item').click(function() {
+      $(this)
+        .addClass('active')
+        .closest('.ui.menu')
+        .find('.item')
+          .not($(this))
+          .removeClass('active')
+      ;
+      editor.getSession().setMode("ace/mode/" + $(this).data('mode'));
+    });
+  });
+  </script>
+  <script src="https://cdn.staticfile.org/css-element-queries/0.4.0/ResizeSensor.min.js"></script>
+<% } else { %>
+  <script>
+  function submit_code() {
+    var a = [];
+    for (var i = 0; i < cases.length; i++) {
+      a.push({
+        filename: cases[i],
+        data: editors[i].getValue()
+      });
+    }
+    $('#answer_by_editor').val(JSON.stringify(a));
+    $('#submit').remove();
+  }
+  </script>
+<% } %>
+<% include footer %>

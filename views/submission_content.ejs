@@ -1,0 +1,294 @@
+<% include util %>
+<%
+// Sanitize judge results for backward compatibility and clarity
+if (!judge.result.subtasks) {
+  judge.result.subtasks = [
+    { case_num: judge.result.case_num, status: judge.status, score: judge.result.score }
+  ];
+  for (let i = 0; i < judge.result.case_num; ++i) {
+    judge.result.subtasks[0][i] = judge.result[i];
+  }
+}
+let runningFound = false;
+for (let s of judge.result.subtasks) {
+  s.pending = (s.status === 'Waiting' || s.status.startsWith('Running'));
+  for (let i = 0; i < s.case_num; ++i) if (!s[i]) {
+    s[i] = {
+      pending: true,
+      status: runningFound ? 'Waiting' : 'Running'
+    };
+    if (!runningFound) s.isActiveSubtask = true;
+    runningFound = true;
+  }
+}
+%>
+
+<%
+let problemUrl;
+if (typeof contest !== 'undefined') problemUrl = zoj.utils.makeUrl(['contest', contest.id, judge.problem_id]);
+else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
+%>
+<script src="/textFit.js"></script>
+<div class="padding">
+  <table class="ui very basic center aligned table" id="status_table" style="visibility: hidden; ">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Problem</th>
+        <th>Status</th>
+        <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && contest.type === 'acm') && !hideScore) { %>
+          <th>*</th>
+        <% } %>
+        <% if (judge.problem.type !== 'submit-answer') { %>
+          <% if (!hideScore) { %>
+            <th>Time</th>
+            <th>Memory</th>
+          <% } %>
+          <th>Code</th>
+        <% } else { %>
+          <th>File</th>
+        <% } %>
+        <th>Submitter</th>
+        <th>Submit Time</th>
+        <th>Judger</th>
+        <% if (judge.allowedRejudge) { %>
+          <th>Rejudge</th>
+        <% } %>
+      </tr>
+     </thead>
+     <tbody>
+       <tr>
+        <td>#<%= judge.id %></td>
+        <td><a style="width: 230px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-p" href="<%= problemUrl %>"><%= (typeof contest !== 'undefined' && contest) ? this.alpha(judge.problem_id) : ('#' + judge.problem_id) %>. <%= judge.problem.title %></a></td>
+        <td><a style="width: 150px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-s" href="#">
+          <span class="status <%= getStatusMeta(judge.status).toLowerCase().split(' ').join('_') %>">
+          <i class="<%= icon[getStatusMeta(judge.status)] || 'remove' %> icon"></i>
+          <%= judge.status %>
+          </span>
+      </a></td>
+        <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && contest.type === 'acm') && !hideScore) { %>
+          <td class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></td>
+        <% } %>
+        <% if (judge.problem.type !== 'submit-answer') { %>
+          <% if (!hideScore) { %>
+            <td><%= judge.result.total_time %> ms</td>
+            <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
+          <% } %>
+          <% if (judge.allowedSeeCode) { %>
+            <td><%= zoj.config.languages[judge.language].show %> / <%= zoj.utils.formatSize(judge.codeLength) %></td>
+          <% } else { %>
+            <td><%= zoj.config.languages[judge.language].show %> / Hide %></td>
+          <% } %>
+        <% } else { %>
+          <td><%= zoj.utils.formatSize(judge.max_memory) %></td>
+        <% } %>
+        <td><a href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a><% if (judge.user.nameplate) { %><%- judge.user.nameplate %><% } %></td>
+        <td><%= zoj.utils.formatDate(judge.submit_time) %></td>
+        <td><%= judge.result.judger %></td>
+        <% if (judge.allowedRejudge) { %>
+          <td>
+            <a id="rejudge-button" onclick="check_rejudge()" style="color: #000; " href="#"><i class="repeat icon"></i></a>
+            <div class="ui basic modal" id="modal-rejudge">
+              <div class="ui icon header">
+                <i class="retweet icon"></i>
+                <p style="margin-top: 15px; ">Rejudge</p>
+              </div>
+              <div class="content" style="text-align: center; ">
+                <p>Are you sure to rejudge this submission?</p>
+                <p id="warning_pending"><strong>Warning: Only an administrator can rejudge an unfinished submission, which usually occurs after the judge service is interrupted.<br>If a submission is being judged, rejudging it will cause system confusion!</strong></p>
+                <script>
+                var pending = <%= judge.pending %>;
+                function check_rejudge() {
+                  if (pending) {
+                    $('#warning_pending').css('display', '');
+                  } else {
+                    $('#warning_pending').css('display', 'none');
+                  }
+                  $('#modal-rejudge').modal('show');
+                }
+                </script>
+              </div>
+              <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                  <i class="remove icon"></i>
+                  No
+                </div>
+                <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['submission', judge.id, 'rejudge']) %>">
+                  <i class="checkmark icon"></i>
+                  Yes
+                </a>
+              </div>
+            </div>
+          </td>
+        <% } %>
+       </tr>
+     </tbody>
+  </table>
+  <script>
+  window.applyTextFit = function () {
+    var e = document.getElementById('text-fit-p');
+    var s = document.getElementById('text-fit-s');
+    textFit(e, { maxFontSize: 14 });
+    textFit(s, { maxFontSize: 14 });
+    document.getElementById('status_table').style.visibility = '';
+  }
+  window.applyTextFit();
+  </script>
+  <% if (judge.problem.type !== 'submit-answer' && judge.allowedSeeCode) { %>
+    <div class="ui existing segment" style="position: relative; ">
+      <pre style="margin-top: 0; margin-bottom: 0; "><code id="code"><%- judge.code %></code></pre>
+    </div>
+    <script>
+      document.addEventListener('keydown', function (event) {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
+          var sel = window.getSelection();
+          var rg = document.createRange()
+          rg.selectNodeContents(document.getElementById('code'));
+          sel.removeAllRanges();
+          sel.addRange(rg);
+          event.preventDefault();
+        }
+      });
+    </script>
+  <% } %>
+<% if (judge.problem.type !== 'submit-answer' && judge.result.compiler_output && judge.status === 'Compile Error' && judge.allowedSeeCode) { %>
+  <h3 class="ui header">Compile Information</h3>
+  <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%- zoj.utils.ansiToHTML(judge.result.compiler_output) %></code></pre></div>
+<% } else if (judge.result.message) { %>
+  <h3 class="ui header">System Debugging Information</h3>
+  <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= judge.result.message %></code></pre></div>
+<% } else if (judge.result.spj_compiler_output) { %>
+  <h3 class="ui header">Special Judge Compile Information</h3>
+  <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%- zoj.utils.ansiToHTML(judge.result.spj_compiler_output) %></code></pre></div>
+<% } else if (judge.allowedSeeCase && judge.result.subtasks && (judge.result.subtasks.length !== 1 || judge.result.subtasks[0].case_num)) { %>
+<div class="ui styled fluid accordion" id="subtasks_list">
+  <% let subtask_count = 0; %>
+  <% for (let subtask_cases of (judge.result.subtasks || [])) { %>
+    <% if (judge.result.subtasks.length !== 1) { %>
+      <div class="title auto_update auto_update_activation<% if (subtask_cases.isActiveSubtask) { %> active<% } %>">
+        <div class="ui grid">
+          <div class="three wide column"><i class="dropdown icon"></i>Subtask #<%= ++subtask_count %></div>
+          <div class="four wide column status status_detail <%= getStatusMeta(subtask_cases.status).toLowerCase().split(' ').join('_') %>">
+          <i class="<%= icon[getStatusMeta(subtask_cases.status)] || 'remove' %> icon"></i>
+          <%= subtask_cases.status %></div>
+          <% if (!subtask_cases.pending) { %>
+            <div class="three wide column">Score：<span style="font-weight: normal; "><%= parseFloat(subtask_cases.score.toFixed(2)).toString() %></span></div>
+          <% } %>
+        </div>
+      </div>
+      <div class="content auto_update_activation<% if (subtask_cases.isActiveSubtask) { %> active<% } %>">
+        <div class="accordion" style="margin-top: 0; ">
+    <% } %>
+    <% for (let i = 0; i < subtask_cases.case_num; i++) { %>
+      <% let testcase = subtask_cases[i]; %>
+      <div class="title<% if (testcase.pending || !judge.allowedSeeData || testcase.status === 'Skipped') { %> pending<% } %> auto_update"<% if (testcase.pending || !judge.allowedSeeData) { %> style="cursor: auto; "<% } %>>
+        <div class="ui grid">
+          <div class="<%= judge.problem.type === 'submit-answer' ? 'four' : 'three' %> wide column"><i class="dropdown icon"></i>Point #<%= i + 1 %></div>
+          <div class="four wide column status status_detail <%= getStatusMeta(testcase.status).toLowerCase().split(' ').join('_') %>">
+          <i class="<%= icon[getStatusMeta(testcase.status)] || 'remove' %> icon"></i>
+          <%= testcase.status %></div>
+          <% if (!testcase.pending && testcase.status !== 'Skipped') { %>
+            <% if (!testcase.score) testcase.score = testcase.status === 'Accepted' ? 100 : 0; %>
+            <% if (judge.problem.type === 'submit-answer') { %>
+              <% if (testcase.length != null) { %>
+                <div class="three wide column">File Size：<span style="font-weight: normal; "><%= zoj.utils.formatSize(testcase.length) %></span></div>
+              <% } %>
+            <% } else { %>
+              <div class="three wide column">Score：<span style="font-weight: normal; "><%= parseFloat(testcase.score.toFixed(2)).toString() %></span></div>
+              <div class="three wide column">Time：<span style="font-weight: normal; "><%= testcase.time_used %> ms</span></div>
+              <div class="three wide column">Memory：<span style="font-weight: normal; "><%= testcase.memory_used %> KiB</span></div>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+      <div class="content auto_update">
+        <% if (!testcase.pending && judge.allowedSeeData && testcase.status !== 'Skipped') { %>
+          <p>
+              <% if (judge.problem.type !== 'submit-answer') { %>
+                <strong>Input File<% if (testcase.input_file_name) { %>（<span style="font-family: monospace; "><%= testcase.input_file_name %></span>）<% } %></strong>
+                <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.input %></code></pre></div>
+              <% } %>
+              <% if (judge.problem.type !== 'submit-answer') { %>
+                  <strong>Output File<% if (testcase.output_file_name) { %>（<span style="font-family: monospace; "><%= testcase.output_file_name %></span>）<% } %></strong>
+                  <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.answer %></code></pre></div>
+              <% } %>
+              <strong>Your Output</strong>
+              <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.user_out %></code></pre></div>
+              <% if (testcase.spj_message) { %>
+                <strong>Special Judge Information</strong>
+                <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.spj_message %></code></pre></div>
+              <% } %>
+              <% if (testcase.user_err) { %>
+                <strong>Standard Error</strong>
+                <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.user_err %></code></pre></div>
+              <% } %>
+              <% if (testcase.runner_message && judge.allowedManage) { %>
+                <strong>Debugging Information</strong>
+                <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.runner_message %></code></pre></div>
+              <% } %>
+          </p>
+        <% } %>
+      </div>
+    <% } %>
+    <% if (judge.result.subtasks.length !== 1) { %>
+      </div></div>
+    <% } %>
+  <% } %>
+</div>
+<% } %>
+</div>
+
+<script>
+$(function() {
+  $('.ui.accordion').accordion({
+    selector: {
+      trigger: '.title:not(.pending)'
+    }
+  });
+});
+</script>
+
+<% if (!isPending(judge.status)) { %><div><div id="not_pending"></div></div><% } %>
+<script>
+<% if (isPending(judge.status)) { %>
+document.addEventListener('mousedown', function (event) {
+  var list = $('#submission_content').find('div.auto_update_activation');
+  for (var i = 0; i < list.length; ++i) {
+    $(list[i]).removeClass('auto_update_activation');
+  }
+});
+function update_submission() {
+  setTimeout(function () {
+    $.get('/submission/<%= judge.id %>/ajax', function (data) {
+      var e = $('#submission_content'), x = $($.parseHTML(data));
+      if (e.find('span.status').text().trim() != x.find('span.status').text().trim()) {
+        var a = e.find('div.auto_update');
+        if (!a.length) {
+          e.html(data);
+          window.applyTextFit();
+        } else {
+          e.find('#status_table').html(x.find('#status_table').html());
+          var b = x.find('div.auto_update');
+          for (var i = 0; i < a.length; i++) {
+            a[i].innerHTML = b[i].innerHTML;
+            if (!$(b[i]).hasClass('pending')) $(a[i]).removeClass('pending');
+            if (!$(b[i]).attr('style')) $(a[i]).attr('style', '');
+          }
+          a = e.find('div.auto_update_activation');
+          b = x.find('div.auto_update_activation');
+          for (var i = 0; i < a.length; i++) {
+            if ($(b[i]).hasClass('active')) $(a[i]).addClass('active'); else $(a[i]).removeClass('active');
+          }
+
+          window.applyTextFit();
+          if (!x.find('#not_pending').length) update_submission();
+          else pending = false;
+        }
+      }
+      else if (!x.find('#not_pending').length) update_submission();
+    });
+  }, 500);
+}
+update_submission();
+<% } %>
+</script>

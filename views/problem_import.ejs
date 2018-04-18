@@ -1,0 +1,26 @@
+<% this.title = 'Import Problem'; %>
+<% include header %>
+<div class="padding">
+  <div style="margin-bottom: 30px; ">
+    <h1 style="margin-bottom: 10px; ">Import Problems</h1>
+    Import problems form another website running ZOJ.
+  </div>
+
+  <form class="ui form" action="<%= zoj.utils.makeUrl(['problem', problem.id, 'import']) %>" method="post">
+      <% if (problem.allowedManage) { %>
+          <div class="field">
+              <label>Problem ID</label>
+              <input type="text" name="id" value="<%= problem.id ? problem.id : '' %>" placeholder="Will extend if it is empty" <%= problem.new ? '' : 'disabled' %>>
+          </div>
+      <% } %>
+      <div class="field">
+          <label>Problem Link</label>
+          <input type="text" name="url" placeholder="Such as：http://example.com/problem/1">
+      </div>
+      <div class="field">
+        <label>ZOJ Token</label>
+        <input type="text" name="token" placeholder="Can be NULL">
+    </div>
+      <button type="submit" class="ui button">Submit</button>
+  </form>
+<% include footer %>

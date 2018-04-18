@@ -1,0 +1,205 @@
+<% this.title = 'Index'; %>
+<% include header %>
+<div class="padding">
+<div class="ui three column grid">
+<div class="eleven wide column">
+<h4 class="ui top attached block header">Bulletins</h4>
+<div class="ui bottom attached segment">
+<table class="ui very basic table">
+<thead>
+<tr>
+<th>Title</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<% for (let item of notices) { %>
+<tr>
+<td>
+<a href="<%= item.url %>">
+<%= item.title %>
+</a>
+</td>
+<td>
+<%= item.date %>
+</td>
+</tr>
+<% } %>
+</tbody>
+</table>
+</div>
+
+<h4 class="ui top attached block header">Ranklist</h4>
+<div class="ui bottom attached segment">
+<table class="ui very basic center aligned table" style="table-layout: fixed; ">
+<thead>
+<tr>
+<th style="width: 50px; ">#</th>
+<th style="width: 170px; ">User</th>
+<th>Motto</th>
+</tr>
+</thead>
+<tbody>
+<%
+let i = 0;
+for (let user of ranklist) {
+++i;
+%>
+<tr>
+<td>
+<%= i %>
+</td>
+<td>
+<a href="<%= zoj.utils.makeUrl(['user', user.id]) %>">
+<%= user.username %>
+</a>
+<% if (user.nameplate) { %>
+<%- user.nameplate %>
+<% } %>
+</td>
+<td>
+<%= user.information %>
+</td>
+</tr>
+<%
+} %>
+</tbody>
+</table>
+</div>
+<h4 class="ui top attached block header">Recent Contests</h4>
+<div class="ui bottom attached <% if (!contests || !contests.length) { %>center aligned <% } %>segment">
+<% if (!contests || !contests.length) { %>
+There is no contest.
+<% } else { %>
+<table class="ui very basic center aligned table">
+<thead>
+<tr>
+<th>Contest Name</th>
+<th>Start</th>
+</tr>
+</thead>
+<tbody>
+<%
+for (let contest of contests) {
+let now = zoj.utils.getCurrentDate();
+let tag = '';
+%>
+<tr>
+<% if (now < contest.start_time) { %>
+<% tag = '<span class="ui header"><div class="ui mini red label">Upcoming</div></span>' %>
+<% } else if (now >= contest.start_time && now < contest.end_time) { %>
+<% tag = '<span class="ui header"><div class="ui mini green label">Ongoing</div></span>' %>
+<% } else { %>
+<% tag = '<span class="ui header"><div class="ui mini grey label">Finished</div></span>' %>
+<% } %>
+<td>
+<a href="<%= zoj.utils.makeUrl(['contest', contest.id]) %>">
+<%= contest.title %>
+<%- tag %>
+</a>
+</td>
+<td>
+<%= zoj.utils.formatDate(contest.start_time) %>
+</td>
+</tr>
+<% } %>
+</tbody>
+</table>
+<% } %>
+</div>
+
+<h4 class="ui top attached block header">Outside Contests</h4>
+<div class="ui bottom attached segment">
+<div class="ui active centered inline loader" id="contest-loader"></div>
+<script>
+function addContest(name, time){
+    var row = outside.insertRow();
+    var cell0 = row.insertCell();
+    var cell1 = row.insertCell();
+    cell0.innerHTML = name;
+    cell1.innerHTML = time;
+}
+$.get('/api/outsidecontests', function (data) {
+$('#contest-loader').removeClass('active');
+for (var id = 0; id < data.length; id++) {
+    var item = data[id];
+    addContest("<a href=\""+item.link+"\">"+item.name+"</a>", item.time);
+}
+$('#outside').css('display', '');
+});
+</script>
+<table class="ui very basic center aligned table" style="display: none;" id="outside">
+<thead>
+<tr>
+<th>Contest Name</th>
+<th>Start</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="right floated five wide column">
+<h4 class="ui top attached block header">Quote of the day</h4>
+<div class="ui bottom attached center aligned segment">
+<div class="ui active centered inline loader" id="quote-loader"></div>
+<script>
+$.get('https://quotes.rest/qod.json', function (data) {
+data = data.contents.quotes[0];
+$('#quote-loader').removeClass('active');
+$('#quote-content').css('display', '').text(data.quote);
+if (data.from) {
+$('#quote-from').css('display', '').text('--' + data.author);
+}
+});
+</script>
+<div style="font-size: 1em; line-height: 1.5em; display: none; " id="quote-content"></div>
+<div style="text-align: right; margin-top: 15px; font-size: 0.9em; color: #666; display: none; " id="quote-from"></div>
+</div>
+<h4 class="ui top attached block header">Search Problems</h4>
+<div class="ui bottom attached segment">
+<form action="<%= zoj.utils.makeUrl(['problems', 'search']) %>" method="get">
+<div class="ui search" style="width: 100%; ">
+<div class="ui left icon input" style="width: 100%; ">
+<input class="prompt" style="width: 100%; " type="text" placeholder="ID / Problem Name …" name="keyword">
+<i class="search icon"></i>
+</div>
+<div class="results" style="width: 100%; "></div>
+</div>
+</form>
+</div>
+
+<% if (typeof links !== 'undefined' && links) { %>
+<h4 class="ui top attached block header font-content">Links</h4>
+<div class="ui bottom attached segment">
+<ul style="margin: 0; padding-left: 20px; ">
+<% for (let link of links) { %>
+<li>
+<a href="<%= link.url %>">
+<%= link.title %>
+</a>
+</li>
+<% } %>
+</ul>
+</div>
+<% } %>
+</div>
+</div>
+</div>
+<script>
+$(function () {
+$('.ui.search').search({
+debug: true,
+apiSettings: {
+url: '/api/search/problems/{query}',
+cache: false
+},
+fields: {
+title: 'name'
+}
+});
+});
+</script>
+<% include footer %>

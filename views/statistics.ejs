@@ -1,0 +1,216 @@
+<%
+this.title = 'Statistics';
+let types = {
+  fastest: problem.type === 'submit-answer' ? null : 'The Fastest',
+  slowest: problem.type === 'submit-answer' ? null : 'The Slowest',
+  shortest: problem.type === 'submit-answer' ? null : 'The Shortest',
+  longest: problem.type === 'submit-answer' ? null : 'The Logest',
+  earliest: 'The Earliest',
+  min: problem.type === 'submit-answer' ? 'Smallest' : 'Minimal memory',
+  max: problem.type === 'submit-answer' ? 'Biggest' : 'Maximum memory'
+};
+%>
+<% include header %>
+<script src="/libs/raphael/raphael.min.js"></script>
+<script src="/libs/morris.js/morris.min.js"></script>
+<script>
+function getColorOfScore(score) {
+  var color = [];
+  color[0] = 'red';
+  color[1] = '#ff4b00';
+  color[2] = '#ff6200';
+  color[3] = '#ffa900';
+  color[4] = '#ffd800';
+  color[5] = '#c8ff00';
+  color[6] = '#a5ff00';
+  color[7] = '#52ff00';
+  color[8] = '#41f741';
+  color[9] = '#34d034';
+  color[10] = 'forestgreen';
+  return color[parseInt(score / 10)];
+}
+</script>
+<div class="padding">
+  <h1 style="text-align: center; margin-bottom: 30px; ">
+    Accepted Submissions
+    <span class="ui header" style="margin-left: 10px; ">
+      <div class="ui compact menu">
+        <div class="ui simple dropdown item">
+          <%= types[statistics.type] %>
+          <i class="dropdown icon"></i>
+          <div class="menu">
+            <% for (let type in types) { %>
+              <% if (type !== statistics.type && types[type] !== null) { %>
+                <a class="item" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'statistics', type]) %>"><%= types[type] %></a>
+              <% } %>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </span>
+  </h1>
+  <table class="ui very basic center aligned table" style="white-space: nowrap; ">
+    <thead>
+      <tr>
+          <th>ID</th>
+          <th>Problem</th>
+          <th>Status</th>
+          <th>Score</th>
+          <% if (problem.type !== 'submit-answer') { %>
+            <th>Total Time</th>
+            <th>Memory</th>
+            <th>Code</th>
+          <% } else { %>
+            <th>Answer File</th>
+          <% } %>
+          <th>Submitted By</th>
+          <th>Submit Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (let judge of statistics.judge_state) { %>
+          <% include util %>
+          <tr>
+              <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>">#<%= judge.id %></a></td>
+              <td><a href="<%= zoj.utils.makeUrl(['problem', judge.problem_id]) %>">#<%= judge.problem_id %>. <%= judge.problem.title %></a></td>
+              <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>">
+                  <span class="status <%= getStatusMeta(judge.status).toLowerCase().split(' ').join('_') %>">
+                  <i class="<%= icon[getStatusMeta(judge.status)] || 'remove' %> icon"></i>
+                  <%= judge.status %>
+                  </span>
+              </a></td>
+              <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><span class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></span></a></td>
+              <% if (problem.type !== 'submit-answer') { %>
+                <td><%= judge.result.total_time %> ms</td>
+                <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
+                <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> /
+                  <% 
+                  if (judge.allowedSeeCode) { %>
+                    <%= zoj.utils.formatSize(judge.code.length) %>
+                  <% } else { %>
+                    Hide
+                  <% } %>  
+                  
+                </td>
+              <% } else { %>
+              
+                <td>
+                  <% if (judge.allowedSeeCode) { %>
+                  <%= zoj.utils.formatSize(judge.max_memory) %>
+                  <% } else {%>
+                  Hide
+                  <% } %>
+                </td>
+              <% } %>
+              <td><a href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a><% if (judge.user.nameplate) { %><%- judge.user.nameplate %><% } %></td>
+              <td><%= zoj.utils.formatDate(judge.submit_time) %></td>
+          </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <br>
+  <% include page %>
+  <br>
+  <h1 style="text-align: center; ">
+    Score Distribution
+  </h1>
+  <div id="score-distribution-chart" style="height: 250px;"></div>
+  <script type="text/javascript">
+  new Morris.Bar({
+  	element: 'score-distribution-chart',
+  	data: <%- JSON.stringify(statistics.scoreDistribution) %>,
+  	barColors: function(r, s, type) {
+  		return getColorOfScore(r.label);
+  	},
+  	xkey: 'score',
+  	ykeys: ['count'],
+  	labels: ['number'],
+  	hoverCallback: function(index, options, content, row) {
+  		var scr = row.score;
+      
+      return '<div class="morris-hover-row-label">Score: ' + scr 
+              + '<br><div" class="morris-hover-point">'
+              + '<a class="link" style="font-weight:normal" href="/submissions'
+              + '?problem_id=' + <%- problem.id %>
+              + '&amp;min_score=' + scr 
+              + '&amp;max_score=' + scr
+              + '">Count：' + row.count + '</a></div></div>';
+  	},
+  	resize: true
+  });
+  </script>
+  <h1 style="text-align: center; ">
+    Prefix
+  </h1>
+  <div id="score-distribution-chart-pre" style="height: 250px;"></div>
+  <script type="text/javascript">
+  <%
+  for (let i in statistics.prefixSum) {
+    statistics.prefixSum[i].score *= 100;
+  }
+  %>
+  new Morris.Line({
+  	element: 'score-distribution-chart-pre',
+    data: <%- JSON.stringify(statistics.prefixSum) %>,
+  	xkey: 'score',
+  	ykeys: ['count'],
+  	labels: ['number'],
+  	lineColors: function(row, sidx, type) {
+  		if (type == 'line') {
+  			return '#0b62a4';
+  		}
+  		return getColorOfScore(row.src.score / 100);
+  	},
+  	xLabelFormat: function(x) {
+  		return (x.getTime() / 100).toString();
+  	},
+  	hoverCallback: function(index, options, content, row) {
+  		var scr = row.score / 100;
+      return '<div class="morris-hover-row-label">Score：≤ ' + scr 
+              + '<br><div" class="morris-hover-point">'
+              + '<a class="link" style="font-weight:normal" href="/submissions'
+              + '?problem_id=' + <%- problem.id %>
+              + '&amp;max_score=' + scr 
+              + '">Count：' + row.count + '</a></div></div>';
+  	},
+  	resize: true
+  });
+  </script>
+  <h1 style="text-align: center; ">
+    Suffix
+  </h1>
+  <div id="score-distribution-chart-suf" style="height: 250px;"></div>
+  <script type="text/javascript">
+  <%
+  for (let i in statistics.suffixSum) {
+    statistics.suffixSum[i].score *= 100;
+  }
+  %>
+  new Morris.Line({
+  	element: 'score-distribution-chart-suf',
+    data: <%- JSON.stringify(statistics.suffixSum) %>,
+  	xkey: 'score',
+  	ykeys: ['count'],
+  	labels: ['number'],
+  	lineColors: function(row, sidx, type) {
+  		if (type == 'line') {
+  			return '#0b62a4';
+  		}
+  		return getColorOfScore(row.src.score / 100);
+  	},
+  	xLabelFormat: function(x) {
+  		return (x.getTime() / 100).toString();
+  	},
+  	hoverCallback: function(index, options, content, row) {
+  		var scr = row.score / 100;
+      return '<div class="morris-hover-row-label">Score：≥ ' + scr 
+              + '<br><div" class="morris-hover-point">'
+              + '<a class="link" style="font-weight:normal" href="/submissions'
+              + '?problem_id=' + <%- problem.id %>
+              + '&amp;min_score=' + scr 
+              + '">Count：' + row.count + '</a></div></div>';},
+  	resize: true
+  });
+  </script>
+</div>
+<% include footer %>

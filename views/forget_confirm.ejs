@@ -1,0 +1,86 @@
+<% this.title = 'Reset the Password';  %>
+    <% this.noPreserveUrl = true; %>
+        <% include header %>
+            <div class="ui message" id="msgBox" hidden>
+                <p id="msgContent"></p>
+            </div>
+            <div class="ui middle aligned center aligned grid">
+                <div class="row">
+                    <div class="column" style="max-width: 450px">
+                        <h2 class="ui image header">
+                            <div class="content">
+                                Reset the Password
+                            </div>
+                        </h2>
+                        <form class="ui large form" id="resetForm">
+                            <div class="ui existing segment">
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="lock icon"></i>
+                                        <input type="password" placeholder="Password" id="password1">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="undo icon"></i>
+                                        <input type="password" placeholder="Repeat the Password" id="password2">
+                                    </div>
+                                </div>
+                                <button type="submit" class="ui fluid large submit button" id="resetPassword">Reset</div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+            </div>
+            <script src="/libs/blueimp-md5/js/md5.min.js"></script>
+            <script type="text/javascript">
+                function showMessage(mclass, content) {
+                    $("#msgBox").addClass(mclass);
+                    $("#msgContent").text(content);
+                    $("#msgBox").show();
+                }
+                function submitForm() {
+                    if ($("#password1").val() != $("#password2").val()) {
+                        showMessage("error", "The two passwords are not the same!");
+                        return;
+                    }
+                    if ($("#password1").val().length < 6) {
+                        showMessage("error", "The password is too short!");
+                        return;
+                    }
+                    password = md5($("#password1").val());
+                    $("#resetPassword").fadeOut(0);
+                    showMessage("positive", "The system is processing,please wait...");
+                    $.ajax({
+                        url: "/api/reset_password",
+                        type: 'POST',
+                        data: {
+                            "token": <%-JSON.stringify(token) %>,
+                            "password": password,
+                            "_csrf": document.head.getAttribute('data-csrf-token')
+                        },
+                        async: true,
+                        success: function (data) {
+                            error_code = data.error_code;
+                            switch (error_code) {
+                                case 1:
+                                    showMessage("positive", "Reset successfully!");
+                                    break;
+                                default:
+                                    showMessage("error", "Unknown error!" + error_code);
+                                    break;
+                            }
+                            $("#resetPassword").fadeIn(0);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(XMLHttpRequest.responseText);
+                        }
+                    });
+                }
+                $(document).ready(function () {
+                    $("#resetForm").submit(function (event) {
+                        submitForm();
+                        event.preventDefault();
+                    });
+                });
+            </script>

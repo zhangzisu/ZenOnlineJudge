@@ -1,0 +1,73 @@
+<% this.title = 'Forget the Password' %>
+    <% this.noPreserveUrl = true; %>
+        <% include header %>
+            <div class="ui message" id="msgBox" hidden>
+                <p id="msgContent"></p>
+            </div>
+            <div class="ui middle aligned center aligned grid">
+                <div class="row">
+                    <div class="column" style="max-width: 450px">
+                        <h2 class="ui image header">
+                            <div class="content">
+                                Forget the Password
+                            </div>
+                        </h2>
+                        <form class="ui large form" id="forgetForm">
+                            <div class="ui existing segment">
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="at icon"></i>
+                                        <input name="email" placeholder="Email" type="text" id="email">
+                                    </div>
+                                </div>
+                                <button type="submit" class="ui fluid large submit button" id="sendEmail">Retrieve the Password</div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+            </div>
+            <script type="text/javascript">
+                function showMessage(mclass, content) {
+                    $("#msgBox").addClass(mclass);
+                    $("#msgContent").text(content);
+                    $("#msgBox").show();
+                }
+                function submitForm() {
+                    $("#sendEmail").fadeOut(0);
+                    showMessage("positive", "The system is processing,please wait...");
+                    $.ajax({
+                        url: "/api/forget",
+                        type: 'POST',
+                        data: {
+                            "email": $("#email").val(),
+                            "_csrf": document.head.getAttribute('data-csrf-token')
+                        },
+                        async: true,
+                        success: function (data) {
+                            error_code = data.error_code;
+                            switch (error_code) {
+                                case 1:
+                                    showMessage("positive", "Retrieve password email has been sent to your email!");
+                                    break;
+                                case 1001:
+                                    showMessage("error", "This user does not exist!");
+                                    break;
+                                default:
+                                    showMessage("error", "Unknown error!" + error_code);
+                                    break;
+                            }
+                            $("#sendEmail").fadeIn(0);
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(XMLHttpRequest.responseText);
+                        }
+                    });
+                }
+                $(document).ready(function () {
+                    $("#forgetForm").submit(function (event) {
+                        submitForm();
+                        event.preventDefault();
+                    });
+                });
+            </script>
+            <% include footer %>

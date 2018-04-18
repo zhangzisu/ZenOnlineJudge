@@ -1,0 +1,164 @@
+<%
+this.title = 'Testdata';
+function getIcon(filename) {
+  let a = {
+    '.cpp': 'file code outline',
+    '.c': 'file code outline',
+    '.cs': 'file code outline',
+    '.pas': 'file code outline',
+    '.py': 'file code outline',
+    '.js': 'file code outline',
+    '.java': 'file code outline',
+    '.hs': 'file code outline',
+    '.vala': 'file code outline',
+    '.lua': 'file code outline',
+    '.rb': 'file code outline',
+    '.vb': 'file code outline',
+    '.ml': 'file code outline',
+    '.in': 'file text outline',
+    '.out': 'file text outline',
+    '.ans': 'file text outline',
+    '.txt': 'file text outline',
+    '.md': 'file text outline',
+    '.md': 'file text outline',
+    '.docx': 'file word outline',
+    '.odt': 'file word outline',
+    '.xlsx': 'file excel outline',
+    '.ods': 'file excel outline',
+    '.pptx': 'file powerpoint outline',
+    '.odp': 'file powerpoint outline',
+    '.zip': 'file archive outline',
+    '.7z': 'file archive outline',
+  }
+  for (let x in a) if (filename.endsWith(x)) return a[x];
+  return 'file outline';
+}
+%>
+<% include header %>
+<div class="padding">
+  <div class="ui grid">
+    <div class="seven wide column">
+      <h3 style="text-align: center; ">Testdata Information</h3>
+      <% include problem_testcases %>
+    </div>
+    <div class="nine wide column">
+      <h3 style="text-align: center; ">File List</h3>
+      <% if (testdata) { %>
+        <table class="ui very basic center aligned table">
+          <thead>
+            <tr>
+              <th class="left aligned">File Name</th>
+              <th style="width: 100px">File Size</th>
+              <th style="width: 35px">Download</th>
+              <% if (problem.allowedEdit) { %>
+                <th style="width: 35px">Delete</th>
+              <% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (testdata.zip) { %>
+            <tr>
+              <td class="left aligned"><i class="file archive outline icon"></i> Complete Data Package</td>
+              <td><%- !testdata.zip.size ? '<i class="minus icon"></i>' : zoj.utils.formatSize(testdata.zip.size) %></td>
+              <td><a style="color: #000; " href="<%= zoj.utils.makeUrl(['problem', problem.id, 'testdata', 'download']) %>"><i class="download icon"></i></td>
+              <% if (problem.allowedEdit) { %>
+                <td><i class="minus icon"></i></td>
+              <% } %>
+            </tr>
+            <% } %>
+            <% let i = 0; %>
+            <% if (testdata.files) for (let file of testdata.files) { %>
+            <% i++; %>
+            <tr>
+              <td class="left aligned"><i class="<%= getIcon(file.filename) %> icon"></i> <%= file.filename %></td>
+              <td><%= zoj.utils.formatSize(file.size) %></td>
+              <td>
+                <a style="color: #000; " href="<%= zoj.utils.makeUrl(['problem', problem.id, 'testdata', 'download', file.filename]) %>">
+                  <i class="download icon"></i>
+                </a>
+              </td>
+              <% if (problem.allowedEdit) { %>
+                <td>
+                  <a style="color: #000; " onclick="$('#modal-delete-<%= i %>').modal('show')">
+                    <i class="remove icon"></i>
+                  </a>
+                  <div class="ui basic modal" id="modal-delete-<%= i %>">
+                    <div class="ui icon header">
+                      <i class="trash icon"></i>
+                      <p style="margin-top: 15px; ">Delete this File</p>
+                    </div>
+                    <div class="content" style="text-align: center; ">
+                      <p>Are you sure to delte「 <samp><%= file.filename %></samp> 」?</p>
+                    </div>
+                    <div class="actions">
+                      <div class="ui red basic cancel inverted button">
+                        <i class="remove icon"></i>
+                        No
+                      </div>
+                      <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'testdata', 'delete', file.filename]) %>">
+                        <i class="checkmark icon"></i>
+                        Yes
+                      </a>
+                    </div>
+                  </div>
+                </td>
+              <% } %>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <h4 style="text-align: center; ">No Testdata</h4>
+      <% } %>
+      <% if (problem.allowedEdit) { %>
+        <form id="form_upload" class="ui form" action="<%= zoj.utils.makeUrl(['problem', problem.id, 'testdata', 'upload']) %>" method="post" enctype="multipart/form-data">
+          <div class="inline fields">
+            <div class="field" style="margin: 0 auto; ">
+              <label for="answer">Upload Files(Can upload more than one)</label>
+              <input type="file" name="file" multiple id="upload_file">
+              <div class="ui center aligned vertical segment" style="padding-bottom: 0; ">
+                <div class="ui button" onclick="check_replace()">Submit</div>
+                <a href="<%= zoj.utils.makeUrl(['problem', problem.id]) %>" class="ui blue button">Return to the Problem</a>
+              </div>
+            </div>
+          </div>
+        </form>
+        <div class="ui basic modal" id="modal-replace">
+          <div class="ui icon header">
+            <i class="refresh icon"></i>
+            <p style="margin-top: 15px; ">Replace these Files</p>
+          </div>
+          <div class="content" style="text-align: center; ">
+            <p>Are you sure to replace these files?</p>
+            <div style="display: inline-block; text-align: left; " id="replaced_files"></div>
+          </div>
+          <div class="actions">
+            <div class="ui red basic cancel inverted button">
+              <i class="remove icon"></i>
+              No
+            </div>
+            <a class="ui green ok inverted button" onclick="$('#form_upload').submit()">
+              <i class="checkmark icon"></i>
+              Yes
+            </a>
+          </div>
+        </div>
+        <script>
+        function check_replace() {
+          var old_files = <%- JSON.stringify((testdata && testdata.files ? testdata.files : []).map(x => x.filename)) %>;
+          var replaced_files = Array.prototype.slice.call($('#upload_file')[0].files).map(function (x) { return x.name; }).filter(function (x) { return old_files.includes(x); });
+          var s = '';
+          for (let file of replaced_files) s += '<samp>' + file + '</samp><br>';
+          if (s) {
+            $('#replaced_files').html(s);
+            $('#modal-replace').modal('show');
+          } else {
+            $('#form_upload').submit();
+          }
+        }
+        </script>
+      <% } %>
+    </div>
+  </div>
+</div>
+<% include footer %>

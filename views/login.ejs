@@ -1,0 +1,101 @@
+<% this.title = 'Login' %>
+    <% this.noPreserveUrl = true; %>
+        <% include header %>
+            <div class="ui error message" id="error" hidden></div>
+            <div class="ui middle aligned center aligned grid">
+                <div class="row">
+                    <div class="column" style="max-width: 450px">
+                        <h2 class="ui image header">
+                            <div class="content">
+                                Login
+                            </div>
+                        </h2>
+                        <form class="ui large form">
+                            <div class="ui existing segment">
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="user icon"></i>
+                                        <input name="email" placeholder="User Name" type="text" id="username" onKeyDown="KeyDown(event)">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="ui left icon input">
+                                        <i class="lock icon"></i>
+                                        <input name="password" placeholder="Password" type="password" id="password" onKeyDown="KeyDown(event)">
+                                    </div>
+                                </div>
+                                <div class="ui fluid large submit button" id="login">Login</div>
+                            </div>
+
+                            <div class="ui error message"></div>
+
+                        </form>
+
+                        <div class="ui message">
+                            <a href="/sign_up">Register</a> | <a href="<%= zoj.utils.makeUrl(['forget']) %>">Forget the Password </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script src="/libs/blueimp-md5/js/md5.min.js"></script>
+            <script type="text/javascript">
+                function KeyDown(event) {
+                    if (event.keyCode == 13) {
+                        login();
+                    }
+                }
+                function show_error(error) {
+                    $("#error").text(error);
+                    $("#error").show();
+                }
+                function success(session_id) {
+                    window.location.href = '/';
+                }
+                function login() {
+                    password = md5($("#password").val());
+                    $("#login").addClass("loading");
+                    $.ajax({
+                        url: "/api/login",
+                        type: 'POST',
+                        data: {
+                            "username": $("#username").val(),
+                            "password": password,
+                            "_csrf": document.head.getAttribute('data-csrf-token')
+                        },
+                        async: true,
+                        success: function (data) {
+                            error_code = data.error_code;
+                            switch (error_code) {
+                                case 1001:
+                                    show_error("This user does not exist!");
+                                    break;
+                                case 1002:
+                                    show_error("Password error!");
+                                    break;
+                                case 1003:
+                                    show_error("Your registration request is waiting for an artificial intelligence review. Please wait.");
+                                    break;
+                                case 1:
+                                    success(data.session_id);
+                                    return;
+                                default:
+                                    show_error("Unknown error!");
+                                    break;
+                            }
+                            $("#login").text("Login");
+                            $("#login").removeClass("loading");
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(XMLHttpRequest.responseText);
+                            show_error("Unknown error!");
+                            $("#login").text("Login");
+                        }
+                    });
+                }
+                $(document).ready(function () {
+                    $("#login").click(function () {
+                        login();
+                    });
+                });
+            </script>
+            <% include footer %>

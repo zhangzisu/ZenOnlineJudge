@@ -1,0 +1,51 @@
+<% this.title = 'Contest' %>
+<% include header %>
+<div class="padding">
+    <% if (user && user.admin >= 3) { %>
+    <div class="ui grid">
+      <div class="row">
+        <div class="column">
+          <a href="<%= zoj.utils.makeUrl(['contest', 0, 'edit']) %>" class="ui labeled icon mini right floated button"> 
+            <i class="add icon"></i>
+              Add Contest
+          </a>
+        </div>
+      </div>
+    </div>
+    <% } %>
+    <table class="ui very basic center aligned table">
+      <thead>
+        <tr>
+          <th>Contest Name</th>
+          <th>Begin</th>
+          <th>End</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%
+        for (let contest of contests) {
+          let now = zoj.utils.getCurrentDate();
+          let tag = '';
+        %>
+        <tr>
+          <% if (now < contest.start_time) { %>
+            <% tag = '<span class="ui header"><div class="ui mini red label">Upcoming</div></span>' %>
+          <% } else if (now >= contest.start_time && now < contest.end_time) { %>
+            <% tag = '<span class="ui header"><div class="ui mini green label">Ongoing</div></span>' %>
+          <% } else { %>
+            <% tag = '<span class="ui header"><div class="ui mini grey label">Finished</div></span>' %>
+          <% } %>
+
+          <td><a href="<%= zoj.utils.makeUrl(['contest', contest.id]) %>"><%= contest.title %> <%- tag %></a></td>
+          <td><%= zoj.utils.formatDate(contest.start_time) %></td>
+          <td><%= zoj.utils.formatDate(contest.end_time) %></td>
+          <td class="font-content"><%- contest.subtitle %></td>
+        </tr>
+        <% } %>
+      </tbody>
+    </table>
+  <br>
+  <% include page %>
+</div>
+<% include footer %>

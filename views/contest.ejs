@@ -1,0 +1,127 @@
+<% this.title = contest.title + ' - Contest' %>
+<style>
+.ui.label.pointing.below.left::before { left: 12%; }
+.ui.label.pointing.below.right::before { left: 88%; }
+.ui.label.pointing.below.left { margin-bottom: 0; }
+.ui.label.pointing.below.right { margin-bottom: 0; float: right; }
+#back_to_contest { display: none;  }
+</style>
+<% include header %>
+<div class="padding">
+  <h1><%= contest.title %></h1>
+  <div style="margin-bottom: 30px;"><%- contest.subtitle %></div>
+  <% let unveiled = (contest.allowedEdit || zoj.utils.getCurrentDate() >= contest.start_time); %>
+  <% let start = zoj.utils.formatDate(contest.start_time), end = zoj.utils.formatDate(contest.end_time); %>
+  <% if (contest.running && start.split(' ')[0] === end.split(' ')[0]) {
+    start = start.split(' ')[1]; end = end.split(' ')[1];
+  } %>
+  <div class="ui pointing below left label"><%= start %></div>
+  <div class="ui pointing below right label"><%= end %></div>
+  <% let timePercentage = Math.floor(Math.min(1, (zoj.utils.getCurrentDate() - contest.start_time) / (contest.end_time - contest.start_time)) * 100); %>
+  <div id="timer-progress" class="ui tiny indicating progress<% if (timePercentage == 100) { %> success<% } %>" data-percent="<%= timePercentage %>">
+    <div class="bar" style="width: <%= timePercentage %>%;"></div>
+  </div>
+  <div class="ui grid">
+  <% if (contest.allowedEdit || (unveiled && (!contest.running || contest.type === 'acm'))) { %>
+    <div class="row">
+      <div class="column">
+        <div class="ui buttons">
+          <a class="ui small blue button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'ranklist']) %>">Ranklist</a>
+          <a class="ui small positive button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions']) %>">Submissions</a>
+          <% if (contest.allowedEdit) { %>
+            <a class="ui small button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'edit']) %>">Edit This Contest</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+  <% if (contest.information) { %>
+    <div class="row">
+      <div class="column">
+        <h4 class="ui top attached block header">Information and Bulletins</h4>
+        <div class="ui bottom attached segment font-content">
+          <%- contest.information %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+  <% if (unveiled) { %>
+    <div class="row">
+      <div class="column">
+         <table class="ui selectable celled table">
+            <thead>
+              <tr>
+                <th class="one wide" style="text-align: center">Status</th>
+                <th>Problem</th>
+                <% if (hasStatistics) { %>
+                  <th class="one wide center aligned">Statistics</th>
+                <% } %>
+              </tr>
+            </thead>
+            <tbody>
+              <%
+              let i = 0;
+              for (let problem of problems) {
+                i++;
+              %>
+              <tr>
+                <td class="center aligned" style="white-space: nowrap; ">
+                <% if (problem.judge_id) { %>
+                  <a href="<%= zoj.utils.makeUrl(['submission', problem.judge_id]) %>">
+                  <% if (typeof problem.status === 'string') { %>
+                    <span class="status <%= problem.status.toLowerCase().split(' ').join('_') %>">
+                      <i class="<%= icon[getStatusMeta(problem.status)] || 'remove' %> icon"></i>
+                      <%= problem.status %>
+                    </span>
+                  <% } else if (typeof problem.status === 'object') { %>
+                    <% if (problem.status.accepted) { %>
+                      <span class="score score_10">
+                        <% if (problem.status.unacceptedCount === 0) { %>
+                          +
+                        <% } else { %>
+                          +<%= problem.status.unacceptedCount %>
+                        <% } %>
+                      </span>
+                    <% } else { %>
+                      <span class="score score_0">
+                        <% if (problem.status.unacceptedCount !== 0) { %>
+                          -<%= problem.status.unacceptedCount %>
+                        <% } %>
+                      </span>
+                    <% } %>
+                  <% } %>
+                <% } %>
+                </td>
+                <td><a href="<%= zoj.utils.makeUrl(['contest', contest.id, i]) %>"><%= zoj.utils.removeTitleTag(problem.problem.title) %></a></td>
+                <% if (hasStatistics) { %>
+                  <td class="center aligned" style="white-space: nowrap; ">
+                  <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i, status: 'Accepted' }) %>"><%= problem.statistics.accepted %></a>
+                  /
+                    <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i, min_score: 1 }) %>"><%= problem.statistics.partially %></a>
+                    <% if (contest.type === 'noi' || contest.type === 'ioi') { %>
+                    /
+                  <% } %>
+                  <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i }) %>"><%= problem.statistics.attempt %></a>
+                  </td>
+                <% } %>
+              </tr>
+            <% } %>
+            </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+  </div>
+</div>
+
+<script>
+$(function () {
+  setInterval(function () {
+    $('#timer-progress').progress({
+      value: Date.now() / 1000 - <%= contest.start_time %>,
+      total: <%= contest.end_time - contest.start_time %>
+    });
+  }, 5000);
+});
+</script>
+<% include footer %>

@@ -1,0 +1,25 @@
+<%
+let items = {
+  info: 'Analytics',
+  rejudge: 'Rejudge',
+  links: 'Links',
+  rating: 'Rating',
+  raw: 'Raw config',
+  upgrade: 'System upgrade'
+};
+%>
+	<% this.title = 'Console - ' + items[this.adminPage]; %>
+		<% include header %>
+			<div class="ui grid">
+				<div class="three wide column">
+					<div class="ui vertical fluid tabular menu" style="height: 100%; ">
+						<% for (let x in items) { %>
+							<a class="item<% if (this.adminPage === x) { %> active<% } %>" <% if (this.adminPage !==x ) { %> href="
+								<%= zoj.utils.makeUrl(['admin', x]) %>"
+									<% } %>>
+										<%= items[x] %>
+							</a>
+							<% } %>
+					</div>
+				</div>
+				<div class="thirteen wide stretched column">

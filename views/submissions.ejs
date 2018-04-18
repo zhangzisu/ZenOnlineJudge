@@ -1,0 +1,121 @@
+<% this.title = 'Submissions' %>
+<% include header %>
+<% include util %>
+<script src="/textFit.js"></script>
+<div class="padding">
+  <form action="<%= zoj.utils.makeUrl(['submissions']) %>" class="ui mini form" method="get" role="form" id="form">
+    <div class="inline fields" style="margin-bottom: 25px; white-space: nowrap; ">
+      <label style="font-size: 1.2em; margin-right: 1px; ">Problem：</label>
+      <div class="field"><input name="problem_id" style="width: 50px; " type="text" value="<%= form.problem_id %>"></div>
+      <label style="font-size: 1.2em; margin-right: 1px; ">Submitted By：</label>
+      <div class="field"><input name="submitter" style="width: 100px; " type="text" value="<%= form.submitter %>"></div>
+      <label style="font-size: 1.2em; margin-right: 1px; ">Score：</label>
+      <div class="field" style="padding-right: 6px; "><input name="min_score" style="width: 50px; " type="text" value="<%= form.min_score || 0 %>"></div>
+      <label style="font-size: 1.2em; margin-right: 7px; ">～</label>
+      <div class="field"><input name="max_score" style="width: 50px; " type="text" value="<%= form.max_score || 100 %>"></div>
+      <label style="font-size: 1.2em; margin-right: 1px; ">Language：</label>
+      <div class="field">
+        <div class="ui fluid selection dropdown" id="select_language" style="width: 110px; ">
+          <input type="hidden" name="language" value="<%= form.language %>">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">No Limit</div>
+            <div class="item" data-value="submit-answer">Submit_Ans</div>
+            <% for (let lang in zoj.config.languages) { %>
+              <div class="item" data-value="<%= lang %>"><%= zoj.config.languages[lang].show %></div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <label style="font-size: 1.2em; margin-right: 1px; ">Status：</label>
+      <div class="field">
+        <div class="ui fluid selection dropdown" id="select_status" style="width: 210px; ">
+          <input type="hidden" name="status" value="<%= form.status %>">
+          <i class="dropdown icon"></i>
+          <div class="default text"></div>
+          <div class="menu">
+            <div class="item" data-value="">No Limit<i class="dropdown icon" style="visibility: hidden; "></i></div>
+            <% for (let status in this.icon) { %>
+              <% if (this.iconHidden.includes(status)) continue; %>
+              <div class="item" data-value="<%= status %>"><span class="status <%= status.toLowerCase().split(' ').join('_') %>"><i class="<%= this.icon[status] %> icon"></i> <%= status %></div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    
+      <button class="ui icon mini button fluid" style="margin-left: auto;" type="submit" title="Search">
+        <i class="search icon"></i>
+      </button>
+      <% if (user) { %>
+      <a class="ui mini icon blue button fluid" style="margin-left: auto;" id="my_submit" title="My Submissions">
+        <i class="user icon"></i>
+      </a>
+      <script>
+      $(function () {
+        $('#my_submit').click(function () {
+          $('[name=submitter]').val(<%- JSON.stringify(user.username) %>);
+          $('#form').submit();
+        });
+      });
+      </script>
+      <% } %>
+    </div>
+  </form>
+  <table class="ui very basic center aligned table" style="white-space: nowrap; visibility: hidden; " id="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Problem</th>
+        <th>Status</th>
+        <th>*</th>
+        <th>Time</th>
+        <th>Memory</th>
+        <th>Code</th>
+        <th>Submitter</th>
+        <th>Submit Time</th>
+        <th>Judger</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% let ids = []; %>
+      <% for (let judge of judge_state) { %>
+        <% if (judge.pending) ids.push(judge.id); %>
+        <tr id="submissions_<%= judge.id %>"><% include submissions_item %></tr>
+      <% } %>
+    </tbody>
+  </table>
+  <script>
+  document.getElementById('table').style.visibility = '';
+  </script>
+  <br>
+  <% include page %>
+</div>
+<script>
+$(function () {
+  $('#select_language').dropdown();
+  $('#select_status').dropdown();
+});
+
+var ids = <%= JSON.stringify(ids) %>;
+function update() {
+  setTimeout(function () {
+    $.get('/submissions/' + ids.join(',') + '/ajax', function (data) {
+      var newIDs = [];
+      for (var id in data) {
+        if (data[id].pending) newIDs.push(id);
+        var e = $('#submissions_' + id);
+        if (e.find('span.status').text().trim() !== data[id].status) e.html(data[id].html);
+      }
+
+      if (newIDs.length > 0) {
+        ids = newIDs;
+        update();
+      }
+    });
+  }, 500);
+}
+
+update();
+</script>
+<% include footer %>

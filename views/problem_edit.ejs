@@ -1,0 +1,117 @@
+<% this.title = 'Edit Problem'; %>
+<% include header %>
+<style type="text/css">
+  .problem_header{
+    text-align: center;
+  }
+</style>
+<div class="padding">
+    <form class="ui form" method="post" action="<%= zoj.utils.makeUrl(['problem', req.params.id, 'edit']) %>">
+      <div class="ui top attached tabular menu">
+        <a class="item active" data-tab="edit">Edit<i class="mega-octicon octicon-markdown"></i></a>
+        <a class="item" data-tab="preview" id="preview_tab">Preview</a>
+      </div>
+      <div class="ui bottom attached tab segment active" data-tab="edit">
+        <div class="field">
+          <% if (problem.allowedManage) { %>
+            <label for="id">
+              <% if (problem.new) { %>
+                Problem ID
+              <% } else { %>
+                Modify Problem ID
+              <% } %>
+            </label>
+            <input type="text" id="id" name="id" placeholder="<% if (problem.new) { %>Will extend if it is empty <% } else { %>Won't modify if it is empty<% } %>" value="<%= problem.id ? problem.id : '' %>">
+
+            <div style="margin-top: 15px; "></div>
+          <% } %>
+          <label for="title">Problem Name</label>
+          <input class="font-content" type="text" id="title" name="title" value="<%= problem.title %>">
+          <label style="margin-top: 15px; " for="description">Description</label>
+          <textarea class="font-content" rows="15" id="description" name="description"><%= problem.description %></textarea>
+          <label style="margin-top: 15px; " for="input_format">Input</label>
+          <textarea class="font-content" rows="10" id="input" name="input_format"><%= problem.input_format %></textarea>
+          <label style="margin-top: 15px; " for="output_format">Output</label>
+          <textarea class="font-content" rows="10" id="output" name="output_format"><%= problem.output_format %></textarea>
+          <label style="margin-top: 15px; ">Example</label>
+          <textarea class="font-content" rows="15" id="example" name="example"><%= problem.example %></textarea>
+          <label style="margin-top: 15px; ">Limits and Hints</label>
+          <textarea class="font-content" rows="10" id="hint" name="limit_and_hint"><%= problem.limit_and_hint %></textarea>
+          <label style="margin-top: 15px; ">Add Tags</label><!--Wait for change-->
+          <select class="ui fluid search dropdown" multiple="" id="search_tags" name="tags">
+            <% for (let tag of problem.tags) { %>
+              <option value="<%= tag.id %>" selected><%= tag.name %></option>
+            <% } %>
+          </select>
+          <div class="ui segment" style="display: none">
+          <% for (let tag of problem.tags) { %>
+             <a class="ui large label transition visible" data-value="<%= tag.id %>"> 
+              <%= tag.name %>
+             </a>
+          <% } %>
+          </div>
+          <div class="ui <% if (problem.is_anonymous) { %>checked <% } %>checkbox" style="margin-top: 15px; ">
+            <input <% if (problem.is_anonymous) { %>checked=""<% } %> name="is_anonymous" type="checkbox">
+            <label><strong>Anonymous Upload</strong></label>
+            <p style="margin-top: 5px; ">The user name won't show in the problem page if you choose it.</p>
+          </div>
+        </div>
+      </div>
+      <div class="ui bottom attached tab segment" data-tab="preview" id="preview">
+        <h1 class="ui header problem_header" id="pv-title"></h1>
+        <h2 class="ui header">Description</h2>
+        <div class="font-content" id="pv-description"></div>
+        <h2 class="ui header">Input</h2>
+        <div class="font-content" id="pv-input"></div>
+        <h2 class="ui header">Output</h2>
+        <div class="font-content" id="pv-output"></div>
+        <h2 class="ui header">Example</h2>
+        <div class="font-content" id="pv-example"></div>
+        <h2 class="ui header">Limits and Hints</h2>
+        <div class="font-content" id="pv-hint"></div>
+      </div>
+      <% if (problem.allowedEdit) { %>
+      <button type="submit" class="ui button">Submit</button>
+      <% } %>
+    </form>
+</div>
+<script type="text/javascript">
+$(function () {
+    function render(output, input) {
+      $.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
+        // console.log(s);
+        output.html(s);
+      });
+    }
+    $("#preview_tab").click(function () {
+      $("#pv-title").text($("#title").val());
+      $("#pv-description, #pv-input, #pv-output, #pv-example, #pv-hint").text('Loading...');
+      render($("#pv-description"), $("#description"));
+      render($("#pv-input"), $("#input"));
+      render($("#pv-output"), $("#output"));
+      render($("#pv-example"), $("#example"));
+      render($("#pv-hint"), $("#hint"));
+    });
+    $('.tabular.menu .item').tab();
+});
+</script>
+<script>
+$(function () {
+  $('#search_tags')
+    .dropdown({
+      debug: true,
+      apiSettings: {
+        url: '/api/search/tags_problem/{query}',
+        onResponse: function (response) {
+          var a = $('#search_tags').val().map(function (x) { return parseInt(x) });
+          if (response.results) {
+            response.results = response.results.filter(x => !a.includes(parseInt(x.value)));
+          }
+          return response;
+        },
+        cache: false
+      }
+    });
+});
+</script>
+<% include footer %>

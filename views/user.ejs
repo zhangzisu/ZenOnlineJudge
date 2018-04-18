@@ -1,0 +1,263 @@
+<% this.title = show_user.username + ' - User'; %>
+<% include header %>
+<style>
+#avatar_container:before {
+content: "";
+display: block;
+padding-top: 100%;
+}
+</style>
+<div class="padding">
+<div class="ui grid">
+<div class="row">
+<div class="five wide column">
+<div class="ui card" style="width: 100%; " id="user_card">
+<div class="blurring dimmable image" id="avatar_container">
+<div class="ui dimmer transition hidden">
+<div class="content">
+<div class="center">
+<% if (show_user.allowedEdit) { %>
+<a class="ui inverted button" href="<%= zoj.utils.makeUrl(['user', show_user.id, 'edit']) %>"><i class="edit icon"></i>Edit Profile</a>
+<br>
+<br>
+<% } %>
+<a class="ui button" href="<%= zoj.utils.makeUrl(['blogs', 'user', show_user.id]) %>"><i class="coffee icon"></i>Visit Blog</a>
+</div>
+</div>
+</div>
+<img style="margin-top: -100%; " src="<%= zoj.utils.gravatar(show_user.email, 1000) %>">
+</div>
+<div class="content">
+<div class="header">
+<%= show_user.username %>
+<% if (show_user.nameplate) { %>
+<%- show_user.nameplate %>
+<% } %>
+<% if (show_user.sex == 1) { %>
+<i class="man icon"></i>
+<% } else if (show_user.sex == -1) { %>
+<i class="woman icon"></i>
+<% } %>
+</div>
+<div class="meta">
+<a class="group">Privilege level: <%= show_user.admin %></a>
+</div>
+</div>
+<div class="extra content">
+<a><i class="check icon"></i><%= show_user.ac_problems.length %></a>
+<a><i class="star icon"></i><%= show_user.rating %></a>
+</div>
+</div>
+</div>
+<div class="eleven wide column">
+<div class="ui grid">
+<div class="row">
+<div class="sixteen wide column">
+<div class="ui grid">
+<div class="eight wide column">
+<div class="ui grid">
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">User Name</h4>
+<div class="ui bottom attached segment">
+<%= show_user.username %>
+<% if (show_user.nameplate) { %>
+<%- show_user.nameplate %>
+<% } %>
+</div>
+</div>
+</div>
+<% if (show_user.emailVisible) { %>
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">Email</h4>
+<div class="ui bottom attached segment" class="font-content">
+<%= show_user.email %>
+</div>
+</div>
+</div>
+<% } %>
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">Motto</h4>
+<div class="ui bottom attached segment" class="font-content">
+<%- show_user.information %>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">Accepted Problems</h4>
+<div class="ui bottom attached segment">
+<% for (let problem of show_user.ac_problems) { %>
+<a href="<%= zoj.utils.makeUrl(['problem', problem]) %>">
+<%= problem %>
+</a>
+<% } %>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="eight wide column">
+<div class="ui grid">
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">Statistics</h4>
+<div class="ui bottom attached segment">
+<div id="pie_chart_legend"></div>
+<div style="width: 260px; height: 260px; margin-left: 33.5px; ">
+<canvas style="width: 50%; " id="pie_chart"></canvas>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">Articles</h4>
+<div class="ui bottom attached <% if (!show_user.articles.length) { %>center aligned <% } %>segment">
+<% if (!show_user.articles.length) { %>This user has never posted a article.
+<% } else { %>
+<table class="ui very basic table">
+<thead>
+<tr>
+<th>Title</th>
+<th>Time</th>
+</tr>
+</thead>
+<tbody>
+<% for (let article of show_user.articles) { %>
+<tr>
+<td>
+<a href="<%= zoj.utils.makeUrl(['article', article.id]) %>">
+<%= article.title %>
+</a>
+</td>
+<td>
+<%= zoj.utils.formatDate(article.public_time) %>
+</td>
+</tr>
+<% } %>
+</tbody>
+</table>
+<% } %>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">Contests</h4>
+<div class="ui bottom attached segment">
+<table class="ui very basic table">
+<thead>
+<tr>
+<th>Contest</th>
+<th>Ranking</th>
+<th>Rating</th>
+</tr>
+</thead>
+<tbody>
+<% for (const history of ratingHistories) { %>
+<tr>
+<td>
+<%= history.contestName %>
+</td>
+<td>
+<%= history.rank != null ? history.rank + " / " + history.participants : '' %>
+</td>
+<td>
+<%= history.value %>
+<% if(history.delta != null) { %>
+<span class="<%= history.delta >= 0 ? 'rating_up' : 'rating_down' %>">
+(
+<%= (history.delta < 0 ? '' : '+') + history.delta %>)
+<% } %>
+</td>
+</tr>
+<% } %>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+$(function () {
+$('#user_card .image').dimmer({
+on: 'hover'
+});
+var pie = new Chart(document.getElementById('pie_chart').getContext('2d'), {
+type: 'pie',
+data: {
+datasets: [
+{
+data: [
+<%= statistics["Accepted"] %>,
+<%= statistics["Wrong Answer"] %>,
+<%= statistics["Runtime Error"] %>,
+<%= statistics["Time Limit Exceeded"] %>,
+<%= statistics["Memory Limit Exceeded"] %>,
+<%= statistics["Compile Error"] %>,
+],
+backgroundColor: [
+"#66dd66",
+"#ff6384",
+"darkorchid",
+"#ffce56",
+"#00b5ad",
+"#35a0e8"
+]
+}
+],
+labels: [
+"Accepted",
+"Wrong Answer",
+"Runtime Error",
+"Time Limit Exceeded",
+"Memory Limit Exceeded",
+"Compile Error"
+]
+},
+options: {
+responsive: true,
+legend: {
+display: false
+},
+legendCallback: function (chart) {
+var text = [];
+text.push('<ul style="list-style: none; padding-left: 20px; margin-top: 0; " class="' + chart.id + '-legend">');
+
+var data = chart.data;
+var datasets = data.datasets;
+var labels = data.labels;
+
+if (datasets.length) {
+for (var i = 0; i < datasets[0].data.length; ++i) {
+text.push('<li style="font-size: 12px; width: 50%; display: inline-block; color: #666; "><span style="width: 10px; height: 10px; display: inline-block; border-radius: 50%; margin-right: 5px; background-color: ' + datasets[0].backgroundColor[i] + '; "></span>');
+if (labels[i]) {
+text.push(labels[i]);
+}
+text.push('</li>');
+}
+}
+
+text.push('</ul>');
+return text.join('');
+}
+},
+});
+
+document.getElementById('pie_chart_legend').innerHTML = pie.generateLegend();
+});
+</script>
+<% include footer %>

@@ -1,0 +1,131 @@
+<% this.title = 'Edit Profile'; %>
+<% include header %>
+<div class="padding">
+    <div class="ui <% if (error_info === '') { %>success<% } else { %>error<% } %> message" id="error" <% if (error_info === null) { %>hidden<% } %>>
+      <% if (error_info !== null) {
+          if (error_info === '') error_info = 'Modify Successfully.';
+      %>
+      	<p id="error_info"><%= error_info %></p>
+      <% } %>
+    </div>
+		<form id="form" class="ui form" action="<%= zoj.utils.makeUrl(['user', edited_user.id, 'edit']) %>" method="post" onsubmit="return check()">
+      <div class="field">
+	    	<label for="username">User Name</label>
+	    	<input type="text" id="username" name="username" value="<%= edited_user.username %>"<% if (!user.allowedManage) { %> readonly<% } %>>
+	    </div>
+      <div class="field">
+	    	<label for="sex">Sex</label>
+	    	<select class="ui dropdown" name="sex">
+          <option value="0" <%= edited_user.sex == 0 ? 'selected': '' %>>Other</option>
+          <option value="1" <%= edited_user.sex == 1 ? 'selected': '' %>>Male</option>
+          <option value="-1" <%= edited_user.sex == -1 ? 'selected': '' %>>Female</option>
+        </select>
+	    </div>
+	    <div class="field">
+	    	<label for="email">Email</label>
+	    	<input class="font-content" type="email" id="email" name="email" value="<%= edited_user.email %>">
+	    </div>
+      <div class="inline field">
+        <label class="ui header">Publish Email</label>
+        <div class="ui toggle checkbox">
+          <input id="public_email" name="public_email" type="checkbox" <% if (edited_user.public_email) { %> checked<% } %>>
+          <label></label>
+        </div>
+	    </div>
+	    <div class="field">
+	    	<label for="information">Motto</label>
+	    	<input type="text" class="font-content" id="information" name="information" value="<%= edited_user.information %>">
+      </div>
+      <div class="field">
+	    	<label for="theme">Theme</label>
+        <select class="ui dropdown" id="theme" name="theme">
+          <option value="">Theme</option>
+          <option value="light" <% if(edited_user.theme === 'light'){ %> selected <% } %> >Light</option>
+          <option value="dark" <% if(edited_user.theme === 'dark'){ %> selected <% } %> >Dark</option>
+        </select>
+      </div>
+      <div class="field">
+      <label class="ui header">Password</label>
+        <input type="password" placeholder="The original password (Won't modify if it is empty)" name="old_password" id="old_password">
+      </div>
+      <div class="two fields" id="new_password_field">
+        <div class="field">
+          <input type="password" placeholder="New Password" name="new_password" id="password1">
+        </div>
+        <div class="field">
+          <input type="password" placeholder="Repeat the Password" id="password2">
+        </div>
+      </div>
+      <%
+      let allowedManagePrivilege = user && user.admin >= 3;
+      %>
+      <% if(allowedManagePrivilege && edited_user.id !== user.id){ %>
+      <div class="inline field">
+        <label class="ui header">Permissions</label>
+        <input type="range" id="admin" name="admin" min="0" max="<%= user.admin - 1 %>" value="<%= edited_user.admin %>">
+        <label class="ui header" id="admintip"></label>
+      </div>
+      <div class="inline field">
+        <label class="ui header">Ban</label>
+        <div class="ui toggle checkbox">
+          <input id="is_show" name="is_show" type="checkbox" <% if (!edited_user.is_show) { %> checked<% } %>>
+          <label></label>
+        </div>
+      </div>
+      <% } %>
+      <div style="text-align: center; ">
+        <button type="submit" class="ui button">Modify</button>
+        <a href="<%= zoj.utils.makeUrl(['user', edited_user.id]) %>" class="ui blue button">Return to Personal Information</a>
+      </div>
+		</form>
+	</div>
+</div>
+<script src="/libs/blueimp-md5/js/md5.min.js"></script>
+<script type="text/javascript">
+function make_md5(tag) {
+	if (tag.val()) {
+		tag.val(md5(tag.val()));
+	}
+}
+function check() {
+	old_password = $("#old_password");
+	password1 = $("#password1");
+	password2 = $("#password2");
+	if ($("#old_password").val() && password1.val() != password2.val()) {
+		$("#error").removeClass("success");
+		$("#error").removeClass("error");
+		$("#error").addClass("error");
+		$("#error_info").html("The two passwords are not the same!");
+		$("#error").show();
+		return false;
+	}
+	make_md5(old_password);
+	make_md5(password1);
+	make_md5(password2);
+	return true;
+}
+</script>
+<script>
+$(function () {
+	$('.ui.dropdown').dropdown();
+});
+</script>
+<% if(allowedManagePrivilege && edited_user.id !== user.id){ %>
+<script>
+function updateInfo(){
+  var value = $('#admin').val();
+  var tip = "What the fuck is???";
+  switch(value){
+    case "0":tip = "Common user, no any privileges.";break;
+    case "1":tip = "Privileged user, can access privileged problems.";break;
+    case "2":tip = "Student administrator, can manage tags.";break;
+    case "3":tip = "Teacher administrator, can manage problems, contests and users.";break;
+    case "4":tip = "Super administrator.";break;
+  }
+  $('#admintip').text(tip);
+}
+updateInfo();
+$('#admin').bind('input propertychange', function() {updateInfo();});
+</script>
+<% } %>
+<% include footer %>
