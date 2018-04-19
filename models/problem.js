@@ -152,6 +152,14 @@ testcases: []\
 		await this.save();
 	}
 
+	async updateTestdataConfig(config) {
+		let fs = Promise.promisifyAll(require('fs-extra'));
+		let path = require('path');
+		this.datainfo = config;
+		await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
+		await this.save();
+	}
+
 	async updateTestdataConfig() {
 		let dir = this.getTestdataPath();
 
@@ -191,8 +199,10 @@ testcases: []\
 
 				testcases.push(subtask);
 				this.datainfo.testcases = testcases;
-				let spj = list.some(s => s.startsWith('spj_'));
-				if (spj) this.datainfo.spj = spj;
+				for (var obj of list) if (obj.startsWith('spj_')) {
+					this.datainfo.spj = obj;
+					break;
+				}
 				await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
 			} else {
 				let config = await fs.readFileAsync(dir + '/config.json');

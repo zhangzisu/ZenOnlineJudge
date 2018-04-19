@@ -414,47 +414,77 @@ app.post('/problem/:id/import', async (req, res) => {
 		let url = require('url');
 		let token = req.body.token || '';
 
-		let json = await request({
-			uri: req.body.url + (req.body.url.endsWith('/') ? 'export' : '/export') + '/' + token,
-			timeout: 5000,
-			json: true
-		});
+		if (req.body.type === 'SYZOJ') {
+			let json = await request({
+				uri: req.body.url + (req.body.url.endsWith('/') ? 'export' : '/export'),
+				timeout: 5000,
+				json: true
+			});
 
-		if (!json.success) throw new ErrorMessage('Import failed.', null, json.error);
+			if (!json.success) throw new ErrorMessage('Import failed.', null, json.error);
 
-		if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
-		problem.title = json.obj.title;
-		problem.description = json.obj.description;
-		problem.input_format = json.obj.input_format;
-		problem.output_format = json.obj.output_format;
-		problem.example = json.obj.example;
-		problem.limit_and_hint = json.obj.limit_and_hint;
-		problem.datainfo = {
-			time_limit: json.obj.time_limit,
-			memory_limit: json.obj.memory_limit,
-			testcases: json.obj.testcases
-		};
-		await problem.save();
+			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
+			problem.title = json.obj.title;
+			problem.description = json.obj.description;
+			problem.input_format = json.obj.input_format;
+			problem.output_format = json.obj.output_format;
+			problem.example = json.obj.example;
+			problem.limit_and_hint = json.obj.limit_and_hint;
+			// No datainfo, let zoj automatic generate it.
+			await problem.save();
 
-		let tagIDs = (await json.obj.tags.mapAsync(name => ProblemTag.findOne({ where: { name: name } }))).filter(x => x).map(tag => tag.id);
-		await problem.setTags(tagIDs);
+			let tagIDs = (await json.obj.tags.mapAsync(name => ProblemTag.findOne({ where: { name: name } }))).filter(x => x).map(tag => tag.id);
+			await problem.setTags(tagIDs);
 
-		let download = require('download');
-		let tmp = require('tmp-promise');
-		let tmpFile = await tmp.file();
-		let fs = require('bluebird').promisifyAll(require('fs'));
+			let download = require('download');
+			let tmp = require('tmp-promise');
+			let tmpFile = await tmp.file();
+			let fs = require('bluebird').promisifyAll(require('fs'));
 
-		try {
-			let data;
-			if (token !== '') {
-				data = await download(req.body.url + (req.body.url.endsWith('/') ? 'testdata/export/' : '/testdata/export/') + token);
-			} else {
-				data = await download(req.body.url + (req.body.url.endsWith('/') ? 'testdata/download' : '/testdata/download'));
+			try {
+				let data = await download(req.body.url + (req.body.url.endsWith('/') ? 'testdata/download' : '/testdata/download'));
+				await fs.writeFileAsync(tmpFile.path, data);
+				await problem.updateTestdata(tmpFile.path, await res.locals.user.admin >= 3);
+			} catch (e) {
+				zoj.log(e);
 			}
-			await fs.writeFileAsync(tmpFile.path, data);
-			await problem.updateTestdata(tmpFile.path, await res.locals.user.admin >= 3);
-		} catch (e) {
-			zoj.log(e);
+		} else if (req.body.type === 'ZOJ') {
+			let json = await request({
+				uri: req.body.url + (req.body.url.endsWith('/') ? 'export' : '/export') + '/' + token,
+				timeout: 5000,
+				json: true
+			});
+
+			if (!json.success) throw new ErrorMessage('Import failed.', null, json.error);
+
+			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
+			problem.title = json.obj.title;
+			problem.description = json.obj.description;
+			problem.input_format = json.obj.input_format;
+			problem.output_format = json.obj.output_format;
+			problem.example = json.obj.example;
+			problem.limit_and_hint = json.obj.limit_and_hint;
+
+			await problem.save();
+
+			let tagIDs = (await json.obj.tags.mapAsync(name => ProblemTag.findOne({ where: { name: name } }))).filter(x => x).map(tag => tag.id);
+			await problem.setTags(tagIDs);
+
+			let download = require('download');
+			let tmp = require('tmp-promise');
+			let tmpFile = await tmp.file();
+			let fs = require('bluebird').promisifyAll(require('fs'));
+
+			try {
+				let data = await download(req.body.url + (req.body.url.endsWith('/') ? 'testdata/export/' : '/testdata/export/') + token);
+				await fs.writeFileAsync(tmpFile.path, data);
+				await problem.updateTestdata(tmpFile.path, await res.locals.user.admin >= 3);
+				await problem.updateTestdataConfig(json.obj.datainfo);
+			} catch (e) {
+				zoj.log(e);
+			}
+		}else{
+			throw new ErrorMessage(`Do not support ${req.body.type}.`);
 		}
 
 		res.redirect(zoj.utils.makeUrl(['problem', problem.id]));
