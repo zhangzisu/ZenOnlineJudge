@@ -11,12 +11,9 @@
           <input type="text" name="subtitle" value="<%= contest.subtitle %>">
         </div>
         <div class="field">
-          <label>Problem List</label>
-          <select class="ui fluid search dropdown" multiple="" id="search_problems" name="problems">
-            <% for (let problem of problems) { %>
-              <option value="<%= problem.id %>" selected>#<%= problem.id %>.<%= problem.title %></option>
-            <% } %>
-          </select>
+          <label>Problems</label>
+          <div id="editor" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problems %></div>
+          <input type="hidden" name="problems" value="<%= problems %>">
         </div>
         <div class="inline fields">
           <label>Competition System</label>
@@ -84,6 +81,26 @@
         </div>
         <button type="submit" class="ui button">Submit</button>
       </form>
+      <script src="/libs/ace/ace.js"></script>
+      <script type="text/javascript">
+      var editor = ace.edit("editor");
+
+      editor.setTheme("ace/theme/tomorrow");
+      editor.getSession().setMode("ace/mode/json");
+      editor.getSession().setUseSoftTabs(false);
+
+      editor.container.name = 'problems';
+      editor.container.style.lineHeight = 1.6;
+      editor.container.style.fontSize = '14px';
+      editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+      editor.setShowPrintMargin(false);
+      editor.renderer.updateFontSize();
+
+      var input = $('[name="problems"]');
+      editor.getSession().on("change", function () {
+        input.val(editor.getSession().getValue());
+      });
+      </script>
       <script>
         $(function () {
           $('#search_problems')

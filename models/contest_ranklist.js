@@ -1,9 +1,3 @@
-/*
- *  Package  : models
- *  Filename : contest_player.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
@@ -13,13 +7,15 @@ let User = zoj.model('user');
 let Problem = zoj.model('problem');
 let ContestPlayer = zoj.model('contest_player');
 
-let model = db.define('contest_ranklist', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	ranklist: { type: Sequelize.TEXT, json: true }
-}, {
+let model = db.define('contest_ranklist',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+		ranklist: { type: Sequelize.TEXT, json: true }
+	}, {
 		timestamps: false,
 		tableName: 'contest_ranklist'
-	});
+	}
+);
 
 let Model = require('./common');
 class ContestRanklist extends Model {
@@ -68,7 +64,7 @@ class ContestRanklist extends Model {
 				if (a.latest > b.latest) return 1;
 				return 0;
 			});
-		} else {
+		} else if (contest.type === 'acm') {
 			for (let player of players) {
 				player.timeSum = 0;
 				for (let i in player.score_details) {

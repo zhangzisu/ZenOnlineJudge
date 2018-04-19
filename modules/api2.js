@@ -51,16 +51,6 @@ app.apiRouter.post('/api/judge/peek', async (req, res) => {
 		});
 
 		if (judge_state) {
-			if (judge_state.problem.type === 'submit-answer') {
-				res.send({
-					have_task: 1,
-					judge_id: judge_state.id,
-					answer_file: judge_state.code,
-					testdata: judge_state.problem.id,
-					problem_type: judge_state.problem.type,
-					type: 'submission'
-				});
-			} else {
 				res.send({
 					have_task: 1,
 					judge_id: judge_state.id,
@@ -75,7 +65,6 @@ app.apiRouter.post('/api/judge/peek', async (req, res) => {
 					problem_type: judge_state.problem.type,
 					type: 'submission'
 				});
-			}
 		} else {
 			res.send({ have_task: 0 });
 		}

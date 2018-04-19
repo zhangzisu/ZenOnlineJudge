@@ -217,15 +217,12 @@ app.get('/problem/:id', async (req, res) => {
 		problem.tags = await problem.getTags();
 		await problem.loadRelationships();
 
-		let testcases = await zoj.utils.parseTestdata(problem.getTestdataPath(), problem.type === 'submit-answer');
-
 		let discussionCount = await Article.count({ problem_id: id });
 
 		res.render('problem', {
 			problem: problem,
 			state: state,
 			lastLanguage: res.locals.user ? await res.locals.user.getLastSubmitLanguage() : null,
-			testcases: testcases,
 			discussionCount: discussionCount
 		});
 	} catch (e) {
@@ -253,11 +250,7 @@ app.get('/problem/:id/export/:token?', async (req, res) => {
 			output_format: problem.output_format,
 			example: problem.example,
 			limit_and_hint: problem.limit_and_hint,
-			time_limit: problem.time_limit,
-			memory_limit: problem.memory_limit,
-			file_io: problem.file_io,
-			file_io_input_name: problem.file_io_input_name,
-			file_io_output_name: problem.file_io_output_name,
+			datainfo: problem.datainfo,
 			tags: []
 		};
 
@@ -419,7 +412,7 @@ app.post('/problem/:id/import', async (req, res) => {
 
 		let request = require('request-promise');
 		let url = require('url');
-		let token = req.body.token||'';
+		let token = req.body.token || '';
 
 		let json = await request({
 			uri: req.body.url + (req.body.url.endsWith('/') ? 'export' : '/export') + '/' + token,
@@ -436,15 +429,11 @@ app.post('/problem/:id/import', async (req, res) => {
 		problem.output_format = json.obj.output_format;
 		problem.example = json.obj.example;
 		problem.limit_and_hint = json.obj.limit_and_hint;
-		problem.time_limit = json.obj.time_limit;
-		problem.memory_limit = json.obj.memory_limit;
-		problem.file_io = json.obj.file_io;
-		problem.file_io_input_name = json.obj.file_io_input_name;
-		problem.file_io_output_name = json.obj.file_io_output_name;
-
-		let validateMsg = await problem.validate();
-		if (validateMsg) throw new ErrorMessage('Invalid data configuration.', null, validateMsg);
-
+		problem.datainfo = {
+			time_limit: json.obj.time_limit,
+			memory_limit: json.obj.memory_limit,
+			testcases: json.obj.testcases
+		};
 		await problem.save();
 
 		let tagIDs = (await json.obj.tags.mapAsync(name => ProblemTag.findOne({ where: { name: name } }))).filter(x => x).map(tag => tag.id);
@@ -457,9 +446,9 @@ app.post('/problem/:id/import', async (req, res) => {
 
 		try {
 			let data;
-			if(token!==''){
+			if (token !== '') {
 				data = await download(req.body.url + (req.body.url.endsWith('/') ? 'testdata/export/' : '/testdata/export/') + token);
-			}else{
+			} else {
 				data = await download(req.body.url + (req.body.url.endsWith('/') ? 'testdata/download' : '/testdata/download'));
 			}
 			await fs.writeFileAsync(tmpFile.path, data);
@@ -477,7 +466,6 @@ app.post('/problem/:id/import', async (req, res) => {
 	}
 });
 
-// The 'manage' is not `allow manage`'s 'manage', I just have no better name for it.
 app.get('/problem/:id/manage', async (req, res) => {
 	try {
 		let id = parseInt(req.params.id);
@@ -488,11 +476,8 @@ app.get('/problem/:id/manage', async (req, res) => {
 
 		await problem.loadRelationships();
 
-		let testcases = await zoj.utils.parseTestdata(problem.getTestdataPath(), problem.type === 'submit-answer');
-
 		res.render('problem_manage', {
-			problem: problem,
-			testcases: testcases
+			problem: problem
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -512,23 +497,7 @@ app.post('/problem/:id/manage', app.multer.fields([{ name: 'testdata', maxCount:
 
 		await problem.loadRelationships();
 
-		problem.time_limit = req.body.time_limit;
-		problem.memory_limit = req.body.memory_limit;
-		if (req.body.type === 'traditional') {
-			problem.file_io = req.body.io_method === 'file-io';
-			problem.file_io_input_name = req.body.file_io_input_name;
-			problem.file_io_output_name = req.body.file_io_output_name;
-		}
-
-		if (problem.type === 'submit-answer' && req.body.type !== 'submit-answer' || problem.type !== 'submit-answer' && req.body.type === 'submit-answer') {
-			if (await JudgeState.count({ problem_id: id }) !== 0) {
-				throw new ErrorMessage('Cannot change type for problem which exists submissions.');
-			}
-		}
-		problem.type = req.body.type;
-
-		let validateMsg = await problem.validate();
-		if (validateMsg) throw new ErrorMessage('Invalid data configuration.', null, validateMsg);
+		problem.datainfo = JSON.parse(req.body.datainfo);
 
 		if (req.files['testdata']) {
 			await problem.updateTestdata(req.files['testdata'][0].path, await res.locals.user.admin >= 3);
@@ -611,48 +580,25 @@ app.post('/problem/:id/dis_protect', async (req, res) => {
 });
 
 app.post('/problem/:id/submit', app.multer.fields([{ name: 'answer', maxCount: 1 }]), async (req, res) => {
+	let id = parseInt(req.params.id);
+	let problem = await Problem.fromID(id);
+
+	if (!problem) throw new ErrorMessage('No such problem.');
+	if (!zoj.config.languages[req.body.language]) throw new ErrorMessage('Permission denied.');
+	if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': zoj.utils.makeUrl(['problem', id]) }) });
+
+	let judge_state;
 	try {
-		let id = parseInt(req.params.id);
-		let problem = await Problem.fromID(id);
+		let code;
+		if (req.body.code.length > zoj.config.limit.submit_code) throw new ErrorMessage('Your code is too long.');
+		code = req.body.code;
 
-		if (!problem) throw new ErrorMessage('No such problem.');
-		if (problem.type !== 'submit-answer' && !zoj.config.languages[req.body.language]) throw new ErrorMessage('Permission denied.');
-		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': zoj.utils.makeUrl(['problem', id]) }) });
-
-		let judge_state;
-		if (problem.type === 'submit-answer') {
-			let File = zoj.model('file'), path;
-			try {
-				path = await File.zipFiles(JSON.parse(req.body.answer_by_editor));
-			} catch (e) {
-				throw new ErrorMessage('Can not parse data.');
-			}
-
-			let file = await File.upload(path, 'answer');
-			let size = await file.getUnzipSize();
-
-			if (size > zoj.config.limit.submit_answer) throw new ErrorMessage('Your answer is too large.');
-
-			if (!file.md5) throw new ErrorMessage('Upload failed.');
-			judge_state = await JudgeState.create({
-				code: file.md5,
-				max_memory: size,
-				language: '',
-				user_id: res.locals.user.id,
-				problem_id: req.params.id
-			});
-		} else {
-			let code;
-			if (req.body.code.length > zoj.config.limit.submit_code) throw new ErrorMessage('Your code is too long.');
-			code = req.body.code;
-
-			judge_state = await JudgeState.create({
-				code: code,
-				language: req.body.language,
-				user_id: res.locals.user.id,
-				problem_id: req.params.id
-			});
-		}
+		judge_state = await JudgeState.create({
+			code: code,
+			language: req.body.language,
+			user_id: res.locals.user.id,
+			problem_id: req.params.id
+		});
 
 		let contest_id = parseInt(req.query.contest_id), redirectToContest = false;
 		if (contest_id) {
@@ -660,6 +606,7 @@ app.post('/problem/:id/submit', app.multer.fields([{ name: 'answer', maxCount: 1
 			if (!contest) throw new ErrorMessage('No such contest.');
 			if (!await contest.isRunning()) throw new ErrorMessage('Permission denied.');
 			let problems_id = await contest.getProblems();
+			problems_id = await problems_id.mapAsync(x => (x.id));
 			if (!problems_id.includes(id)) throw new ErrorMessage('No such problem.');
 
 			judge_state.type = 1;
@@ -718,14 +665,12 @@ app.get('/problem/:id/testdata', async (req, res) => {
 		if (!res.locals.user || !await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		let testdata = await problem.listTestdata();
-		let testcases = await zoj.utils.parseTestdata(problem.getTestdataPath(), problem.type === 'submit-answer');
 
 		problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user)
 
 		res.render('problem_data', {
 			problem: problem,
-			testdata: testdata,
-			testcases: testcases
+			testdata: testdata
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -809,14 +754,14 @@ app.get('/problem/:id/testdata/export/:token', async (req, res) => {
 	try {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
-		let token = req.params.token ||'';
+		let token = req.params.token || '';
 
 		if (!problem) throw new ErrorMessage('No such problem.');
-		if (token!==zoj.config.token) throw new ErrorMessage('You do not have permission to do this.');
+		if (token !== zoj.config.token) throw new ErrorMessage('You do not have permission to do this.');
 
-			if (!await zoj.utils.isFile(problem.getTestdataPath() + '.zip')) {
-				await problem.makeTestdataZip();
-			}
+		if (!await zoj.utils.isFile(problem.getTestdataPath() + '.zip')) {
+			await problem.makeTestdataZip();
+		}
 
 		let path = require('path');
 		let filename = problem.getTestdataPath() + '.zip';
@@ -845,6 +790,7 @@ app.get('/problem/:id/download/additional_file', async (req, res) => {
 			if (!contest) throw new ErrorMessage('No such contest.');
 			if (!await contest.isRunning()) throw new ErrorMessage('Permission denied.');
 			let problems_id = await contest.getProblems();
+			problems_id = await problems_id.mapAsync(x => (x.id));
 			if (!problems_id.includes(id)) throw new ErrorMessage('No such problem.');
 		} else {
 			if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');

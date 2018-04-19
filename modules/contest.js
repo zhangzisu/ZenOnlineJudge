@@ -48,8 +48,7 @@ app.get('/contest/:id/edit', async (req, res) => {
 			contest.id = 0;
 		}
 
-		let problems = [];
-		if (contest.problems) problems = await contest.problems.split('|').mapAsync(async id => await Problem.fromID(id));
+		let problems =  JSON.stringify(contest.problems);
 
 		res.render('contest_edit', {
 			contest: contest,
@@ -77,22 +76,19 @@ app.post('/contest/:id/edit', async (req, res) => {
 			let ranklist = await ContestRanklist.create();
 			await ranklist.save();
 			contest.ranklist_id = ranklist.id;
-
-			// Only new contest can be set type
-			if (!['noi', 'ioi', 'acm'].includes(req.body.type)) throw new ErrorMessage('Invalid contest type.');
-			contest.type = req.body.type;
 		}
 
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 		contest.title = req.body.title;
 		contest.subtitle = req.body.subtitle;
-		if (!Array.isArray(req.body.problems)) req.body.problems = [req.body.problems];
-		contest.problems = req.body.problems.join('|');
+		console.log(req.body.problems);
+		contest.problems = JSON.parse(req.body.problems);
 		contest.information = req.body.information;
 		contest.start_time = zoj.utils.parseDate(req.body.start_time);
 		contest.end_time = zoj.utils.parseDate(req.body.end_time);
 		contest.is_public = req.body.is_public === 'on';
 		contest.is_protected = req.body.is_protected == 'on';
+		contest.type = req.body.type;
 
 		await contest.save();
 
@@ -119,8 +115,8 @@ app.get('/contest/:id', async (req, res) => {
 		contest.subtitle = await zoj.utils.markdown(contest.subtitle);
 		contest.information = await zoj.utils.markdown(contest.information);
 
-		let problems_id = await contest.getProblems();
-		let problems = await problems_id.mapAsync(async id => await Problem.fromID(id));
+		let problemset = await contest.getProblems();
+		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
 
 		let player = null;
 
@@ -164,7 +160,7 @@ app.get('/contest/:id', async (req, res) => {
 		}
 
 		let hasStatistics = false;
-		if (contest.type === 'ioi' || contest.type === 'acm' || (contest.type === 'noi' && (contest.ended || (res.locals.user && res.locals.user.admin >= 3)))) {
+		if (contest.ended || (res.locals.user && res.locals.user.admin >= 3)) {
 			hasStatistics = true;
 
 			await contest.loadRelationships();
@@ -179,7 +175,8 @@ app.get('/contest/:id', async (req, res) => {
 				for (let player of players) {
 					if (player.score_details[problem.problem.id]) {
 						problem.statistics.attempt++;
-						if ((contest.type === 'acm' && player.score_details[problem.problem.id].accepted) || ((contest.type === 'noi' || contest.type === 'ioi') && player.score_details[problem.problem.id].score === 100)) {
+						if ((contest.type === 'acm' && player.score_details[problem.problem.id].accepted)
+							|| ((contest.type === 'noi' || contest.type === 'ioi') && player.score_details[problem.problem.id].score === 100)) {
 							problem.statistics.accepted++;
 						}
 
@@ -258,6 +255,7 @@ app.get('/contest/:id/submissions', async (req, res) => {
 		contest.ended = await contest.isEnded();
 
 		let problems_id = await contest.getProblems();
+		problems_id = await problems_id.mapAsync(x => (x.id));
 
 		let user = await User.fromName(req.query.submitter || '');
 		let where = {};
@@ -322,6 +320,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 		if (!contest) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
+		problems_id = await problems_id.mapAsync(x => (x.id));
 
 		let pid = parseInt(req.params.pid);
 		if (!pid || pid < 1 || pid > problems_id.length) throw new ErrorMessage('No such problem.');
@@ -343,7 +342,6 @@ app.get('/contest/:id/:pid', async (req, res) => {
 		await zoj.utils.markdown(problem, ['description', 'input_format', 'output_format', 'example', 'limit_and_hint']);
 
 		let state = await problem.getJudgeState(res.locals.user, false);
-		let testcases = await zoj.utils.parseTestdata(problem.getTestdataPath(), problem.type === 'submit-answer');
 
 		await problem.loadRelationships();
 
@@ -352,8 +350,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 			contest: contest,
 			problem: problem,
 			state: state,
-			lastLanguage: res.locals.user ? await res.locals.user.getLastSubmitLanguage() : null,
-			testcases: testcases
+			lastLanguage: res.locals.user ? await res.locals.user.getLastSubmitLanguage() : null
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -370,6 +367,7 @@ app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 		if (!contest) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
+		problems_id = await problems_id.mapAsync(x => (x.id));
 
 		let pid = parseInt(req.params.pid);
 		if (!pid || pid < 1 || pid > problems_id.length) throw new ErrorMessage('No such problem.');

@@ -1,9 +1,3 @@
-/*
- *  Package  : models
- *  Filename : contest_player.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
@@ -12,29 +6,27 @@ let db = zoj.db;
 let User = zoj.model('user');
 let Problem = zoj.model('problem');
 
-let model = db.define('contest_player', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	contest_id: { type: Sequelize.INTEGER },
-	user_id: { type: Sequelize.INTEGER },
+let model = db.define('contest_player',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+		contest_id: { type: Sequelize.INTEGER },
+		user_id: { type: Sequelize.INTEGER },
 
-	score: { type: Sequelize.INTEGER },
-	// Sum score
-	score_details: { type: Sequelize.TEXT, json: true },
-	// Score of every problem
-	time_spent: { type: Sequelize.INTEGER }
-	// Total time
-}, {
+		score: { type: Sequelize.INTEGER },
+		// Sum score
+		score_details: { type: Sequelize.TEXT, json: true },
+		// Score of every problem
+		time_spent: { type: Sequelize.INTEGER }
+		// Total time
+	}, {
 		timestamps: false,
 		tableName: 'contest_player',
 		indexes: [
-			{
-				fields: ['contest_id'],
-			},
-			{
-				fields: ['user_id'],
-			}
+			{ fields: ['contest_id'], },
+			{ fields: ['user_id'], }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class ContestPlayer extends Model {
@@ -93,11 +85,13 @@ class ContestPlayer extends Model {
 				this.score_details[judge_state.problem_id].time = maxScoreSubmission.time;
 
 				this.score = 0;
-				for (let x in this.score_details) {
-					this.score += this.score_details[x].score;
+				for (let x in this.contest.problems) {
+					if (!this.score_details[x.problem_id]) continue;
+					this.score += Math.round(this.score_details[x.problem_id].score / 100 * x.score);
 				}
 			}
 		} else if (this.contest.type === 'noi') {
+			// Current submittion is later than the recorded one.
 			if (this.score_details[judge_state.problem_id] && this.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
 
 			this.score_details[judge_state.problem_id] = {
@@ -107,8 +101,9 @@ class ContestPlayer extends Model {
 			};
 
 			this.score = 0;
-			for (let x in this.score_details) {
-				this.score += this.score_details[x].score;
+			for (let x in this.contest.problems) {
+				if (!this.score_details[x.problem_id]) continue;
+				this.score += Math.round(this.score_details[x.problem_id].score / 100 * x.score);
 			}
 		} else if (this.contest.type === 'acm') {
 			if (!judge_state.pending) {
@@ -154,8 +149,9 @@ class ContestPlayer extends Model {
 				}
 
 				this.score = 0;
-				for (let x in this.score_details) {
-					if (this.score_details[x].accepted) this.score++;
+				for (let x in this.contest.problems) {
+					if (!this.score_details[x.problem_id]) continue;
+					this.score += Math.round(this.score_details[x.problem_id].score / 100 * x.score);
 				}
 			}
 		}

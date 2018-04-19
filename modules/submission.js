@@ -30,8 +30,7 @@ app.get('/submissions', async (req, res) => {
 		};
 
 		if (req.query.language) {
-			if (req.query.language === 'submit-answer') where.language = '';
-			else where.language = req.query.language;
+			where.language = req.query.language;
 		}
 		if (req.query.status) where.status = { $like: req.query.status + '%' };
 
@@ -93,6 +92,7 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 				contest.ended = await contest.isEnded();
 
 				let problems_id = await contest.getProblems();
+				problems_id = await problems_id.mapAsync(x => (x.id));
 				judge_state.problem_id = problems_id.indexOf(judge_state.problem_id) + 1;
 				judge_state.problem.title = zoj.utils.removeTitleTag(judge_state.problem.title);
 
@@ -142,15 +142,14 @@ app.get('/submission/:id', async (req, res) => {
 		judge.allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
 		judge.allowedManage = await judge.problem.isAllowedManageBy(res.locals.user);
 
-		if (judge.problem.type !== 'submit-answer') {
 			judge.codeLength = judge.code.length;
 			judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
-		}
 		// judge.allowedSeeCode |= judge.problem.judge_state.result.status == 'Accepted';
 
 		let hideScore = false;
 		if (contest) {
 			let problems_id = await contest.getProblems();
+			problems_id = await problems_id.mapAsync(x => (x.id));
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
 			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 
@@ -189,10 +188,9 @@ app.get('/submission/:id/ajax', async (req, res) => {
 
 		await judge.loadRelationships();
 
-		if (judge.problem.type !== 'submit-answer') {
 			judge.codeLength = judge.code.length;
 			judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
-		}
+			
 		judge.allowedSeeCode = await judge.isAllowedSeeCodeBy(res.locals.user);
 		judge.allowedSeeCase = await judge.isAllowedSeeCaseBy(res.locals.user);
 		judge.allowedSeeData = await judge.isAllowedSeeDataBy(res.locals.user);
@@ -202,6 +200,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 		let hideScore = false;
 		if (contest) {
 			let problems_id = await contest.getProblems();
+			problems_id = await problems_id.mapAsync(x => (x.id));
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
 			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 

@@ -1,9 +1,3 @@
-/*
- *  Package  : models
- *  Filename : article.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
@@ -11,38 +5,32 @@ let db = zoj.db;
 
 let User = zoj.model('user');
 
-let model = db.define('article', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	
-	title: { type: Sequelize.STRING(80) },
-	content: { type: Sequelize.TEXT('medium') },
+let model = db.define('article',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 
-	user_id: { type: Sequelize.INTEGER },
-	// The id of the user who whote this article
-	problem_id: { type: Sequelize.INTEGER },
-	// The id of the problem of this article. NULL if it is not of a problem 
-	public_time: { type: Sequelize.INTEGER },
-	// The time of making this article public
-	update_time: { type: Sequelize.INTEGER },
-	// The latest upate time of this article
-	sort_time: { type: Sequelize.INTEGER },
+		title: { type: Sequelize.STRING(80) },
+		content: { type: Sequelize.TEXT('medium') },
 
-	comments_num: { type: Sequelize.INTEGER },
-	allow_comment: { type: Sequelize.BOOLEAN },
+		user_id: { type: Sequelize.INTEGER },
+		problem_id: { type: Sequelize.INTEGER },
+		public_time: { type: Sequelize.INTEGER },
+		update_time: { type: Sequelize.INTEGER },
+		sort_time: { type: Sequelize.INTEGER },
 
-	is_notice: { type: Sequelize.BOOLEAN }
-}, {
+		comments_num: { type: Sequelize.INTEGER },
+		allow_comment: { type: Sequelize.BOOLEAN },
+
+		is_notice: { type: Sequelize.BOOLEAN }
+	}, {
 		timestamps: false,
 		tableName: 'article',
 		indexes: [
-			{
-				fields: ['user_id']
-			},
-			{
-				fields: ['sort_time']
-			}
+			{ fields: ['user_id'] },
+			{ fields: ['sort_time'] }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class Article extends Model {

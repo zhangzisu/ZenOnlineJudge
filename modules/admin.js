@@ -188,8 +188,7 @@ app.post('/admin/rejudge', async (req, res) => {
 		};
 
 		if (req.body.language) {
-			if (req.body.language === 'submit-answer') where.language = '';
-			else where.language = req.body.language;
+			where.language = req.body.language;
 		}
 		if (req.body.status) where.status = { $like: req.body.status + '%' };
 		if (req.body.problem_id) where.problem_id = parseInt(req.body.problem_id) || -1;

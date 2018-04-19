@@ -1,9 +1,3 @@
-/*
- *  Package  : models
- *  Filename : article-comment.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
@@ -12,19 +6,20 @@ let db = zoj.db;
 let User = zoj.model('user');
 let Article = zoj.model('article');
 
-let model = db.define('comment', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+let model = db.define('comment',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 
-	content: { type: Sequelize.TEXT },
+		content: { type: Sequelize.TEXT },
 
-	article_id: { type: Sequelize.INTEGER },
+		article_id: { type: Sequelize.INTEGER },
 
-	user_id: { type: Sequelize.INTEGER },
-	// The id of the user who whote this comment
+		user_id: { type: Sequelize.INTEGER },
+		// The id of the user who whote this comment
 
-	public_time: { type: Sequelize.INTEGER }
-	// The time of making this comment public
-}, {
+		public_time: { type: Sequelize.INTEGER }
+		// The time of making this comment public
+	}, {
 		timestamps: false,
 		tableName: 'comment',
 		indexes: [
@@ -35,7 +30,8 @@ let model = db.define('comment', {
 				fields: ['user_id']
 			}
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class ArticleComment extends Model {

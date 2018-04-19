@@ -13,50 +13,43 @@ let User = zoj.model('user');
 let Problem = zoj.model('problem');
 let Contest = zoj.model('contest');
 
-let model = db.define('judge_state', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+let model = db.define('judge_state',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 
-	// The data zip's md5 if it's a submit-answer problem
-	code: { type: Sequelize.TEXT('medium') },
-	language: { type: Sequelize.STRING(20) },
+		code: { type: Sequelize.TEXT },
+		language: { type: Sequelize.STRING(20) },
 
-	status: { type: Sequelize.STRING(50) },
-	score: { type: Sequelize.INTEGER },
-	total_time: { type: Sequelize.INTEGER },
-	pending: { type: Sequelize.BOOLEAN },
-	max_memory: { type: Sequelize.INTEGER },
+		status: { type: Sequelize.STRING(50) },
+		score: { type: Sequelize.INTEGER },
+		total_time: { type: Sequelize.INTEGER },
+		pending: { type: Sequelize.BOOLEAN },
+		max_memory: { type: Sequelize.INTEGER },
 
-	result: { type: Sequelize.TEXT('medium'), json: true },
+		result: { type: Sequelize.TEXT('medium'), json: true },
 
-	user_id: { type: Sequelize.INTEGER },
-	// The id of the user who submitted
-	problem_id: { type: Sequelize.INTEGER },
-	// The id of the problem
-	submit_time: { type: Sequelize.INTEGER },
-	type: { type: Sequelize.INTEGER },
-	/*
-	 * "type" indicate it's contest's submission(type = 1) or normal submission(type = 0)
-	 * "type_info" will be the contest id if it's a contest's submission
-	 */
-	type_info: { type: Sequelize.INTEGER }
-}, {
+		user_id: { type: Sequelize.INTEGER },
+		// The id of the user who submitted
+		problem_id: { type: Sequelize.INTEGER },
+		// The id of the problem
+		submit_time: { type: Sequelize.INTEGER },
+		type: { type: Sequelize.INTEGER },
+		/*
+		 * "type" indicate it's contest's submission(type = 1) or normal submission(type = 0)
+		 * "type_info" will be the contest id if it's a contest's submission
+		 */
+		type_info: { type: Sequelize.INTEGER }
+	}, {
 		timestamps: false,
 		tableName: 'judge_state',
 		indexes: [
-			{
-				fields: ['status'],
-			},
-			{
-				fields: ['score'],
-			},
-			{
-				fields: ['user_id'],
-			},
-			{
-				fields: ['problem_id'],
-			}
+			{ fields: ['status'], },
+			{ fields: ['score'], },
+			{ fields: ['user_id'], },
+			{ fields: ['problem_id'], }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class JudgeState extends Model {
@@ -89,23 +82,25 @@ class JudgeState extends Model {
 	async isAllowedVisitBy(user) {
 		await this.loadRelationships();
 
-		if (user && user.id === this.problem.user_id) return true;
+		if (!user || user.admin < 1) return this.problem.is_public && !this.problem.is_protected;
+
+		if (user.id === this.problem.user_id) return true;
 		// The user is the creator of the problem.
-		else if (user && user.id === this.user_id) return true;
+		if (user.id === this.user_id) return true;
 		// The user is the submitter.
-		else if (this.type === 0) {
-			if (!user || await user.admin < 1) return this.problem.is_public && !this.problem.is_protected;
-			else if (await user.admin < 3) return this.problem.is_public;
+		if (this.type === 0) {
+			if (user.admin < 1) return this.problem.is_public && !this.problem.is_protected;
+			if (user.admin < 3) return this.problem.is_public;
 			return true;
 		}
 		// Normal submission
 		// 1. The problem is public and not protected
 		// 2. The problem is public and the user is indoor student/student admin
 		// 3. The the user is teacher/system admin
-		else if (this.type === 1) {
+		if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
-				return ((user && user.admin >= 3) || (user && user.id === contest.holder_id));
+				return ((user.admin >= 3) || (user.id === contest.holder_id));
 			} else {
 				return true;
 			}
@@ -153,8 +148,7 @@ class JudgeState extends Model {
 		else if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
-				return (contest.type === 'ioi' && user && user.id === this.user_id) 
-						|| (user && user.admin >= 3) || (user && user.id === contest.holder_id);
+				return user && (contest.type === 'ioi' && user.id === this.user_id) || ser.admin >= 3 || user.id === contest.holder_id;
 			} else {
 				return true;
 			}
@@ -193,7 +187,6 @@ class JudgeState extends Model {
 		this.pending = result.pending;
 		this.status = result.status;
 		if (this.language) {
-			// language is empty if it's a submit-answer problem
 			this.total_time = result.total_time;
 			this.max_memory = result.max_memory;
 		}
@@ -236,7 +229,6 @@ class JudgeState extends Model {
 			this.status = 'Waiting';
 			this.score = 0;
 			if (this.language) {
-				// language is empty if it's a submit-answer problem
 				this.total_time = 0;
 				this.max_memory = 0;
 			}

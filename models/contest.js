@@ -14,48 +14,46 @@ let Problem = zoj.model('problem');
 let ContestRanklist = zoj.model('contest_ranklist');
 let ContestPlayer = zoj.model('contest_player');
 
-let model = db.define('contest', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	title: { type: Sequelize.STRING(80) },
-	subtitle: { type: Sequelize.TEXT },
-	start_time: { type: Sequelize.INTEGER },
-	end_time: { type: Sequelize.INTEGER },
+let model = db.define('contest',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+		title: { type: Sequelize.STRING(80) },
+		subtitle: { type: Sequelize.TEXT },
+		start_time: { type: Sequelize.INTEGER },
+		end_time: { type: Sequelize.INTEGER },
 
-	holder_id: {
-		type: Sequelize.INTEGER,
-		references: {
-			model: 'user',
-			key: 'id'
-		}
-	},
-	// type: noi, ioi, acm
-	type: { type: Sequelize.STRING(10) },
+		holder_id: {
+			type: Sequelize.INTEGER,
+			references: {
+				model: 'user',
+				key: 'id'
+			}
+		},
+		// type: noi, ioi, acm
+		type: { type: Sequelize.TEXT },
 
-	information: { type: Sequelize.TEXT },
-	problems: { type: Sequelize.TEXT },
+		information: { type: Sequelize.TEXT },
+		problems: { type: Sequelize.TEXT, json: true },
 
-	ranklist_id: {
-		type: Sequelize.INTEGER,
-		references: {
-			model: 'contest_ranklist',
-			key: 'id'
-		}
-	},
+		ranklist_id: {
+			type: Sequelize.INTEGER,
+			references: {
+				model: 'contest_ranklist',
+				key: 'id'
+			}
+		},
 
-	is_public: { type: Sequelize.BOOLEAN },
-	is_protected: { type: Sequelize.BOOLEAN }
-}, {
+		is_public: { type: Sequelize.BOOLEAN },
+		is_protected: { type: Sequelize.BOOLEAN }
+	}, {
 		timestamps: false,
 		tableName: 'contest',
 		indexes: [
-			{
-				fields: ['holder_id'],
-			},
-			{
-				fields: ['ranklist_id'],
-			}
+			{ fields: ['holder_id'], },
+			{ fields: ['ranklist_id'], }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class Contest extends Model {
@@ -63,9 +61,9 @@ class Contest extends Model {
 		return Contest.fromRecord(Contest.model.build(Object.assign({
 			title: '',
 			subtitle: '',
-			problems: '',
+			problems: '[]',
 			information: '',
-			type: 'noi',
+			type: '',
 			start_time: 0,
 			end_time: 0,
 			holder: 0,
@@ -85,31 +83,21 @@ class Contest extends Model {
 	}
 
 	async isAllowedSeeResultBy(user) {
-		if (this.type === 'acm') return true;
+		if (this.type == 'ioi') return true;
 		return (user && (user.admin >= 3 || this.holder_id === user.id)) || !(await this.isRunning());
 	}
 
 	async getProblems() {
-		if (!this.problems) return [];
-		return this.problems.split('|').map(x => parseInt(x));
+		return this.problems;
 	}
 
-	async setProblemsNoCheck(problemIDs) {
-		this.problems = problemIDs.join('|');
-	}
-
-	async setProblems(s) {
-		let a = [];
-		await s.split('|').forEachAsync(async x => {
-			let problem = await Problem.fromID(x);
-			if (!problem) return;
-			a.push(x);
-		});
-		this.problems = a.join('|');
+	async setProblemsNoCheck(problems) {
+		this.problems = problems;
 	}
 
 	async newSubmission(judge_state) {
 		let problems = await this.getProblems();
+		problems = await problems.mapAsync(x => (x.id));
 		if (!problems.includes(judge_state.problem_id)) throw new ErrorMessage('No such problem in the current contest.');
 
 		await zoj.utils.lock(['Contest::newSubmission', judge_state.user_id], async () => {

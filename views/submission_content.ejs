@@ -39,15 +39,11 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
         <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && contest.type === 'acm') && !hideScore) { %>
           <th>*</th>
         <% } %>
-        <% if (judge.problem.type !== 'submit-answer') { %>
           <% if (!hideScore) { %>
             <th>Time</th>
             <th>Memory</th>
           <% } %>
           <th>Code</th>
-        <% } else { %>
-          <th>File</th>
-        <% } %>
         <th>Submitter</th>
         <th>Submit Time</th>
         <th>Judger</th>
@@ -69,18 +65,14 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
         <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && contest.type === 'acm') && !hideScore) { %>
           <td class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></td>
         <% } %>
-        <% if (judge.problem.type !== 'submit-answer') { %>
-          <% if (!hideScore) { %>
-            <td><%= judge.result.total_time %> ms</td>
-            <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
-          <% } %>
-          <% if (judge.allowedSeeCode) { %>
-            <td><%= zoj.config.languages[judge.language].show %> / <%= zoj.utils.formatSize(judge.codeLength) %></td>
-          <% } else { %>
-            <td><%= zoj.config.languages[judge.language].show %> / Hide %></td>
-          <% } %>
+        <% if (!hideScore) { %>
+          <td><%= judge.result.total_time %> ms</td>
+          <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
+        <% } %>
+        <% if (judge.allowedSeeCode) { %>
+          <td><%= zoj.config.languages[judge.language].show %> / <%= zoj.utils.formatSize(judge.codeLength) %></td>
         <% } else { %>
-          <td><%= zoj.utils.formatSize(judge.max_memory) %></td>
+          <td><%= zoj.config.languages[judge.language].show %> / Hide %></td>
         <% } %>
         <td><a href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a></td>
         <td><%= zoj.utils.formatDate(judge.submit_time) %></td>
@@ -134,7 +126,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
   }
   window.applyTextFit();
   </script>
-  <% if (judge.problem.type !== 'submit-answer' && judge.allowedSeeCode) { %>
+  <% if (judge.allowedSeeCode) { %>
     <div class="ui existing segment" style="position: relative; ">
       <pre style="margin-top: 0; margin-bottom: 0; "><code id="code"><%- judge.code %></code></pre>
     </div>
@@ -151,7 +143,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
       });
     </script>
   <% } %>
-<% if (judge.problem.type !== 'submit-answer' && judge.result.compiler_output && judge.status === 'Compile Error' && judge.allowedSeeCode) { %>
+<% if (judge.result.compiler_output && judge.status === 'Compile Error' && judge.allowedSeeCode) { %>
   <h3 class="ui header">Compile Information</h3>
   <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%- zoj.utils.ansiToHTML(judge.result.compiler_output) %></code></pre></div>
 <% } else if (judge.result.message) { %>
@@ -183,35 +175,29 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
       <% let testcase = subtask_cases[i]; %>
       <div class="title<% if (testcase.pending || !judge.allowedSeeData || testcase.status === 'Skipped') { %> pending<% } %> auto_update"<% if (testcase.pending || !judge.allowedSeeData) { %> style="cursor: auto; "<% } %>>
         <div class="ui grid">
-          <div class="<%= judge.problem.type === 'submit-answer' ? 'four' : 'three' %> wide column"><i class="dropdown icon"></i>Point #<%= i + 1 %></div>
+          <div class="three wide column"><i class="dropdown icon"></i>Point #<%= i + 1 %></div>
           <div class="four wide column status status_detail <%= getStatusMeta(testcase.status).toLowerCase().split(' ').join('_') %>">
           <i class="<%= icon[getStatusMeta(testcase.status)] || 'remove' %> icon"></i>
           <%= testcase.status %></div>
           <% if (!testcase.pending && testcase.status !== 'Skipped') { %>
             <% if (!testcase.score) testcase.score = testcase.status === 'Accepted' ? 100 : 0; %>
-            <% if (judge.problem.type === 'submit-answer') { %>
-              <% if (testcase.length != null) { %>
-                <div class="three wide column">File Size：<span style="font-weight: normal; "><%= zoj.utils.formatSize(testcase.length) %></span></div>
-              <% } %>
-            <% } else { %>
-              <div class="three wide column">Score：<span style="font-weight: normal; "><%= parseFloat(testcase.score.toFixed(2)).toString() %></span></div>
-              <div class="three wide column">Time：<span style="font-weight: normal; "><%= testcase.time_used %> ms</span></div>
-              <div class="three wide column">Memory：<span style="font-weight: normal; "><%= testcase.memory_used %> KiB</span></div>
-            <% } %>
+            <div class="three wide column">Score：<span style="font-weight: normal; "><%= parseFloat(testcase.score.toFixed(2)).toString() %></span></div>
+            <div class="three wide column">Time：<span style="font-weight: normal; "><%= testcase.time_used %> ms</span></div>
+            <div class="three wide column">Memory：<span style="font-weight: normal; "><%= testcase.memory_used %> KiB</span></div>
           <% } %>
         </div>
       </div>
       <div class="content auto_update">
         <% if (!testcase.pending && judge.allowedSeeData && testcase.status !== 'Skipped') { %>
           <p>
-              <% if (judge.problem.type !== 'submit-answer') { %>
+
                 <strong>Input File<% if (testcase.input_file_name) { %>（<span style="font-family: monospace; "><%= testcase.input_file_name %></span>）<% } %></strong>
                 <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.input %></code></pre></div>
-              <% } %>
-              <% if (judge.problem.type !== 'submit-answer') { %>
+
+
                   <strong>Output File<% if (testcase.output_file_name) { %>（<span style="font-family: monospace; "><%= testcase.output_file_name %></span>）<% } %></strong>
                   <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.answer %></code></pre></div>
-              <% } %>
+
               <strong>Your Output</strong>
               <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.user_out %></code></pre></div>
               <% if (testcase.spj_message) { %>

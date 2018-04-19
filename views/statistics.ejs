@@ -1,13 +1,13 @@
 <%
 this.title = 'Statistics';
 let types = {
-  fastest: problem.type === 'submit-answer' ? null : 'The Fastest',
-  slowest: problem.type === 'submit-answer' ? null : 'The Slowest',
-  shortest: problem.type === 'submit-answer' ? null : 'The Shortest',
-  longest: problem.type === 'submit-answer' ? null : 'The Logest',
+  fastest: 'The Fastest',
+  slowest: 'The Slowest',
+  shortest: 'The Shortest',
+  longest: 'The Logest',
   earliest: 'The Earliest',
-  min: problem.type === 'submit-answer' ? 'Smallest' : 'Minimal memory',
-  max: problem.type === 'submit-answer' ? 'Biggest' : 'Maximum memory'
+  min: 'Minimal memory',
+  max: 'Maximum memory'
 };
 %>
 <% include header %>
@@ -56,13 +56,9 @@ function getColorOfScore(score) {
           <th>Problem</th>
           <th>Status</th>
           <th>Score</th>
-          <% if (problem.type !== 'submit-answer') { %>
-            <th>Total Time</th>
-            <th>Memory</th>
-            <th>Code</th>
-          <% } else { %>
-            <th>Answer File</th>
-          <% } %>
+          <th>Total Time</th>
+          <th>Memory</th>
+          <th>Code</th>
           <th>Submitted By</th>
           <th>Submit Time</th>
       </tr>
@@ -80,28 +76,17 @@ function getColorOfScore(score) {
                   </span>
               </a></td>
               <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><span class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></span></a></td>
-              <% if (problem.type !== 'submit-answer') { %>
-                <td><%= judge.result.total_time %> ms</td>
-                <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
-                <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> /
-                  <% 
-                  if (judge.allowedSeeCode) { %>
-                    <%= zoj.utils.formatSize(judge.code.length) %>
-                  <% } else { %>
-                    Hide
-                  <% } %>  
-                  
-                </td>
-              <% } else { %>
-              
-                <td>
-                  <% if (judge.allowedSeeCode) { %>
-                  <%= zoj.utils.formatSize(judge.max_memory) %>
-                  <% } else {%>
+              <td><%= judge.result.total_time %> ms</td>
+              <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
+              <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> /
+                <% 
+                if (judge.allowedSeeCode) { %>
+                  <%= zoj.utils.formatSize(judge.code.length) %>
+                <% } else { %>
                   Hide
-                  <% } %>
-                </td>
-              <% } %>
+                <% } %>  
+                
+              </td>
               <td><a href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a></td>
               <td><%= zoj.utils.formatDate(judge.submit_time) %></td>
           </tr>

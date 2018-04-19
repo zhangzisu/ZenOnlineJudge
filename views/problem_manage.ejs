@@ -10,80 +10,11 @@
         <form class="ui form" method="post" enctype="multipart/form-data" onsubmit="return checkSubmit()">
           <input type="hidden" name="type" value="<%= problem.type %>">
           <div class="ui pointing secondary menu" id="problem-type-tab" style="margin-top: -10px; ">
-            <a class="<%= problem.type === 'traditional' ? 'active ' : '' %>item" data-tab="traditional">Traditional</a>
-            <a class="<%= problem.type === 'submit-answer' ? 'active ' : '' %>item" data-tab="submit-answer">Submit Answer</a>
+            <a class="active item" data-tab="traditional">Config</a>
           </div>
-          <div class="ui <%= problem.type !== 'submit-answer' ? 'active ' : '' %>tab" data-tab="traditional">
-            <div class="two fields">
-              <div class="field">
-                <label for="doc-ds-ipt-1">Time Limit(ms)</label>
-                <input type="number" name="time_limit" value="<%= problem.time_limit %>">
-              </div>
-              <div class="field">
-                <label for="doc-ds-ipt-1">Memory Limit(MiB)</label>
-                <input type="number" name="memory_limit" value="<%= problem.memory_limit %>">
-              </div>
-            </div>
-            <div id="io-type">
-              <% if (!problem.file_io) { %>
-              <div class="inline fields">
-                <label>IO Mode</label>
-                <div class="field">
-                  <div class="ui radio checkbox">
-                    <input name="io_method" value="std-io" id="std-io" type="radio" onclick="goDisable()" checked>
-                    <label for="std-io">Standard IO</label>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="ui radio checkbox">
-                    <input name="io_method" value="file-io" id="file-io" type="radio" onclick="goEnable()">
-                    <label for="file-io">File IO</label>
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <div class="field">
-                  <label for="file_io_input_name">Input File Name</label>
-                  <input type="text" id="file-io-input-name" name="file_io_input_name" value="<%= problem.file_io_input_name %>" disabled>
-                </div>
-                <div class="field">
-                  <label for="file_io_output_name">Output File Name</label>
-                  <input type="text" id="file-io-output-name" name="file_io_output_name" value="<%= problem.file_io_output_name %>" disabled>
-                </div>
-              </div>
-              <% } else { %>
-              <div class="inline fields">
-                <label>IO Mode</label>
-                <div class="field">
-                  <div class="ui radio checkbox" id="std-io-div">
-                    <input name="io_method" value="std-io" id="std-io" type="radio" onclick="goDisable()">
-                    <label for="std-io">Standard IO</label>
-                  </div>
-                </div>
-                <div class="field">
-                  <div class="ui radio checkbox">
-                    <input name="io_method" value="file-io" id="file-io" type="radio" onclick="goEnable()" checked>
-                    <label for="file-io">File IO</label>
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <div class="field">
-                  <label for="file_io_input_name">Input File Name</label>
-                  <input type="text" id="file-io-input-name" name="file_io_input_name" value="<%= problem.file_io_input_name %>">
-                </div>
-                <div class="field">
-                  <label for="file_io_output_name">Ouput File Name</label>
-                  <input type="text" id="file-io-output-name" name="file_io_output_name" value="<%= problem.file_io_output_name %>">
-                </div>
-              </div>
-              <% } %>
-            </div>
-          </div>
-          <div class="ui <%= problem.type === 'submit-answer' ? 'active ' : '' %>tab" data-tab="submit-answer" style="margin-bottom: 10px; ">
-            <b>In order to avoid system errors, existing submissions are not allowed to change between submit-answer and not submit-answer.</b><br>
-            Submit-answer problems don't need to set the time limit,memory limit and IO mode.<br>
-            The third column in the table on the left shows the name of the file the player should submit.
+          <div class="ui active tab" data-tab="traditional">
+            <div id="editor" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= JSON.stringify(problem.datainfo) %></div>
+            <input type="hidden" name="datainfo" value="<%= JSON.stringify(problem.datainfo) %>">
           </div>
           <div class="field">
             <label for="testdata">Upload Testdata(Please use ZIP)</label>
@@ -99,6 +30,28 @@
       </div>
   </div>
 <div>
+
+<script src="/libs/ace/ace.js"></script>
+<script type="text/javascript">
+var editor = ace.edit("editor");
+
+editor.setTheme("ace/theme/tomorrow");
+editor.getSession().setMode("ace/mode/json");
+editor.getSession().setUseSoftTabs(false);
+
+editor.container.name = 'datainfo';
+editor.container.style.lineHeight = 1.6;
+editor.container.style.fontSize = '14px';
+editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+editor.setShowPrintMargin(false);
+editor.renderer.updateFontSize();
+
+var input = $('[name="datainfo"]');
+editor.getSession().on("change", function () {
+  input.val(editor.getSession().getValue());
+});
+</script>
+
 <script>
 function goEnable() {
   document.getElementById('file-io-input-name').disabled = false;

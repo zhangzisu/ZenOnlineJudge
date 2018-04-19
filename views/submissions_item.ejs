@@ -20,17 +20,12 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
 </script>
 <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && (contest.type === 'acm' || contest.type === 'noi'))) { %>
   <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><span class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></span></a></td>
-  <% if (judge.problem.type !== 'submit-answer') { %>
-    <td><%= judge.result.total_time %> ms</td>
-    <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
-    <% if (judge.allowedSeeCode) { %>
-      <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / <%= zoj.utils.formatSize(judge.code.length) %></td>
-    <% } else { %>
-      <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / Hide</td>
-    <% } %>
+  <td><%= judge.result.total_time %> ms</td>
+  <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
+  <% if (judge.allowedSeeCode) { %>
+    <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / <%= zoj.utils.formatSize(judge.code.length) %></td>
   <% } else { %>
-    <td>-</td><td>-</td>
-    <td><%= zoj.utils.formatSize(judge.max_memory) %></td>
+    <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / Hide</td>
   <% } %>
 <% } %>
 <td><a href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a></td>
