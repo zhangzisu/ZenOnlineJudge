@@ -198,6 +198,7 @@ testcases: []\
 					break;
 				}
 				await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
+				await fs.removeAsync(await this.getTestdataPath() + '.zip');
 			} else {
 				let config = await fs.readFileAsync(dir + '/config.json');
 				config = JSON.parse(config.toString());
@@ -230,8 +231,8 @@ testcases: []\
 			await p7zip.extract(path, dir);
 			await fs.moveAsync(path, dir + '.zip', { overwrite: true });
 		});
-		await this.updateTestdataHash();
 		await this.updateTestdataConfig();
+		await this.updateTestdataHash();
 	}
 
 	async uploadTestdataSingleFile(filename, filepath, size, noLimit) {
@@ -255,8 +256,8 @@ testcases: []\
 			await fs.moveAsync(filepath, path.join(dir, filename), { overwrite: true });
 			await fs.removeAsync(dir + '.zip');
 		});
-		await this.updateTestdataHash();
 		await this.updateTestdataConfig();
+		await this.updateTestdataHash();
 	}
 
 	async deleteTestdataSingleFile(filename) {
@@ -266,8 +267,8 @@ testcases: []\
 			await fs.removeAsync(path.join(dir, filename));
 			await fs.removeAsync(dir + '.zip');
 		});
-		await this.updateTestdataHash();
 		await this.updateTestdataConfig();
+		await this.updateTestdataHash();
 	}
 
 	async makeTestdataZip() {
@@ -345,8 +346,8 @@ testcases: []\
 		}
 
 		await this.save();
-		await this.updateTestdataHash();
 		await this.updateTestdataConfig();
+		await this.updateTestdataHash();
 	}
 
 	async getJudgeState(user, acFirst) {
