@@ -57,12 +57,6 @@ app.apiRouter.post('/api/judge/peek', async (req, res) => {
 					code: judge_state.code,
 					language: judge_state.language,
 					testdata: judge_state.problem.id,
-					time_limit: judge_state.problem.time_limit,
-					memory_limit: judge_state.problem.memory_limit,
-					file_io: judge_state.problem.file_io,
-					file_io_input_name: judge_state.problem.file_io_input_name,
-					file_io_output_name: judge_state.problem.file_io_output_name,
-					problem_type: judge_state.problem.type,
 					type: 'submission'
 				});
 		} else {
@@ -110,23 +104,6 @@ app.apiRouter.get('/api/problemdata/:id/:token', async (req, res) => {
 		let path = require('path');
 		let filename = problem.getTestdataPath() + '.zip';
 		if (!await zoj.utils.isFile(filename)) return res.status(404).send({ err: 'Permission denied' });
-		res.download(filename, path.basename(filename));
-	} catch (e) {
-		res.status(500).send(e);
-		zoj.log(e);
-	}
-});
-
-app.apiRouter.get('/api/answer/:id/:token', async (req, res) => {
-	try {
-		let token = req.params.token;
-		if (token !== zoj.config.token) return res.status(404).send({ err: 'Permission denied' });
-
-		let id = req.params.id;
-		let filename = zoj.utils.resolvePath(zoj.config.upload_dir, 'answer', id);
-		if (!await zoj.utils.isFile(filename))
-			return res.status(404).send({ err: 'Permission denied' });
-		let path = require('path');
 		res.download(filename, path.basename(filename));
 	} catch (e) {
 		res.status(500).send(e);

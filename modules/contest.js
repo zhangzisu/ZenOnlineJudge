@@ -48,7 +48,7 @@ app.get('/contest/:id/edit', async (req, res) => {
 			contest.id = 0;
 		}
 
-		let problems =  JSON.stringify(contest.problems);
+		let problems =  JSON.stringify(contest.problems, null, '\t');
 
 		res.render('contest_edit', {
 			contest: contest,

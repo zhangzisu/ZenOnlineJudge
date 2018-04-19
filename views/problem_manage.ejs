@@ -13,8 +13,8 @@
             <a class="active item" data-tab="traditional">Config</a>
           </div>
           <div class="ui active tab" data-tab="traditional">
-            <div id="editor" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= JSON.stringify(problem.datainfo) %></div>
-            <input type="hidden" name="datainfo" value="<%= JSON.stringify(problem.datainfo) %>">
+            <div id="editor" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= JSON.stringify(problem.datainfo, null, '\t') %></div>
+            <input type="hidden" name="datainfo" value="<%= JSON.stringify(problem.datainfo, null, '\t') %>">
           </div>
           <div class="field">
             <label for="testdata">Upload Testdata(Please use ZIP)</label>

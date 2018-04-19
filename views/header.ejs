@@ -41,7 +41,7 @@
             <a title="Submissions" class="item<% if (active.startsWith('submission')) { %> active<% } %>" href="/submissions"><i class="tasks icon"></i></a>
             <a title="Ranklist" class="item<% if (active.startsWith('ranklist')) { %> active<% } %>" href="/ranklist"><i class="signal icon"></i></a>
             <a title="Discussion" class="item<% if (active.startsWith('discussion') || active.startsWith('article')) { %> active<% } %>" href="/discussion"><i class="comments icon"></i></a>
-            <a title="Help" class="item<% if (active.startsWith('help')) { %> active<% } %>" href="/help"><i class="help circle icon"></i></a>
+            <a title="Help" class="item" href="https://github.com/ZhangZisu/ZenOnlineJudge/wiki"><i class="help circle icon"></i></a>
             <% if (typeof contest !== 'undefined' && contest && contest.id) { %>
               <a id="back_to_contest" class="item" href="<%= zoj.utils.makeUrl(['contest', contest.id]) %>"><i class="arrow left icon"></i></a>
             <% } %>

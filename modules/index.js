@@ -40,14 +40,3 @@ app.get('/', async (req, res) => {
 		});
 	}
 });
-
-app.get('/help', async (req, res) => {
-	try {
-		res.render('help');
-	} catch (e) {
-		zoj.log(e);
-		res.render('error', {
-			err: e
-		});
-	}
-});
