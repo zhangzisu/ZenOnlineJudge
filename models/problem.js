@@ -191,6 +191,8 @@ testcases: []\
 
 				testcases.push(subtask);
 				this.datainfo.testcases = testcases;
+				let spj = list.some(s => s.startsWith('spj_'));
+				if (spj) this.datainfo.spj = spj;
 				await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
 			} else {
 				let config = await fs.readFileAsync(dir + '/config.json');

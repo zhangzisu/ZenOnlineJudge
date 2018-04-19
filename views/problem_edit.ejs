@@ -27,16 +27,27 @@
           <% } %>
           <label for="title">Problem Name</label>
           <input class="font-content" type="text" id="title" name="title" value="<%= problem.title %>">
+
           <label style="margin-top: 15px; " for="description">Description</label>
-          <textarea class="font-content" rows="15" id="description" name="description"><%= problem.description %></textarea>
+          <div id="description" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.description %></div>
+          <input type="hidden" name="description" value="<%= problem.description %>">
+
           <label style="margin-top: 15px; " for="input_format">Input</label>
-          <textarea class="font-content" rows="10" id="input" name="input_format"><%= problem.input_format %></textarea>
+          <div id="input_format" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.input_format %></div>
+          <input type="hidden" name="input_format" value="<%= problem.input_format %>">
+
           <label style="margin-top: 15px; " for="output_format">Output</label>
-          <textarea class="font-content" rows="10" id="output" name="output_format"><%= problem.output_format %></textarea>
+          <div id="output_format" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.output_format %></div>
+          <input type="hidden" name="output_format" value="<%= problem.output_format %>">
+
           <label style="margin-top: 15px; ">Example</label>
-          <textarea class="font-content" rows="15" id="example" name="example"><%= problem.example %></textarea>
+          <div id="example" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.example %></div>
+          <input type="hidden" name="example" value="<%= problem.example %>">
+
           <label style="margin-top: 15px; ">Limits and Hints</label>
-          <textarea class="font-content" rows="10" id="hint" name="limit_and_hint"><%= problem.limit_and_hint %></textarea>
+          <div id="limit_and_hint" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.limit_and_hint %></div>
+          <input type="hidden" name="limit_and_hint" value="<%= problem.limit_and_hint %>">
+
           <label style="margin-top: 15px; ">Add Tags</label><!--Wait for change-->
           <select class="ui fluid search dropdown" multiple="" id="search_tags" name="tags">
             <% for (let tag of problem.tags) { %>
@@ -75,6 +86,35 @@
       <% } %>
     </form>
 </div>
+<script src="/libs/ace/ace.js"></script>
+<script type="text/javascript">
+function registerACEditor(editorID, containerName, mode){
+  var editor = ace.edit(editorID);
+
+  editor.setTheme("ace/theme/tomorrow");
+  editor.getSession().setMode(mode);
+  editor.getSession().setUseSoftTabs(false);
+
+  editor.container.name = containerName;
+  editor.container.style.lineHeight = 1.6;
+  editor.container.style.fontSize = '14px';
+  editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+  editor.setShowPrintMargin(false);
+  editor.renderer.updateFontSize();
+
+  var input = $(`[name="${containerName}"]`);
+  editor.getSession().on("change", function () {
+    input.val(editor.getSession().getValue());
+  });
+}
+
+registerACEditor("description", "description", "ace/mode/markdown");
+registerACEditor("input_format", "input_format", "ace/mode/markdown");
+registerACEditor("output_format", "output_format", "ace/mode/markdown");
+registerACEditor("example", "example", "ace/mode/markdown");
+registerACEditor("limit_and_hint", "limit_and_hint", "ace/mode/markdown");
+
+</script>
 <script type="text/javascript">
 $(function () {
     function render(output, input) {

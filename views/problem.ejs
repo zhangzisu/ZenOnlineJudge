@@ -35,19 +35,10 @@ div[class*=ace_br] {
       </h1>
     </div>
       <div class="row" style="margin-top: -15px">
-          <span class="ui label">Memory Limit：<%= problem.memory_limit %> MiB</span>
-          <span class="ui label">Time Limit：<%= problem.time_limit %> ms</span>
-          <% if (problem.file_io) { %>
-            <span class="ui label">Input File: <%= problem.file_io_input_name %></span>
-            <span class="ui label">Output File: <%= problem.file_io_output_name %></span>
-          <% } else { %>
-            <span class="ui label">Standard IO</span>
-          <% } %>
+          <span class="ui label">Memory Limit：<%= problem.datainfo.memory_limit %> MiB</span>
+          <span class="ui label">Time Limit：<%= problem.datainfo.time_limit %> ms</span>
+          <span class="ui label">Judge method：<%= problem.datainfo.spj ? "Special judge" : "Compare text" %></span>
       </div>
-    <div class="row" style="margin-top: -23px">
-        <span class="ui label">Problem Type：normal</span>
-        <span class="ui label">Judge method：normal</span>
-    </div>
     <% if (!contest) { %>
         <div class="row" style="margin-top: -23px">
             <span class="ui label">Uploaded by：

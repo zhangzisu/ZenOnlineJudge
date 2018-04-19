@@ -106,23 +106,4 @@
       registerACEditor("editor", "problems", "ace/mode/json");
       registerACEditor("information", "information", "ace/mode/markdown");
       </script>
-      <script>
-        $(function () {
-          $('#search_problems')
-            .dropdown({
-              debug: true,
-              apiSettings: {
-                url: '/api/search/problems/{query}',
-                onResponse: function (response) {
-                  var a = $('#search_problems').val().map(function (x) { return parseInt(x) });
-                  if (response.results) {
-                    response.results = response.results.filter(x => !a.includes(parseInt(x.value)));
-                  }
-                  return response;
-                },
-                cache: false
-              }
-            });
-        });
-      </script>
       <% include footer %>
