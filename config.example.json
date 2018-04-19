@@ -1,0 +1,99 @@
+{
+    "title": "ZOJ",
+    "listen": "localhost",
+    "port": "1926",
+    "hostname": "localhost",
+    "db": {
+        "database": "zoj",
+        "username": "username",
+        "password": "password",
+        "host": null,
+        "dialect": "mysql",
+        "storage": null
+    },
+    "register_mail": {
+        "enabled": false,
+        "host": "smtp-mail.outlook.com",
+        "port": 587,
+        "username": "",
+        "password": "",
+        "allowUnauthorizedTls": false
+    },
+    "upload_dir": "uploads",
+    "default": {
+        "problem": {
+            "time_limit": 1000,
+            "memory_limit": 256
+        },
+        "user": {
+            "show": true,
+            "rating": 1500
+        }
+    },
+    "sorting": {
+        "ranklist": {
+            "field": "rating",
+            "order": "desc"
+        },
+        "problem": {
+            "field": "id",
+            "order": "asc"
+        }
+    },
+    "limit": {
+        "time_limit": 10000,
+        "memory_limit": 2048,
+        "data_size": 209715200000,
+        "testdata": 209715200000,
+        "submit_code": 102400,
+        "submit_answer": 10485760,
+        "custom_test_input": 20971520,
+        "testdata_filecount": 500
+    },
+    "page": {
+        "problem": 50,
+        "problem_statistics": 10,
+        "judge_state": 50,
+        "ranklist": 20,
+        "discussion": 50,
+        "article_comment": 20,
+        "contest": 10,
+        "edit_contest_problem_list": 10,
+        "edit_problem_tag_list": 10,
+        "post": 20
+    },
+    "languages": {
+        "cpp": {
+            "show": "C++",
+            "highlight": "cpp",
+            "version": "GCC 5.4.0",
+            "editor": "c_cpp"
+        },
+        "cpp11": {
+            "show": "C++11",
+            "highlight": "cpp",
+            "version": "GCC 5.4.0",
+            "editor": "c_cpp"
+        },
+        "c": {
+            "show": "C",
+            "highlight": "c",
+            "version": "GCC 5.4.0",
+            "editor": "c_cpp"
+        },
+        "java": {
+            "show": "Java",
+            "highlight": "java",
+            "version": "GCC 5.4.0",
+            "editor": "java"
+        }
+    },
+    "links": [
+        {
+            "title": "ZhangZisu.CN",
+            "url": "https://zhangzisu.cn/"
+        }
+    ],
+    "session_secret": "null",
+    "token": "null"
+}
