@@ -1,8 +1,4 @@
-/*
- *  Package  : libs
- *  Filename : rating.js
- *  Create   : 2018-02-17
- */
+'use strict';
 
 const util = require('util');
 const _ = require('lodash');

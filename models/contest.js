@@ -1,9 +1,3 @@
-/*
- *  Package  : models
- *  Filename : contest.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');

@@ -1,9 +1,3 @@
-/*
- *  Package  : modules
- *  Filename : api2.js
- *  Create   : 2018-03-13
- */
-
 'use strict';
 
 let [Fetcher] = require('zoj-contest-fetcher');

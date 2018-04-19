@@ -1,9 +1,3 @@
-/*
- * Package : models
- * Filename : problem.js
- * Create : 2018-02-05
- */
-
 'use strict';
 
 let statisticsStatements = {

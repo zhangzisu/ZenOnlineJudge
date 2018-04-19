@@ -1,9 +1,3 @@
-/*
- *  Package  : modules
- *  Filename : contest.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Contest = zoj.model('contest');

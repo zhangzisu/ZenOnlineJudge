@@ -1,8 +1,4 @@
-/*
- *  Package  : libs
- *  Filename : email.js
- *  Create   : 2018-02-17
- */
+'use strict';
 
 const Bluebird = require('bluebird');
 const nodemailer = require('nodemailer');

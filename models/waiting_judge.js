@@ -1,9 +1,3 @@
-/*
- *  Package  : models
- *  Filename : waiting_judge.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
@@ -11,27 +5,27 @@ let db = zoj.db;
 
 let JudgeState = zoj.model('judge_state');
 
-let model = db.define('waiting_judge', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	judge_id: { type: Sequelize.INTEGER },
+let model = db.define('waiting_judge',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+		judge_id: { type: Sequelize.INTEGER },
 
-	// Smaller is higher
-	priority: { type: Sequelize.INTEGER },
-	// It determines first or later
+		// Smaller is higher
+		priority: { type: Sequelize.INTEGER },
+		// It determines first or later
 
-	type: {
-		type: Sequelize.ENUM,
-		values: ['submission', 'custom-test']
-	}
-}, {
+		type: {
+			type: Sequelize.ENUM,
+			values: ['submission', 'custom-test']
+		}
+	}, {
 		timestamps: false,
 		tableName: 'waiting_judge',
 		indexes: [
-			{
-				fields: ['judge_id'],
-			}
+			{ fields: ['judge_id'], }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class WaitingJudge extends Model {

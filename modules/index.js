@@ -1,9 +1,3 @@
-/*
- *  Package  : modules
- *  Filename : index.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let User = zoj.model('user');

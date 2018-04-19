@@ -1,9 +1,3 @@
-/*
- *  Package  : modules
- *  Filename : discussion.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Problem = zoj.model('problem');

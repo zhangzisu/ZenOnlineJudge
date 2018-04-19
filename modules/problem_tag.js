@@ -1,9 +1,3 @@
-/*
- *  Package  : modules
- *  Filename : problem_tag.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let ProblemTag = zoj.model('problem_tag');

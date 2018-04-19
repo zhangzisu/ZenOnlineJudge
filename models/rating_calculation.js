@@ -5,18 +5,18 @@ let db = zoj.db;
 const User = zoj.model('user');
 const Contest = zoj.model('contest');
 
-let model = db.define('rating_calculation', {
-    id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-    contest_id: { type: Sequelize.INTEGER }
-}, {
+let model = db.define('rating_calculation',
+    {
+        id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+        contest_id: { type: Sequelize.INTEGER }
+    }, {
         timestamps: false,
         tableName: 'rating_calculation',
         indexes: [
-            {
-                fields: ['contest_id']
-            },
+            { fields: ['contest_id'] },
         ]
-    });
+    }
+);
 
 let Model = require('./common');
 class RatingCalculation extends Model {

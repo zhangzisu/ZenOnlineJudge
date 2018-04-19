@@ -1,30 +1,22 @@
-/*
- *  Package  : models
- *  Filename : file.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
 let db = zoj.db;
 
-let model = db.define('file', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	type: { type: Sequelize.STRING(80) },
-	md5: { type: Sequelize.STRING(80), unique: true }
-}, {
+let model = db.define('file',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+		type: { type: Sequelize.STRING(80) },
+		md5: { type: Sequelize.STRING(80), unique: true }
+	}, {
 		timestamps: false,
 		tableName: 'file',
 		indexes: [
-			{
-				fields: ['type'],
-			},
-			{
-				fields: ['md5'],
-			}
+			{ fields: ['type'], },
+			{ fields: ['md5'], }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class File extends Model {

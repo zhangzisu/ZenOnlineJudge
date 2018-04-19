@@ -1,9 +1,3 @@
-/*
- *  Package  : modules
- *  Filename : admin.js
- *  Create   : 2018-02-05
- */
-
 let Problem = zoj.model('problem');
 let JudgeState = zoj.model('judge_state');
 let Article = zoj.model('article');

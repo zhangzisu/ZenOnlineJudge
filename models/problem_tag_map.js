@@ -1,32 +1,24 @@
-/*
- *  Package  : models
- *  Filename : problem_tag_map.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
 let db = zoj.db;
 
-let model = db.define('problem_tag_map', {
-	problem_id: { type: Sequelize.INTEGER, primaryKey: true },
-	tag_id: {
-		type: Sequelize.INTEGER,
-		primaryKey: true
-	}
-}, {
+let model = db.define('problem_tag_map',
+	{
+		problem_id: { type: Sequelize.INTEGER, primaryKey: true },
+		tag_id: {
+			type: Sequelize.INTEGER,
+			primaryKey: true
+		}
+	}, {
 		timestamps: false,
 		tableName: 'problem_tag_map',
 		indexes: [
-			{
-				fields: ['problem_id']
-			},
-			{
-				fields: ['tag_id']
-			}
+			{ fields: ['problem_id'] },
+			{ fields: ['tag_id'] }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class ProblemTagMap extends Model {

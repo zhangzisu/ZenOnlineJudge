@@ -1,68 +1,35 @@
-/*
- *  Package  : models
- *  Filename : contest.js
- *  Create   : 2018-02-05
- * 
- *  Introduce to Privilege System:
- *    Privileges:
- *      0 : Common user
- *          No permission to access protected problems
- *          No permission to access protected contests
- *          No administration access
- *      1 : Indoor user
- *          Have permission to access protected problems
- *          Have permission to access protected contests
- *          No administration access
- *      2 : Student administrators
- *          Have permission to edit problems
- *          Have permission to edit articles
- *          No other administration access
- *      3 : Teacher administrators
- *          Have permission to edit contests and peoples
- *          Cannot access system core
- *      4 : Super administrator (ME) 
- *          I can do anything I want,
- *            edit anything I dislike,
- *            and access mysql.
- */
-
 'use strict';
 
 let Sequelize = require('sequelize');
 let db = zoj.db;
 
-let model = db.define('user', {
-	id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-	username: { type: Sequelize.STRING(80), unique: true },
-	email: { type: Sequelize.STRING(120) },
-	password: { type: Sequelize.STRING(120) },
-	nickname: { type: Sequelize.STRING(80) },
-	information: { type: Sequelize.TEXT },
-	ac_num: { type: Sequelize.INTEGER },
-	submit_num: { type: Sequelize.INTEGER },
-	admin: { type: Sequelize.INTEGER },
-	is_show: { type: Sequelize.BOOLEAN },
-	// is_show : Whether the user is banned
-	public_email: { type: Sequelize.BOOLEAN },
-	sex: { type: Sequelize.INTEGER },
-	rating: { type: Sequelize.INTEGER },
-	theme: { type: Sequelize.STRING(10) }
-}, {
+let model = db.define('user',
+	{
+		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
+		username: { type: Sequelize.STRING(80), unique: true },
+		email: { type: Sequelize.STRING(120) },
+		password: { type: Sequelize.STRING(120) },
+		nickname: { type: Sequelize.STRING(80) },
+		information: { type: Sequelize.TEXT },
+		ac_num: { type: Sequelize.INTEGER },
+		submit_num: { type: Sequelize.INTEGER },
+		admin: { type: Sequelize.INTEGER },
+		is_show: { type: Sequelize.BOOLEAN },
+		// is_show : Whether the user is banned
+		public_email: { type: Sequelize.BOOLEAN },
+		sex: { type: Sequelize.INTEGER },
+		rating: { type: Sequelize.INTEGER },
+		theme: { type: Sequelize.STRING(10) }
+	}, {
 		timestamps: false,
 		tableName: 'user',
 		indexes: [
-			{
-				fields: ['username'],
-				unique: true
-			},
-			{
-				fields: ['nickname'],
-			},
-			{
-				fields: ['ac_num'],
-			}
+			{ fields: ['username'], unique: true },
+			{ fields: ['nickname'], },
+			{ fields: ['ac_num'], }
 		]
-	});
+	}
+);
 
 let Model = require('./common');
 class User extends Model {

@@ -4,12 +4,13 @@ let Sequelize = require('sequelize');
 const User = zoj.model('user');
 let db = zoj.db;
 
-let model = db.define('rating_history', {
-    rating_calculation_id: { type: Sequelize.INTEGER, primaryKey: true },
-    user_id: { type: Sequelize.INTEGER, primaryKey: true },
-    rating_after: { type: Sequelize.INTEGER },
-    rank: { type: Sequelize.INTEGER },
-}, {
+let model = db.define('rating_history',
+    {
+        rating_calculation_id: { type: Sequelize.INTEGER, primaryKey: true },
+        user_id: { type: Sequelize.INTEGER, primaryKey: true },
+        rating_after: { type: Sequelize.INTEGER },
+        rank: { type: Sequelize.INTEGER },
+    }, {
         timestamps: false,
         tableName: 'rating_history',
         indexes: [
@@ -20,7 +21,8 @@ let model = db.define('rating_history', {
                 fields: ['user_id']
             },
         ]
-    });
+    }
+);
 
 let Model = require('./common');
 class RatingHistory extends Model {
