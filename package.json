@@ -48,6 +48,7 @@
 		"zoj-contest-fetcher": "0.0.3"
 	},
 	"devDependencies": {
+		"eslint": "^4.19.1",
 		"gulp": "^3.9.1"
 	}
 }

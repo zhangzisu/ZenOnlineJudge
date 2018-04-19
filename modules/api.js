@@ -1,9 +1,3 @@
-/*
- *  Package  : modules
- *  Filename : api.js
- *  Create   : 2018-02-05
- */
-
 'use strict';
 
 let User = zoj.model('user');
@@ -247,38 +241,6 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 	}
 });
 
-app.get('/api/search/blogs/:keyword*?', async (req, res) => {
-	try {
-		let BlogPost = zoj.model('blog_post');
-
-		let keyword = req.params.keyword || '';
-		let posts = await BlogPost.query(null, {
-			title: { like: `%${req.params.keyword}%` }
-		}, [['id', 'desc']]);
-
-		let result = [];
-
-		let id = parseInt(keyword);
-		if (id) {
-			let postByID = await BlogPost.fromID(parseInt(keyword));
-			if (postByID && await postByID.isAllowedSeeBy(res.locals.user)) {
-				result.push(postByID);
-			}
-		}
-		await posts.forEachAsync(async post => {
-			if (await post.isAllowedSeeBy(res.locals.user) && result.length < zoj.config.page.edit_contest_problem_list && post.id !== id) {
-				result.push(post);
-			}
-		});
-
-		result = result.map(x => ({ name: `#${x.id}. ${x.title}`, value: x.id, url: zoj.utils.makeUrl(['blog', x.id]) }));
-		res.send({ success: true, results: result });
-	} catch (e) {
-		zoj.log(e);
-		res.send({ success: false });
-	}
-});
-
 app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 	try {
 		let Problem = zoj.model('problem');
@@ -290,26 +252,6 @@ app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 		}, [['name', 'asc']]);
 
 		let result = tags.slice(0, zoj.config.page.edit_problem_tag_list);
-
-		result = result.map(x => ({ name: x.name, value: x.id }));
-		res.send({ success: true, results: result });
-	} catch (e) {
-		zoj.log(e);
-		res.send({ success: false });
-	}
-});
-
-app.get('/api/search/tags_blog_post/:keyword*?', async (req, res) => {
-	try {
-		let Post = zoj.model('blog_post');
-		let PostTag = zoj.model('blog_post_tag');
-
-		let keyword = req.params.keyword || '';
-		let tags = await PostTag.query(null, {
-			name: { like: `%${req.params.keyword}%` }
-		}, [['name', 'asc']]);
-
-		let result = tags.slice(0, zoj.config.page.edit_post_tag_list);
 
 		result = result.map(x => ({ name: x.name, value: x.id }));
 		res.send({ success: true, results: result });
