@@ -126,11 +126,11 @@ $(function () {
     $("#preview_tab").click(function () {
       $("#pv-title").text($("#title").val());
       $("#pv-description, #pv-input, #pv-output, #pv-example, #pv-hint").text('Loading...');
-      render($("#pv-description"), $("#description"));
-      render($("#pv-input"), $("#input"));
-      render($("#pv-output"), $("#output"));
-      render($("#pv-example"), $("#example"));
-      render($("#pv-hint"), $("#hint"));
+      render($("#pv-description"), $("[name=description]"));
+      render($("#pv-input"), $("[name=input_format]"));
+      render($("#pv-output"), $("[name=output_format]"));
+      render($("#pv-example"), $("[name=example]"));
+      render($("#pv-hint"), $("[name=limit_and_hint]"));
     });
     $('.tabular.menu .item').tab();
 });
