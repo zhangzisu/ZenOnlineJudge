@@ -197,6 +197,9 @@ testcases: []\
 					this.datainfo.spj = obj;
 					break;
 				}
+				if (!this.datainfo.time_limit) this.datainfo.time_limit = zoj.config.default.problem.time_limit;
+				if (!this.datainfo.memory_limit) this.datainfo.memory_limit = zoj.config.default.problem.memory_limit;
+
 				await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
 				await fs.removeAsync(await this.getTestdataPath() + '.zip');
 			} else {
