@@ -287,8 +287,12 @@ app.post('/admin/upgrade', async (req, res) => {
 		if (!res.locals.user || !res.locals.user.admin >= 4) throw new ErrorMessage('You do not have permission to do this.');
 
 		var exec = require('child_process').exec;
-		exec('bash', ['upgrade.sh']);
-		
+		exec('sh upgrade.sh', function (error, stdout, stderr) {
+			if (error !== null) {
+				console.log('exec error: ' + error);
+			}
+		});
+
 		res.redirect('/');
 	} catch (e) {
 		zoj.log(e);
