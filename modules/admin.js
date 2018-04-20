@@ -289,7 +289,7 @@ app.post('/admin/upgrade', async (req, res) => {
 		var exec = require('child_process').exec;
 		exec('bash', ['upgrade.sh']);
 		
-		res.redirect('https://git.zhangzisu.cn/zhangzisu/ZenOnlineJudge/wiki/Upgrade');
+		res.redirect('/');
 	} catch (e) {
 		zoj.log(e);
 		res.render('error', {
