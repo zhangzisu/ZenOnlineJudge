@@ -146,10 +146,12 @@ testcases: []\
 		await this.save();
 	}
 
-	async updateTestdataConfig(config) {
+	async updateTestdataConfigManually(config) {
 		let fs = Promise.promisifyAll(require('fs-extra'));
 		let path = require('path');
 		this.datainfo = config;
+		let dir = this.getTestdataPath();
+		if (!await zoj.utils.isDir(dir)) return null;
 		await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
 		await this.save();
 	}
