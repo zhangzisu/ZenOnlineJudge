@@ -521,7 +521,7 @@ app.post('/problem/:id/manage', app.multer.fields([{ name: 'testdata', maxCount:
 
 		await problem.loadRelationships();
 
-		problem.datainfo = JSON.parse(req.body.datainfo);
+		await problem.updateTestdataConfig(JSON.parse(req.body.datainfo));
 
 		if (req.files['testdata']) {
 			await problem.updateTestdata(req.files['testdata'][0].path, await res.locals.user.admin >= 3);
