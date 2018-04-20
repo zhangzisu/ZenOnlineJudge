@@ -19,7 +19,7 @@ global.zoj = {
 		console.log(obj);
 	},
 	debug(obj) {
-		//console.log(obj);
+		console.log(obj);
 	},
 	async run() {
 		let Express = require('express');
