@@ -153,6 +153,7 @@ testcases: []\
 		let dir = this.getTestdataPath();
 		if (!await zoj.utils.isDir(dir)) return null;
 		await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
+		await fs.removeAsync(dir + '.zip');
 		await this.save();
 	}
 
@@ -290,17 +291,6 @@ testcases: []\
 		});
 	}
 
-	async hasSpecialJudge() {
-		try {
-			let fs = Promise.promisifyAll(require('fs-extra'));
-			let dir = this.getTestdataPath();
-			let list = await fs.readdirAsync(dir);
-			return list.includes('spj.js') || list.find(x => x.startsWith('spj_')) !== undefined;
-		} catch (e) {
-			return false;
-		}
-	}
-
 	async listTestdata() {
 		try {
 			let fs = Promise.promisifyAll(require('fs-extra')), path = require('path');
@@ -348,6 +338,8 @@ testcases: []\
 
 		if (type === 'additional_file') {
 			this.additional_file_id = file.id;
+		} else {
+			throw new ErrorMessage("File update error");
 		}
 
 		await this.save();

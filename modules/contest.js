@@ -331,8 +331,6 @@ app.get('/contest/:id/:pid', async (req, res) => {
 			throw new ErrorMessage('Contest has not started yet.');
 		}
 
-		problem.specialJudge = await problem.hasSpecialJudge();
-
 		await zoj.utils.markdown(problem, ['description', 'input_format', 'output_format', 'example', 'limit_and_hint']);
 
 		let state = await problem.getJudgeState(res.locals.user, false);
