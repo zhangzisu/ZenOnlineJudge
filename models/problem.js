@@ -143,7 +143,6 @@ testcases: []\
 		let buffer = fs.readFileSync(this.getTestdataPath() + '.zip');
 		let md5 = zoj.utils.md5(buffer);
 		this.testdata_hash = md5;
-		await this.save();
 	}
 
 	async updateTestdataConfigManually(config) {
@@ -154,6 +153,7 @@ testcases: []\
 		if (!await zoj.utils.isDir(dir)) return null;
 		await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
 		await fs.removeAsync(dir + '.zip');
+		await this.updateTestdataHash();
 		await this.save();
 	}
 
@@ -205,10 +205,12 @@ testcases: []\
 
 				await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
 				await fs.removeAsync(await this.getTestdataPath() + '.zip');
+				await this.updateTestdataHash();
 			} else {
 				let config = await fs.readFileAsync(dir + '/config.json');
 				config = JSON.parse(config.toString());
 				this.datainfo = config;
+				await this.updateTestdataHash();
 			}
 		} catch (e) {
 			console.log(e);
@@ -238,7 +240,6 @@ testcases: []\
 			await fs.moveAsync(path, dir + '.zip', { overwrite: true });
 		});
 		await this.updateTestdataConfig();
-		await this.updateTestdataHash();
 	}
 
 	async uploadTestdataSingleFile(filename, filepath, size, noLimit) {
@@ -263,7 +264,6 @@ testcases: []\
 			await fs.removeAsync(dir + '.zip');
 		});
 		await this.updateTestdataConfig();
-		await this.updateTestdataHash();
 	}
 
 	async deleteTestdataSingleFile(filename) {
@@ -274,7 +274,6 @@ testcases: []\
 			await fs.removeAsync(dir + '.zip');
 		});
 		await this.updateTestdataConfig();
-		await this.updateTestdataHash();
 	}
 
 	async makeTestdataZip() {
@@ -344,7 +343,6 @@ testcases: []\
 
 		await this.save();
 		await this.updateTestdataConfig();
-		await this.updateTestdataHash();
 	}
 
 	async getJudgeState(user, acFirst) {
