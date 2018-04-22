@@ -72,6 +72,7 @@ function initWebSocket() {
 			socket.on('disconnect', function (data) {
 				$('#wsstatus').text('Disconnected');
 				$('#wsstatus').css('color', '#c72124');
+				Notificate('Network error, connection closed.');
 			});
 			socket.on('logout', function (data) {
 				window.location = "/logout";
