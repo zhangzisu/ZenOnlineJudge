@@ -62,14 +62,16 @@ function initWebSocket() {
 		.done(function (script, textStatus) {
 			var socket = io.connect(window.location.host);
 			socket.on('message', function (data) {
-				console.log(`Get data : ${data}`);
+				console.log(data);
 				Notificate(data.data);
 			});
 			socket.on('connection', function (data) {
+				console.log("WS Connected.");
 				$('#wsstatus').text('Connected');
 				$('#wsstatus').css('color', '#3fb864');
 			});
 			socket.on('disconnect', function (data) {
+				console.log("WS Disconnected.");
 				$('#wsstatus').text('Disconnected');
 				$('#wsstatus').css('color', '#c72124');
 				Notificate('Network error, connection closed.');
