@@ -35,3 +35,51 @@ $(function () {
 		this.action = addUrlParam(this.action || location.href, '_csrf', document.head.getAttribute('data-csrf-token'));
 	});
 });
+function Notificate(text) {
+	if (Notification.permission === "granted") {
+		var options = {
+			dir: "ltr",
+			lang: "utf-8",
+			icon: "",
+			body: text
+		};
+		var n = new Notification("Notice", options);
+	} else {
+		alert(text);
+	}
+}
+function initWebSocket() {
+	if (!Notification) {
+		alert("Your web browser is out of date!");
+		return;
+	}
+	Notification.requestPermission(function (status) {
+		if (Notification.permission !== status) {
+			Notification.permission = status;
+		}
+	});
+	$.getScript("https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js")
+		.done(function (script, textStatus) {
+			var socket = io.connect(window.location.host);
+			socket.on('message', function (data) {
+				console.log(`Get data : ${data}`);
+				Notificate(data.data);
+			});
+			socket.on('connection', function (data) {
+				$('#wsstatus').text('Connected');
+				$('#wsstatus').css('color', '#3fb864');
+			});
+			socket.on('disconnect', function (data) {
+				$('#wsstatus').text('Disconnected');
+				$('#wsstatus').css('color', '#c72124');
+			});
+			socket.on('logout', function (data) {
+				window.location = "/logout";
+			});
+		})
+		.fail(function (jqxhr, settings, exception) {
+			Notificate('Network error!');
+			$('#wsstatus').text('Error');
+			$('#wsstatus').css('color', '#c72124');
+		});
+}

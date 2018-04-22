@@ -24,10 +24,17 @@ global.zoj = {
 	async run() {
 		let Express = require('express');
 		global.app = Express();
+		global.HTTPServer = require('http').Server(app);
+		global.io = require('socket.io').listen(HTTPServer);
+
+		io.on('connection', function (socket) {
+			console.log('a user connected');
+			socket.emit('connection', {});
+		});
 
 		zoj.production = app.get('env') === 'production';
 
-		app.listen(parseInt(zoj.config.port), zoj.config.listen, () => {
+		HTTPServer.listen(parseInt(zoj.config.port), zoj.config.listen, () => {
 			this.log(`ZOJ is listening on ${zoj.config.listen}:${parseInt(zoj.config.port)}...`);
 		});
 

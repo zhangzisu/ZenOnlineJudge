@@ -56,6 +56,7 @@
                     <a class="item" href="<%= zoj.utils.makeUrl(['admin', 'info']) %>"><i class="settings icon"></i>Console</a>
                   <% } else if(user.admin >= 3){ %>
                     <a class="item" href="<%= zoj.utils.makeUrl(['admin', 'rating']) %>"><i class="settings icon"></i>Rating management</a>
+                    <a class="item" href="<%= zoj.utils.makeUrl(['admin', 'message']) %>"><i class="settings icon"></i>Client messaging</a>
                   <% } %>
                   <a class="item" href="<%= zoj.utils.makeUrl(['logout']) %>"><i class="sign out alternate icon"></i>Logout</a>
                 </div>

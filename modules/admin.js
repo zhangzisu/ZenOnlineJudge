@@ -11,6 +11,35 @@ let ContestPlayer = zoj.model('contest_player');
 
 let db = zoj.db;
 
+app.get('/admin/message', async (req, res) => {
+	try {
+		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
+
+		res.render('admin_message', {
+			privilege: res.locals.user.admin >= 4
+		});
+	} catch (e) {
+		zoj.log(e);
+		res.render('error', {
+			err: e
+		})
+	}
+});
+
+app.post('/admin/message', async (req, res) => {
+	try {
+		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
+		console.log(`Boardcase type: ${req.body.type}`);
+		io.emit(req.body.type, { data: req.body.message });
+		res.redirect(zoj.utils.makeUrl(['admin', 'message']));
+	} catch (e) {
+		zoj.log(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
 app.get('/admin/rating', async (req, res) => {
 	try {
 		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
