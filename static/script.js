@@ -40,7 +40,7 @@ function Notificate(text) {
 		var options = {
 			dir: "ltr",
 			lang: "utf-8",
-			icon: "",
+			icon: window.location.host + '/icon.png',
 			body: text
 		};
 		var n = new Notification("Notice", options);
