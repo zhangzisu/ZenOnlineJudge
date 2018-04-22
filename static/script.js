@@ -1,3 +1,5 @@
+const version = "10.2.0.4";
+
 var addUrlParam = function (url, key, val) {
 	var newParam = encodeURIComponent(key) + '=' + encodeURIComponent(val);
 	url = url.split('#')[0];
@@ -58,6 +60,7 @@ function initWebSocket() {
 			Notification.permission = status;
 		}
 	});
+	console.log(`%c Zen Online Judge %c client:${version}`, "color: #fff; background: #27ae60; padding:5px 0;", "background: #2ecc71; padding:5px 0;");
 	$.getScript("/socket.io.js")
 		.done(function (script, textStatus) {
 			var socket = io.connect(window.location.host);
