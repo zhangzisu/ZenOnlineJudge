@@ -58,7 +58,7 @@ function initWebSocket() {
 			Notification.permission = status;
 		}
 	});
-	$.getScript("https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js")
+	$.getScript("/socket.io.js")
 		.done(function (script, textStatus) {
 			var socket = io.connect(window.location.host);
 			socket.on('message', function (data) {
