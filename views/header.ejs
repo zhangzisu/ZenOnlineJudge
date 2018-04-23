@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="/octicons.css">
     <script src="/libs/jquery/jquery.min.js"></script>
     <link rel="icon" sizes="512x512" href="/icon.png">
+    <% if(zoj.config.enable_google_analytics) { %>
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=<%= zoj.config.google_publisher_id %>"></script>
     <script>
@@ -27,6 +28,7 @@
         gtag('js', new Date());
         gtag('config', '<%= zoj.config.google_publisher_id %>');
     </script>
+    <% } %>
     <% if(user && user.theme == 'dark'){ %> 
         <script>$('img').css('filter', 'invert(1)');</script>
     <% } %>

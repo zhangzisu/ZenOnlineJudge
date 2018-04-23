@@ -1,12 +1,7 @@
-/*
- *  Welcome to Zen Online Judge!
- *  https://zhangzisu.cn
- */
-
 'use strict';
 
-let fs = require('fs'),
-	path = require('path');
+let fs = require('fs');
+let path = require('path');
 
 global.zoj = {
 	rootDir: __dirname,
@@ -24,8 +19,18 @@ global.zoj = {
 	async run() {
 		let Express = require('express');
 		global.app = Express();
-		global.HTTPServer = require('http').Server(app);
-		global.io = require('socket.io').listen(HTTPServer);
+		if (zoj.config.https) {
+			let https = require('https');
+			var options = {
+				key: fs.readFileSync(zoj.config.https_config.key),
+				cert: fs.readFileSync(zoj.config.https_config.cert)
+			};
+			global.server = https.createServer(options, app);
+		} else {
+			let http = require('http');
+			global.server = http.createServer(app)
+		}
+		global.io = require('socket.io').listen(server);
 
 		io.on('connection', function (socket) {
 			console.log('a user connected');
@@ -34,7 +39,7 @@ global.zoj = {
 
 		zoj.production = app.get('env') === 'production';
 
-		HTTPServer.listen(parseInt(zoj.config.port), zoj.config.listen, () => {
+		server.listen(parseInt(zoj.config.port), zoj.config.listen, () => {
 			this.log(`ZOJ is listening on ${zoj.config.listen}:${parseInt(zoj.config.port)}...`);
 		});
 

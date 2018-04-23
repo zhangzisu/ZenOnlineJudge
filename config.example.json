@@ -2,6 +2,11 @@
     "title": "ZOJ",
     "listen": "localhost",
     "port": "1926",
+    "https": true,
+    "https_config": {
+        "key": "",
+        "cert": ""
+    },
     "hostname": "localhost",
     "db": {
         "database": "zoj",
@@ -95,5 +100,7 @@
         }
     ],
     "session_secret": "null",
-    "token": "null"
+    "token": "null",
+    "enable_google_analytics": false,
+    "google_publisher_id": "UA-"
 }
