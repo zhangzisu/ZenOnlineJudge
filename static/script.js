@@ -77,10 +77,11 @@ function initWebSocket() {
 				console.log("WS Disconnected.");
 				$('#wsstatus').text('Disconnected');
 				$('#wsstatus').css('color', '#c72124');
-				Notificate('System: Forced logout');
+				Notificate('Network error');
 			});
 			socket.on('logout', function (data) {
 				console.log("Logout");
+				Notificate('System: Forced logout');
 				window.location = "/logout";
 			});
 		})
