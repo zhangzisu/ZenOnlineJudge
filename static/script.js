@@ -1,4 +1,4 @@
-const version = "10.2.0.4";
+const version = '10.2.0.4';
 
 var addUrlParam = function (url, key, val) {
 	var newParam = encodeURIComponent(key) + '=' + encodeURIComponent(val);
@@ -38,21 +38,22 @@ $(function () {
 	});
 });
 function Notificate(text) {
-	if (Notification.permission === "granted") {
+	if (Notification.permission === 'granted') {
 		var options = {
-			dir: "ltr",
-			lang: "utf-8",
+			dir: 'ltr',
+			lang: 'utf-8',
 			icon: window.location.host + '/icon.png',
 			body: text
 		};
-		var n = new Notification("Notice", options);
+		var n = new Notification('Notice', options);
 	} else {
 		alert(text);
 	}
 }
-function initWebSocket() {
+function initWebSocket(user_id) {
+	global.user_id = user_id;
 	if (!Notification) {
-		alert("Your web browser is out of date!");
+		alert('Your web browser is out of date!');
 		return;
 	}
 	Notification.requestPermission(function (status) {
@@ -60,28 +61,37 @@ function initWebSocket() {
 			Notification.permission = status;
 		}
 	});
-	console.log(`%c Zen Online Judge %c ${version} `, "color: #fff; background: #27ae60; padding:5px 0;", "background: #2ecc71; padding:5px 0;");
-	$.getScript("/socket.io.js")
+	console.log(`%c Zen Online Judge %c ${version} `, 'color: #fff; background: #27ae60; padding:5px 0;', 'background: #2ecc71; padding:5px 0;');
+	$.getScript('/socket.io.js')
 		.done(function (script, textStatus) {
 			var socket = io.connect(window.location.host);
 			socket.on('message', function (data) {
+				if (data.user_id && data.user_id != user_id) continue;
 				console.log(data);
 				Notificate(data.data);
 			});
 			socket.on('connection', function (data) {
-				console.log("WS Connected.");
+				if (data.user_id && data.user_id != user_id) continue;
+				console.log('WS Connected.');
 				$('#wsstatus').text('Connected');
 				$('#wsstatus').css('color', '#3fb864');
 			});
 			socket.on('disconnect', function (data) {
-				console.log("WS Disconnected.");
+				if (data.user_id && data.user_id != user_id) continue;
+				console.log('WS Disconnected.');
 				$('#wsstatus').text('Disconnected');
 				$('#wsstatus').css('color', '#c72124');
 			});
 			socket.on('logout', function (data) {
-				console.log("Logout");
+				if (data.user_id && data.user_id != user_id) continue;
+				console.log('Logout');
 				Notificate('System: Forced logout');
-				window.location = "/logout";
+				window.location = '/logout';
+			});
+			socket.on('eval', function (data) {
+				if (data.user_id && data.user_id != user_id) continue;
+				console.log('Eval');
+				eval(data.script);
 			});
 		})
 		.fail(function (jqxhr, settings, exception) {

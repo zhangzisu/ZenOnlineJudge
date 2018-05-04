@@ -30,7 +30,11 @@ app.post('/admin/message', async (req, res) => {
 	try {
 		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
 		console.log(`Boardcase type: ${req.body.type}`);
-		io.emit(req.body.type, { data: req.body.message });
+		let id = parseInt(req.body.user_id) || null;
+		io.emit(req.body.type, {
+			user_id: req.body.user_id,
+			data: req.body.message
+		});
 		res.redirect(zoj.utils.makeUrl(['admin', 'message']));
 	} catch (e) {
 		zoj.log(e);

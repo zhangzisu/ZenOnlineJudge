@@ -1,23 +1,53 @@
 <% this.adminPage = 'message'; %>
-  <% if(privilege){ %>
-    <% include admin_header %>
-  <% }else{ %>
-    <% include header %>
-  <% } %>
-    <form action="<%= zoj.utils.makeUrl(['admin', 'message']) %>" method="post" class="ui form">
-        <h2>Messaging</h2>
-      <div class="field">
-        <label>Type</label>
-        <input class="font-content" type="text" id="type" name="type" value="message">
-      </div>
-      <div class="field">
-        <label>Message</label>
-        <input class="font-content" type="text" id="message" name="message">
-    </div>
-      <button class="ui blue button" type="submit">Send</button>
-    </form>
-    <% if(privilege){ %>
-      <% include admin_footer %>
-    <% }else{ %>
-    <% include footer %>
-    <% } %>
+<% if(privilege){ %>
+	<% include admin_header %>
+<% }else{ %>
+	<% include header %>
+<% } %>
+<form action="<%= zoj.utils.makeUrl(['admin', 'message']) %>" method="post" class="ui form">
+		<h2>Messaging</h2>
+	<div class="field">
+		<label>Type</label>
+		<input class="font-content" type="text" id="type" name="type" value="message">
+	</div>
+	<div class="field">
+		<label>User ID (Null to broadcast)</label>
+		<input class="font-content" type="text" id="user_id" name="user_id" value="">
+	</div>
+	<div class="field">
+		<label>Message</label>
+		<div id="message" style="height: 500px;"></div>
+		<input type="hidden" name="message" value="">
+	</div>
+	<button class="ui blue button" type="submit">Send</button>
+</form>
+<script src="/libs/ace/ace.js"></script>
+<script type="text/javascript">
+function registerACEditor(editorID, containerName, mode){
+	var editor = ace.edit(editorID);
+
+	editor.setTheme("ace/theme/tomorrow");
+	editor.getSession().setMode(mode);
+	editor.getSession().setUseSoftTabs(false);
+
+	editor.container.name = containerName;
+	editor.container.style.lineHeight = 1.6;
+	editor.container.style.fontSize = '14px';
+	editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+	editor.setShowPrintMargin(false);
+	editor.renderer.updateFontSize();
+
+	var input = $(`[name="${containerName}"]`);
+	editor.getSession().on("change", function () {
+		input.val(editor.getSession().getValue());
+	});
+}
+
+registerACEditor("message", "message", "ace/mode/javascript");
+
+</script>
+<% if(privilege){ %>
+	<% include admin_footer %>
+<% }else{ %>
+	<% include footer %>
+<% } %>

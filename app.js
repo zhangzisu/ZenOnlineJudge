@@ -135,7 +135,6 @@ global.zoj = {
 		app.use(Session(sessionConfig));
 
 		app.use((req, res, next) => {
-			// req.session.user_id = 1;
 			let User = zoj.model('user');
 			if (req.session.user_id) {
 				User.fromID(req.session.user_id).then((user) => {

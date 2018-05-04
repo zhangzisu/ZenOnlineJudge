@@ -48,7 +48,7 @@
           <div id="limit_and_hint" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.limit_and_hint %></div>
           <input type="hidden" name="limit_and_hint" value="<%= problem.limit_and_hint %>">
 
-          <label style="margin-top: 15px; ">Add Tags</label><!--Wait for change-->
+          <label style="margin-top: 15px; ">Add Tags</label>
           <select class="ui fluid search dropdown" multiple="" id="search_tags" name="tags">
             <% for (let tag of problem.tags) { %>
               <option value="<%= tag.id %>" selected><%= tag.name %></option>
