@@ -8,7 +8,7 @@
 <div class="padding">
     <form class="ui form" method="post" action="<%= zoj.utils.makeUrl(['problem', req.params.id, 'edit']) %>">
       <div class="ui top attached tabular menu">
-        <a class="item active" data-tab="edit">Edit<i class="mega-octicon octicon-markdown"></i></a>
+        <a class="item active" data-tab="edit">Edit</a>
         <a class="item" data-tab="preview" id="preview_tab">Preview</a>
       </div>
       <div class="ui bottom attached tab segment active" data-tab="edit">
@@ -28,25 +28,9 @@
           <label for="title">Problem Name</label>
           <input class="font-content" type="text" id="title" name="title" value="<%= problem.title %>">
 
-          <label style="margin-top: 15px; " for="description">Description</label>
-          <div id="description" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.description %></div>
-          <input type="hidden" name="description" value="<%= problem.description %>">
-
-          <label style="margin-top: 15px; " for="input_format">Input</label>
-          <div id="input_format" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.input_format %></div>
-          <input type="hidden" name="input_format" value="<%= problem.input_format %>">
-
-          <label style="margin-top: 15px; " for="output_format">Output</label>
-          <div id="output_format" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.output_format %></div>
-          <input type="hidden" name="output_format" value="<%= problem.output_format %>">
-
-          <label style="margin-top: 15px; ">Example</label>
-          <div id="example" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.example %></div>
-          <input type="hidden" name="example" value="<%= problem.example %>">
-
-          <label style="margin-top: 15px; ">Limits and Hints</label>
-          <div id="limit_and_hint" style="border: 1px solid #D4D4D5; height: 500px; margin-bottom: 20px; "><%= problem.limit_and_hint %></div>
-          <input type="hidden" name="limit_and_hint" value="<%= problem.limit_and_hint %>">
+          <label style="margin-top: 15px; " for="content">Content<i class="mega-octicon octicon-markdown"></i></label>
+          <div id="content" style="height: 1000px;"><%= problem.content %></div>
+          <input type="hidden" name="content" value="<%= problem.content %>">
 
           <label style="margin-top: 15px; ">Add Tags</label>
           <select class="ui fluid search dropdown" multiple="" id="search_tags" name="tags">
@@ -70,16 +54,7 @@
       </div>
       <div class="ui bottom attached tab segment" data-tab="preview" id="preview">
         <h1 class="ui header problem_header" id="pv-title"></h1>
-        <h2 class="ui header">Description</h2>
-        <div class="font-content" id="pv-description"></div>
-        <h2 class="ui header">Input</h2>
-        <div class="font-content" id="pv-input"></div>
-        <h2 class="ui header">Output</h2>
-        <div class="font-content" id="pv-output"></div>
-        <h2 class="ui header">Example</h2>
-        <div class="font-content" id="pv-example"></div>
-        <h2 class="ui header">Limits and Hints</h2>
-        <div class="font-content" id="pv-hint"></div>
+        <div class="font-content" id="pv-content"></div>
       </div>
       <% if (problem.allowedEdit) { %>
       <button type="submit" class="ui button">Submit</button>
@@ -108,12 +83,7 @@ function registerACEditor(editorID, containerName, mode){
   });
 }
 
-registerACEditor("description", "description", "ace/mode/markdown");
-registerACEditor("input_format", "input_format", "ace/mode/markdown");
-registerACEditor("output_format", "output_format", "ace/mode/markdown");
-registerACEditor("example", "example", "ace/mode/markdown");
-registerACEditor("limit_and_hint", "limit_and_hint", "ace/mode/markdown");
-
+registerACEditor("content", "content", "ace/mode/markdown");
 </script>
 <script type="text/javascript">
 $(function () {
@@ -125,12 +95,8 @@ $(function () {
     }
     $("#preview_tab").click(function () {
       $("#pv-title").text($("#title").val());
-      $("#pv-description, #pv-input, #pv-output, #pv-example, #pv-hint").text('Loading...');
-      render($("#pv-description"), $("[name=description]"));
-      render($("#pv-input"), $("[name=input_format]"));
-      render($("#pv-output"), $("[name=output_format]"));
-      render($("#pv-example"), $("[name=example]"));
-      render($("#pv-hint"), $("[name=limit_and_hint]"));
+      $("#pv-content").text('Loading...');
+      render($("#pv-content"), $("[name=content]"));
     });
     $('.tabular.menu .item').tab();
 });

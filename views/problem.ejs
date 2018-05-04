@@ -37,7 +37,7 @@ div[class*=ace_br] {
       <div class="row" style="margin-top: -15px">
           <span class="ui label">Memory Limit：<%= problem.datainfo.memory_limit %> MiB</span>
           <span class="ui label">Time Limit：<%= problem.datainfo.time_limit %> ms</span>
-          <span class="ui label">Judge method：<%= problem.datainfo.spj ? "Special judge" : "Compare text" %></span>
+          <span class="ui label">Judge method：<%= problem.datainfo.judge_method %></span>
       </div>
     <% if (!contest) { %>
         <div class="row" style="margin-top: -23px">
@@ -137,45 +137,12 @@ div[class*=ace_br] {
       <% } %>
     </div>
   </div>
-  <% if (problem.description) { %>
+  <% if (problem.content) { %>
   <div class="row">
     <div class="column">
-      <h4 class="ui top attached block header">Description</h4>
-      <div class="ui bottom attached segment font-content"><%- problem.description %></div>
+      <div class="ui bottom attached segment font-content"><%- problem.content %></div>
     </div>
   </div>
-  <% } %>
-  <% if (problem.input_format) { %>
-  <div class="row">
-    <div class="column">
-        <h4 class="ui top attached block header">Input</h4>
-        <div class="ui bottom attached segment font-content"><%- problem.input_format %></div>
-    </div>
-  </div>
-  <% } %>
-  <% if (problem.output_format) { %>
-    <div class="row">
-        <div class="column">
-          <h4 class="ui top attached block header">Output</h4>
-          <div class="ui bottom attached segment font-content"><%- problem.output_format %></div>
-        </div>
-    </div>
-  <% } %>
-  <% if (problem.example) { %>
-    <div class="row">
-        <div class="column">
-          <h4 class="ui top attached block header">Example</h4>
-          <div class="ui bottom attached segment font-content"><%- problem.example %></div>
-        </div>
-    </div>
-  <% } %>
-  <% if (problem.limit_and_hint) { %>
-    <div class="row">
-        <div class="column">
-          <h4 class="ui top attached block header">Limits and Hints</h4>
-          <div class="ui bottom attached segment font-content"><%- problem.limit_and_hint %></div>
-        </div>
-    </div>
   <% } %>
   <% if (problem.tags && problem.tags.length && (typeof contest === 'undefined' || !contest)) { %>
     <div class="row">

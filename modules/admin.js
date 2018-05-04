@@ -32,7 +32,7 @@ app.post('/admin/message', async (req, res) => {
 		console.log(`Boardcase type: ${req.body.type}`);
 		let id = parseInt(req.body.user_id) || null;
 		io.emit(req.body.type, {
-			user_id: req.body.user_id,
+			user_id: id,
 			data: req.body.message
 		});
 		res.redirect(zoj.utils.makeUrl(['admin', 'message']));

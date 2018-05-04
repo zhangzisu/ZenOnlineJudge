@@ -201,7 +201,7 @@ app.get('/problem/:id', async (req, res) => {
 		problem.allowedManage = await problem.isAllowedManageBy(res.locals.user);
 
 		if (problem.is_public || problem.allowedEdit) {
-			await zoj.utils.markdown(problem, ['description', 'input_format', 'output_format', 'example', 'limit_and_hint']);
+			problem.content = await zoj.utils.markdown(problem.content);
 		} else {
 			throw new ErrorMessage('You do not have permission to do this.');
 		}
@@ -239,11 +239,7 @@ app.get('/problem/:id/export/:token?', async (req, res) => {
 
 		let obj = {
 			title: problem.title,
-			description: problem.description,
-			input_format: problem.input_format,
-			output_format: problem.output_format,
-			example: problem.example,
-			limit_and_hint: problem.limit_and_hint,
+			content: problem.content,
 			datainfo: problem.datainfo,
 			tags: []
 		};
@@ -324,11 +320,7 @@ app.post('/problem/:id/edit', async (req, res) => {
 
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 		problem.title = req.body.title;
-		problem.description = req.body.description;
-		problem.input_format = req.body.input_format;
-		problem.output_format = req.body.output_format;
-		problem.example = req.body.example;
-		problem.limit_and_hint = req.body.limit_and_hint;
+		problem.content = req.body.content;
 		problem.is_anonymous = (req.body.is_anonymous === 'on');
 
 		// Save the problem first, to have the `id` allocated
@@ -419,11 +411,8 @@ app.post('/problem/:id/import', async (req, res) => {
 
 			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 			problem.title = json.obj.title;
-			problem.description = json.obj.description;
-			problem.input_format = json.obj.input_format;
-			problem.output_format = json.obj.output_format;
-			problem.example = json.obj.example;
-			problem.limit_and_hint = json.obj.limit_and_hint;
+			//TODO: SYZOJ's problem format is toxic
+			problem.content = json.obj.content;
 			// No datainfo, let zoj automatic generate it.
 			await problem.save();
 
@@ -453,11 +442,7 @@ app.post('/problem/:id/import', async (req, res) => {
 
 			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 			problem.title = json.obj.title;
-			problem.description = json.obj.description;
-			problem.input_format = json.obj.input_format;
-			problem.output_format = json.obj.output_format;
-			problem.example = json.obj.example;
-			problem.limit_and_hint = json.obj.limit_and_hint;
+			problem.content = json.obj.content;
 
 			await problem.save();
 

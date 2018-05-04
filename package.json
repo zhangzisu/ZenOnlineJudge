@@ -1,6 +1,6 @@
 {
 	"name": "zoj",
-	"version": "10.2.1",
+	"version": "10.3.0",
 	"description": "A powerful manage system for OI",
 	"main": "app.js",
 	"scripts": {
@@ -21,6 +21,7 @@
 		"async-lock": "^1.1.2",
 		"body-parser": "^1.15.2",
 		"cheerio": "^1.0.0-rc.1",
+		"connect-ensure-login": "^0.1.1",
 		"cookie-parser": "^1.4.3",
 		"cssfilter": "0.0.10",
 		"csurf": "^1.9.0",
@@ -38,6 +39,8 @@
 		"mysql2": "^1.5.3",
 		"node-7z": "^0.4.0",
 		"nodemailer": "^4.6.4",
+		"passport": "^0.4.0",
+		"passport-auth0": "^0.6.1",
 		"pygmentize-bundled-cached": "^1.1.0",
 		"request": "^2.85.0",
 		"request-promise": "^4.1.1",

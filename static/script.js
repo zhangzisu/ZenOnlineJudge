@@ -1,4 +1,4 @@
-const version = '10.2.0.4';
+const version = '10.3.0';
 
 var addUrlParam = function (url, key, val) {
 	var newParam = encodeURIComponent(key) + '=' + encodeURIComponent(val);
@@ -50,8 +50,8 @@ function Notificate(text) {
 		alert(text);
 	}
 }
-function initWebSocket(user_id) {
-	global.user_id = user_id;
+function initWebSocket(id) {
+	user_id = parseInt(id);
 	if (!Notification) {
 		alert('Your web browser is out of date!');
 		return;
@@ -61,37 +61,35 @@ function initWebSocket(user_id) {
 			Notification.permission = status;
 		}
 	});
-	console.log(`%c Zen Online Judge %c ${version} `, 'color: #fff; background: #27ae60; padding:5px 0;', 'background: #2ecc71; padding:5px 0;');
+	console.log(`%c Zen OJ Client %c ${version} `, 'color: #fff; background: #27ae60; padding:5px 0;', 'background: #2ecc71; padding:5px 0;');
 	$.getScript('/socket.io.js')
 		.done(function (script, textStatus) {
 			var socket = io.connect(window.location.host);
-			socket.on('message', function (data) {
-				if (data.user_id && data.user_id != user_id) continue;
-				console.log(data);
-				Notificate(data.data);
-			});
 			socket.on('connection', function (data) {
-				if (data.user_id && data.user_id != user_id) continue;
 				console.log('WS Connected.');
 				$('#wsstatus').text('Connected');
 				$('#wsstatus').css('color', '#3fb864');
 			});
 			socket.on('disconnect', function (data) {
-				if (data.user_id && data.user_id != user_id) continue;
 				console.log('WS Disconnected.');
 				$('#wsstatus').text('Disconnected');
 				$('#wsstatus').css('color', '#c72124');
 			});
+			socket.on('message', function (data) {
+				if (data.user_id && data.user_id !== user_id) return;
+				console.log(data);
+				Notificate(data.data);
+			});
 			socket.on('logout', function (data) {
-				if (data.user_id && data.user_id != user_id) continue;
+				if (data.user_id && data.user_id !== user_id) return;
 				console.log('Logout');
 				Notificate('System: Forced logout');
 				window.location = '/logout';
 			});
 			socket.on('eval', function (data) {
-				if (data.user_id && data.user_id != user_id) continue;
+				if (data.user_id && data.user_id !== user_id) return;
 				console.log('Eval');
-				eval(data.script);
+				eval(data.data);
 			});
 		})
 		.fail(function (jqxhr, settings, exception) {

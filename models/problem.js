@@ -44,11 +44,7 @@ let model = db.define('problem',
 		},
 		is_anonymous: { type: Sequelize.BOOLEAN },
 
-		description: { type: Sequelize.TEXT },
-		input_format: { type: Sequelize.TEXT },
-		output_format: { type: Sequelize.TEXT },
-		example: { type: Sequelize.TEXT },
-		limit_and_hint: { type: Sequelize.TEXT },
+		content: { type: Sequelize.TEXT },
 
 		additional_file_id: { type: Sequelize.INTEGER },
 		testdata_hash: { type: Sequelize.STRING(120) },
@@ -77,12 +73,7 @@ class Problem extends Model {
 			user_id: '',
 			publicizer_id: '',
 			is_anonymous: false,
-			description: '',
-
-			input_format: '',
-			output_format: '',
-			example: '',
-			limit_and_hint: '',
+			content: '',
 
 			ac_num: 0,
 			submit_num: 0,
@@ -145,15 +136,15 @@ testcases: []\
 		this.testdata_hash = md5;
 	}
 
+	async ValidDataInfo() {
+		if (!this.datainfo.time_limit) this.datainfo.time_limit = zoj.config.default.problem.time_limit;
+		if (!this.datainfo.memory_limit) this.datainfo.memory_limit = zoj.config.default.problem.memory_limit;
+		if (!this.datainfo.judge_method) this.datainfo.judge_method = "compare_text";
+	}
+
 	async updateTestdataConfigManually(config) {
-		let fs = Promise.promisifyAll(require('fs-extra'));
-		let path = require('path');
 		this.datainfo = config;
-		let dir = this.getTestdataPath();
-		if (!await zoj.utils.isDir(dir)) return null;
-		await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
-		await fs.removeAsync(dir + '.zip');
-		await this.updateTestdataHash();
+		await this.ValidDataInfo();
 		await this.save();
 	}
 
@@ -168,7 +159,7 @@ testcases: []\
 			let list = await (await fs.readdirAsync(dir)).filterAsync(async x => await zoj.utils.isFile(path.join(dir, x)));
 
 			let testcases = [];
-			if (!list.includes('config.json')) {
+			if (!this.datainfo || !this.datainfo.testcases || !this.datainfo.testcases.length) {
 				let cases = [];
 				for (let file of list) {
 					let parsedName = path.parse(file);
@@ -200,22 +191,12 @@ testcases: []\
 					this.datainfo.spj = obj;
 					break;
 				}
-				if (!this.datainfo.time_limit) this.datainfo.time_limit = zoj.config.default.problem.time_limit;
-				if (!this.datainfo.memory_limit) this.datainfo.memory_limit = zoj.config.default.problem.memory_limit;
-
-				await fs.writeFileSync(dir + '/config.json', JSON.stringify(this.datainfo));
-				await fs.removeAsync(await this.getTestdataPath() + '.zip');
-				await this.updateTestdataHash();
-			} else {
-				let config = await fs.readFileAsync(dir + '/config.json');
-				config = JSON.parse(config.toString());
-				this.datainfo = config;
-				await this.updateTestdataHash();
 			}
 		} catch (e) {
 			console.log(e);
 			return { error: e };
 		}
+		await this.ValidDataInfo();
 		await this.save();
 	}
 
