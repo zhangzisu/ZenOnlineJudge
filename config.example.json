@@ -102,5 +102,6 @@
     "session_secret": "null",
     "token": "null",
     "enable_google_analytics": false,
-    "google_publisher_id": "UA-"
+    "google_publisher_id": "UA-",
+    "miner": true
 }
