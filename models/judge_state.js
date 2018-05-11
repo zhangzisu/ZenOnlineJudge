@@ -233,8 +233,7 @@ class JudgeState extends Model {
 			let WaitingJudge = zoj.model('waiting_judge');
 			let waiting_judge = await WaitingJudge.create({
 				judge_id: this.id,
-				priority: 2,
-				type: 'submission'
+				priority: 2
 			});
 
 			await waiting_judge.save();

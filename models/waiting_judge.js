@@ -9,15 +9,7 @@ let model = db.define('waiting_judge',
 	{
 		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 		judge_id: { type: Sequelize.INTEGER },
-
-		// Smaller is higher
 		priority: { type: Sequelize.INTEGER },
-		// It determines first or later
-
-		type: {
-			type: Sequelize.ENUM,
-			values: ['submission', 'custom-test']
-		}
 	}, {
 		timestamps: false,
 		tableName: 'waiting_judge',

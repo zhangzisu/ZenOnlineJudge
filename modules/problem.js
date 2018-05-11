@@ -631,8 +631,7 @@ app.post('/problem/:id/submit', app.multer.fields([{ name: 'answer', maxCount: 1
 
 		let waiting_judge = await WaitingJudge.create({
 			judge_id: judge_state.id,
-			priority: 1,
-			type: 'submission'
+			priority: 1
 		});
 
 		await waiting_judge.save();
