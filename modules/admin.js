@@ -7,6 +7,7 @@ const RatingCalculation = zoj.model('rating_calculation');
 const RatingHistory = zoj.model('rating_history');
 const calcRating = require('../libs/rating');
 let ContestPlayer = zoj.model('contest_player');
+const os = require('os');
 
 
 let db = zoj.db;
@@ -142,7 +143,9 @@ app.get('/admin/info', async (req, res) => {
 			problemsCount: problemsCount,
 			articlesCount: articlesCount,
 			contestsCount: contestsCount,
-			usersCount: usersCount
+			usersCount: usersCount,
+			totalMemory: Math.ceil(os.totalmem() / 1024 / 1024 / 1024),
+			uptime: Math.round(os.uptime() / 60 / 60)
 		});
 	} catch (e) {
 		zoj.log(e);

@@ -1,37 +1,59 @@
 'use strict';
 
-let io = require('socket.io').listen(zoj.config.callback_port);
-let dl = require('delivery');
+let app = require('express')();
+let http = require('http').Server(app);
+let io = require('socket.io')(http);
+
+app.get('/', function (req, res) {
+    res.redirect('https://zhangzisu.cn');
+});
+
+let ss = require('socket.io-stream');
 let fs = require('fs-extra');
 let WaitingJudge = zoj.model('waiting_judge');
 let JudgeState = zoj.model('judge_state');
 let Problem = zoj.model('problem');
 
-let judgers = {};
+global.judge_client = {
+    judgers: new Map(),
+    status: {
+        free: new Set(),
+        busy: new Set()
+    }
+};
 
 io.sockets.on('connection', function (socket) {
-    socket.on('connect', async function (data) {
+    socket.on('connection', function () {
+        //
+    });
+    socket.on('login', async function (data) {
         if (data.token !== zoj.config.token) {
             // Token incorrect, force disconnect.
             socket.disconnect();
             return;
         }
         let id = parseInt(data.id) || 0;
-        if (judgers[id]) {
+        if (judge_client.judgers.has(id)) {
             // Registeration failed.
             socket.disconnect();
             return;
         }
-        judgers[socket.id = id] = socket;
-        delivery = dl.listen(socket);
-        delivery.connect();
-        socket.delivery = delivery;
+        judge_client.judgers[socket.id = id] = socket;
+        console.log(`Client ${id} connected.`);
+        console.log(`${judge_client.judgers.size}`);
     });
     socket.on('disconnect', async function (data) {
         let id = socket.id;
-        if (judgers.prototype.has(id)) judgers.prototype.delete(id);
+        console.log(`Client ${id} disconnected.`);
+        if (judge_client.judgers.has(id)) judge_client.judgers.delete(id);
+        if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
+        if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
     });
     socket.on('free', async function (data) {
+        let id = socket.id;
+        if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
+        judge_client.status.free.add(id);
+
         try {
             let judge_state;
             await zoj.utils.lock('judge_peek', async () => {
@@ -63,13 +85,20 @@ io.sockets.on('connection', function (socket) {
             socket.emit('terminate', {});
         }
     });
+    socket.on('busy', async function (data) {
+        let id = socket.id;
+        if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
+        judge_client.status.busy.add(id);
+    });
     socket.on('update', async function (data) {
         try {
-            let judge_state = await JudgeState.fromID(data.judge_id);
-            if (!judge_state) throw null;
-            await judge_state.updateResult(JSON.parse(data.result));
-            await judge_state.save();
-            await judge_state.updateRelatedInfo();
+            await zoj.utils.lock('judge_update', async () => {
+                let judge_state = await JudgeState.fromID(data.judge_id);
+                if (!judge_state) throw null;
+                await judge_state.updateResult(data.result);
+                await judge_state.save();
+                await judge_state.updateRelatedInfo();
+            });
         } catch (e) {
             console.log(e);
             socket.emit('terminate', {});
@@ -84,13 +113,12 @@ io.sockets.on('connection', function (socket) {
             }
             let path = require('path');
             let filename = problem.getTestdataPath() + '.zip';
-            if (!await zoj.utils.isFile(filename)) return res.status(404).send({ err: 'Permission denied' });
-            socket.delivery.send({
-                name: path.basename(filename),
-                path: filename
-            });
-            socket.delivery.on('send.success', function (file) {
-                console.log('File sent successfully!');
+            if (!await zoj.utils.isFile(filename)) throw null;
+            console.log(`Require data: ${data.pid}`);
+            var stream = ss.createStream();
+            ss(socket).emit('file', stream);
+            fs.createReadStream(filename).pipe(stream).on('finish', function () {
+                console.log('Data upload succeed.');
             });
         } catch (e) {
             console.log(e);
@@ -99,4 +127,6 @@ io.sockets.on('connection', function (socket) {
     });
 });
 
-console.log('Judge Client Service started successfully.');
+http.listen(zoj.config.callback_port, function () {
+    console.log('Judge Client Service started successfully.');
+});

@@ -42,7 +42,7 @@ app.get('/contest/:id/edit', async (req, res) => {
 			contest.id = 0;
 		}
 
-		let problems =  JSON.stringify(contest.problems, null, '\t');
+		let problems = JSON.stringify(contest.problems, null, '\t');
 
 		res.render('contest_edit', {
 			contest: contest,
@@ -75,8 +75,11 @@ app.post('/contest/:id/edit', async (req, res) => {
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 		contest.title = req.body.title;
 		contest.subtitle = req.body.subtitle;
-		console.log(req.body.problems);
-		contest.problems = JSON.parse(req.body.problems);
+		let np = JSON.parse(req.body.problems), rsh = false;
+		if (contest.problems !== np) {
+			contest.problems = np;
+			rsh = true;
+		}
 		contest.information = req.body.information;
 		contest.start_time = zoj.utils.parseDate(req.body.start_time);
 		contest.end_time = zoj.utils.parseDate(req.body.end_time);
@@ -85,6 +88,11 @@ app.post('/contest/:id/edit', async (req, res) => {
 		contest.type = req.body.type;
 
 		await contest.save();
+
+		if (rsh) {
+			let players = await ContestPlayer.query(null, { contest_id: contest.id });
+			for (var x of players) x.refreshScore();
+		}
 
 		res.redirect(zoj.utils.makeUrl(['contest', contest.id]));
 	} catch (e) {
@@ -223,7 +231,7 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 		});
 
 		let problems_id = await contest.getProblems();
-		let problems = await problems_id.mapAsync(async id => await Problem.fromID(id));
+		let problems = await problems_id.mapAsync(async obj => await Problem.fromID(obj.id));
 
 		res.render('contest_ranklist', {
 			contest: contest,
@@ -331,7 +339,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 			throw new ErrorMessage('Contest has not started yet.');
 		}
 
-		await zoj.utils.markdown(problem.content);
+		problem.content = await zoj.utils.markdown(problem.content);
 
 		let state = await problem.getJudgeState(res.locals.user, false);
 

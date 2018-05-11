@@ -84,11 +84,7 @@ class ContestPlayer extends Model {
 				this.score_details[judge_state.problem_id].score = maxScoreSubmission.score;
 				this.score_details[judge_state.problem_id].time = maxScoreSubmission.time;
 
-				this.score = 0;
-				for (let x in this.contest.problems) {
-					if (!this.score_details[x.problem_id]) continue;
-					this.score += Math.round(this.score_details[x.problem_id].score / 100 * x.score);
-				}
+				await this.refreshScore(true);
 			}
 		} else if (this.contest.type === 'noi') {
 			// Current submittion is later than the recorded one.
@@ -100,11 +96,7 @@ class ContestPlayer extends Model {
 				judge_id: judge_state.id
 			};
 
-			this.score = 0;
-			for (let x in this.contest.problems) {
-				if (!this.score_details[x.problem_id]) continue;
-				this.score += Math.round(this.score_details[x.problem_id].score / 100 * x.score);
-			}
+			await this.refreshScore(true);
 		} else if (this.contest.type === 'acm') {
 			if (!judge_state.pending) {
 				if (!this.score_details[judge_state.problem_id]) {
@@ -148,13 +140,19 @@ class ContestPlayer extends Model {
 					this.score_details[judge_state.problem_id].judge_id = arr[arr.length - 1].judge_id;
 				}
 
-				this.score = 0;
-				for (let x in this.contest.problems) {
-					if (!this.score_details[x.problem_id]) continue;
-					this.score += Math.round(this.score_details[x.problem_id].score / 100 * x.score);
-				}
+				await this.refreshScore(true);
 			}
 		}
+	}
+
+	async refreshScore(loaded) {
+		if (!loaded) await this.loadRelationships();
+		this.score = 0;
+		for (let x of this.contest.problems) {
+			if (!this.score_details[x.id]) continue;
+			this.score += Math.round(this.score_details[x.id].score / 100 * x.score);
+		}
+		await this.save();
 	}
 
 	getModel() { return model; }

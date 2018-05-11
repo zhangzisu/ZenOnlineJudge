@@ -140,26 +140,13 @@ testcases: []\
 		if (!this.datainfo.time_limit) this.datainfo.time_limit = zoj.config.default.problem.time_limit;
 		if (!this.datainfo.memory_limit) this.datainfo.memory_limit = zoj.config.default.problem.memory_limit;
 		if (!this.datainfo.judge_method) this.datainfo.judge_method = "compare_text";
-	}
+		if (!this.datainfo || !this.datainfo.testcases || !this.datainfo.testcases.length) {
+			try {
+				let dir = this.getTestdataPath();
+				let fs = Promise.promisifyAll(require('fs-extra'));
+				let path = require('path');
+				let list = await (await fs.readdirAsync(dir)).filterAsync(async x => await zoj.utils.isFile(path.join(dir, x)));
 
-	async updateTestdataConfigManually(config) {
-		this.datainfo = config;
-		await this.ValidDataInfo();
-		await this.save();
-	}
-
-	async updateTestdataConfig() {
-		let dir = this.getTestdataPath();
-
-		if (!await zoj.utils.isDir(dir)) return null;
-
-		try {
-			let fs = Promise.promisifyAll(require('fs-extra'));
-			let path = require('path');
-			let list = await (await fs.readdirAsync(dir)).filterAsync(async x => await zoj.utils.isFile(path.join(dir, x)));
-
-			let testcases = [];
-			if (!this.datainfo || !this.datainfo.testcases || !this.datainfo.testcases.length) {
 				let cases = [];
 				for (let file of list) {
 					let parsedName = path.parse(file);
@@ -185,17 +172,28 @@ testcases: []\
 				subtask.score = 100;
 				subtask.cases = cases;
 
+				let testcases = [];
 				testcases.push(subtask);
 				this.datainfo.testcases = testcases;
 				for (var obj of list) if (obj.startsWith('spj_')) {
 					this.datainfo.spj = obj;
 					break;
 				}
+			} catch (e) {
+				console.log(e);
 			}
-		} catch (e) {
-			console.log(e);
-			return { error: e };
 		}
+	}
+
+	async updateTestdataConfigManually(config) {
+		this.datainfo = config;
+		await this.ValidDataInfo();
+		await this.save();
+	}
+
+	async updateTestdataConfig() {
+		let dir = this.getTestdataPath();
+		if (!await zoj.utils.isDir(dir)) return null;
 		await this.ValidDataInfo();
 		await this.save();
 	}

@@ -75,5 +75,57 @@
       All users
     </div>
   </div>
+  <div class="statistic">
+    <div class="value">
+      <i class="hdd outline icon"></i>
+      <%= Object.keys(judge_client.judgers).length; %>
+    </div>
+    <div class="label">
+      Online Judgers
+    </div>
+  </div>
+  <div class="statistic">
+    <div class="value">
+      <i class="circle icon"></i>
+      <%= judge_client.status.free.size %>
+    </div>
+    <div class="label">
+      Free Judgers
+    </div>
+  </div>
+  <div class="statistic">
+    <div class="value">
+      <i class="circle outline icon"></i>
+      <%= judge_client.status.busy.size %>
+    </div>
+    <div class="label">
+      Busy Judgers
+    </div>
+  </div>
+  <div class="statistic">
+    <div class="value">
+      <i class="plug icon"></i>
+      <%= io.eio.clientsCount %>
+    </div>
+    <div class="label">
+      Active connections
+    </div>
+  </div>
+  <div class="statistic">
+    <div class="value">
+      <%= totalMemory %>&nbsp;G
+    </div>
+    <div class="label">
+      Total Memory
+    </div>
+  </div>
+  <div class="statistic">
+    <div class="value">
+      <%= uptime %>&nbsp;H
+    </div>
+    <div class="label">
+      Uptime
+    </div>
+  </div>
 </div>
 <% include admin_footer %>
