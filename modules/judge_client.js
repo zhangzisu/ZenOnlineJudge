@@ -35,6 +35,8 @@ global.judge_client = {
     }
 };
 
+let tasked = new Set();
+
 io.sockets.on('connection', function (socket) {
     socket.on('connection', function () {
         //
@@ -59,19 +61,18 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', async function (data) {
         let id = socket.id;
         console.log(`Client ${id} disconnected.`);
+        if(tasked.has(id))tasked.delete(id);
         if (judge_client.judgers.has(id)) judge_client.judgers.delete(id);
         if (judge_client.ids.has(id)) judge_client.ids.delete(id);
         if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
         if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
     });
     socket.on('free', async function (data) {
-        try {
-            await zoj.utils.lock('judger_state_update', async () => {
-                let id = socket.id;
-                if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
-                judge_client.status.free.add(id);
-            });
-        } catch (e) { console.log(e); socket.emit('terminate', {}); }
+        let id = socket.id;
+        if (tasked.has(id)) return;
+        tasked.add(id);
+        if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
+        judge_client.status.free.add(id);
 
         try {
             let judge_state;
@@ -98,6 +99,8 @@ io.sockets.on('connection', function (socket) {
                     datahash: problem.testdata_hash,
                     config: problem.datainfo
                 });
+            } else {
+                if (tasked.has(id)) tasked.delete(id);
             }
         } catch (e) {
             console.log(e);
@@ -105,13 +108,10 @@ io.sockets.on('connection', function (socket) {
         }
     });
     socket.on('busy', async function (data) {
-        try {
-            await zoj.utils.lock('judger_state_update', async () => {
-                let id = socket.id;
-                if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
-                judge_client.status.busy.add(id);
-            });
-        } catch (e) { console.log(e); socket.emit('terminate', {}); }
+        let id = socket.id;
+        if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
+        judge_client.status.busy.add(id);
+        if (tasked.has(id)) tasked.delete(id);
     });
     socket.on('update', async function (data) {
         try {
