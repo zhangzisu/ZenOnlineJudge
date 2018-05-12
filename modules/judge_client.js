@@ -4,6 +4,7 @@ let app = require('express')();
 let server = null;
 if (zoj.config.https) {
     let https = require('https');
+    let fs = require('fs');
     var options = {
         key: fs.readFileSync(zoj.config.https_config.key),
         cert: fs.readFileSync(zoj.config.https_config.cert)
