@@ -27,7 +27,8 @@ let JudgeState = zoj.model('judge_state');
 let Problem = zoj.model('problem');
 
 global.judge_client = {
-    judgers: new Map(),
+    judgers: new Set(),
+    ids: new Map(),
     status: {
         free: new Set(),
         busy: new Set()
@@ -51,13 +52,15 @@ io.sockets.on('connection', function (socket) {
             socket.disconnect();
             return;
         }
-        judge_client.judgers[socket.id = id] = socket;
+        judge_client.judgers.add(id);
+        judge_client.ids[socket.id = id] = socket;
         console.log(`Client ${id} connected.`);
     });
     socket.on('disconnect', async function (data) {
         let id = socket.id;
         console.log(`Client ${id} disconnected.`);
         if (judge_client.judgers.has(id)) judge_client.judgers.delete(id);
+        if (judge_client.ids.has(id)) judge_client.ids.delete(id);
         if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
         if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
     });
