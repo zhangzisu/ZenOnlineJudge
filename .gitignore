@@ -50,3 +50,7 @@ config.json
 
 #Runtime log
 log.txt
+
+# sqlite3 files
+*.sql
+!default.sql

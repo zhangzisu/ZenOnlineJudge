@@ -411,8 +411,14 @@ app.post('/problem/:id/import', async (req, res) => {
 
 			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 			problem.title = json.obj.title;
-			//TODO: SYZOJ's problem format is toxic
-			problem.content = json.obj.content;
+			// SYZOJ's problem format is toxic
+			problem.content = `\
+# Description\n\n${json.obj.description}\n\n\
+# Input Format\n\n${json.obj.input_format}\n\n\
+# Output Format\n\n${json.obj.output_format}\n\n\
+# Example\n\n${json.obj.example}\n\n\
+# Limit and hint\n\n${json.obj.limit_and_hint}\n\n\
+`;
 			// No datainfo, let zoj automatic generate it.
 			await problem.save();
 
@@ -443,6 +449,7 @@ app.post('/problem/:id/import', async (req, res) => {
 			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 			problem.title = json.obj.title;
 			problem.content = json.obj.content;
+			problem.datainfo = json.obj.datainfo;
 
 			await problem.save();
 
@@ -462,7 +469,7 @@ app.post('/problem/:id/import', async (req, res) => {
 			} catch (e) {
 				zoj.log(e);
 			}
-		}else{
+		} else {
 			throw new ErrorMessage(`Do not support ${req.body.type}.`);
 		}
 

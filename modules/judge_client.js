@@ -41,6 +41,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('login', async function (data) {
         if (data.token !== zoj.config.token) {
             // Token incorrect, force disconnect.
+            socket.emit('terminate', {});
             socket.disconnect();
             return;
         }
