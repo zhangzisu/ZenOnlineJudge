@@ -24,7 +24,6 @@ let util = require('util');
 let moment = require('moment');
 let url = require('url');
 let querystring = require('querystring');
-let pygmentize = require('pygmentize-bundled-cached');
 let gravatar = require('gravatar');
 let filesize = require('file-size');
 let AsyncLock = require('async-lock');
