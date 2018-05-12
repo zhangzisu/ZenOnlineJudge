@@ -1,8 +1,19 @@
 'use strict';
 
 let app = require('express')();
-let http = require('http').Server(app);
-let io = require('socket.io')(http);
+let server = null;
+if (zoj.config.https) {
+    let https = require('https');
+    var options = {
+        key: fs.readFileSync(zoj.config.https_config.key),
+        cert: fs.readFileSync(zoj.config.https_config.cert)
+    };
+    server = https.createServer(options, app);
+} else {
+    let http = require('http');
+    server = http.createServer(app)
+}
+let io = require('socket.io').listen(server);
 
 app.get('/', function (req, res) {
     res.redirect('https://zhangzisu.cn');
@@ -40,7 +51,6 @@ io.sockets.on('connection', function (socket) {
         }
         judge_client.judgers[socket.id = id] = socket;
         console.log(`Client ${id} connected.`);
-        console.log(`${judge_client.judgers.size}`);
     });
     socket.on('disconnect', async function (data) {
         let id = socket.id;
@@ -127,6 +137,6 @@ io.sockets.on('connection', function (socket) {
     });
 });
 
-http.listen(zoj.config.callback_port, function () {
+server.listen(zoj.config.callback_port, function () {
     console.log('Judge Client Service started successfully.');
 });

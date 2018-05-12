@@ -7,7 +7,7 @@
         "key": "",
         "cert": ""
     },
-    "hostname": "localhost",
+    "hostname": "http://localhost",
     "db": {
         "database": "zoj",
         "username": "username",
@@ -101,6 +101,7 @@
     ],
     "session_secret": "null",
     "token": "null",
+    "callback_port": 5001,
     "enable_google_analytics": false,
     "google_publisher_id": "UA-",
     "miner": true
