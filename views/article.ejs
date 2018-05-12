@@ -19,7 +19,7 @@
   </div>
   <h1><%= article.title %></h1>
  	<p style="font-size: 0.7em"><img style="vertical-align: middle;" src="<%= zoj.utils.gravatar(article.user.email, 64) %>" width="32" height="32">
- 		<a href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>">Posted by <%= article.user.username %></a> at <%= zoj.utils.formatDate(article.public_time) %> updated at<%= zoj.utils.formatDate(article.update_time) %> 
+    Posted by <a href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>"><%= article.user.username %></a> at <%= zoj.utils.formatDate(article.public_time) %> updated at<%= zoj.utils.formatDate(article.update_time) %> 
         <% if (article.allowedEdit) { %>
         <a class="ui mini red button" onclick="$('#modal-delete').modal('show')">Delete This Article</a>
         <a class="ui mini button" href="<%= zoj.utils.makeUrl(['article', article.id, 'edit']) %>">Edit This Artice</a>
@@ -94,12 +94,38 @@
    <% if (article.allowedComment) { %>
    <form class="ui reply form" method="post" action="<%= zoj.utils.makeUrl(['article', article.id, 'comment']) %>">
       <div class="field">
-        <textarea name="comment"></textarea>
+        <div id="comment" style="height: 300px;"></div>
+				<input type="hidden" name="comment" value="">
       </div>
       <button type="submit" class="ui labeled submit icon button">
         <i class="icon edit"></i> Reply
       </button>
    </form>
+    <script src="/libs/ace/ace.js"></script>
+    <script type="text/javascript">
+    function registerACEditor(editorID, containerName, mode){
+      var editor = ace.edit(editorID);
+
+      editor.setTheme("ace/theme/tomorrow");
+      editor.getSession().setMode(mode);
+      editor.getSession().setUseSoftTabs(false);
+
+      editor.container.name = containerName;
+      editor.container.style.lineHeight = 1.6;
+      editor.container.style.fontSize = '14px';
+      editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+      editor.setShowPrintMargin(false);
+      editor.renderer.updateFontSize();
+
+      var input = $(`[name="${containerName}"]`);
+      editor.getSession().on("change", function () {
+        input.val(editor.getSession().getValue());
+      });
+    }
+
+    registerACEditor("comment", "comment", "ace/mode/markdown");
+
+    </script>
    <% } %>
 </div>
 <% include footer %>
