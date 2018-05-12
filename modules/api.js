@@ -260,3 +260,15 @@ app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 		res.send({ success: false });
 	}
 });
+
+let [Fetcher] = require('zoj-contest-fetcher');
+
+app.get('/api/outsidecontests', async (req, res) => {
+	try {
+		let outsideContests = await Fetcher(10);
+		res.send(outsideContests);
+	} catch (e) {
+		zoj.log(e);
+		res.send(e);
+	}
+});

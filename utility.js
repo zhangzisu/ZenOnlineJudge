@@ -21,7 +21,6 @@ let Promise = require('bluebird');
 let path = require('path');
 let fs = Promise.promisifyAll(require('fs-extra'));
 let util = require('util');
-let renderer = require('moemark-renderer');
 let moment = require('moment');
 let url = require('url');
 let querystring = require('querystring');
@@ -29,32 +28,20 @@ let pygmentize = require('pygmentize-bundled-cached');
 let gravatar = require('gravatar');
 let filesize = require('file-size');
 let AsyncLock = require('async-lock');
+let marked = require('marked-katex');
+let katex = require('katex');
+let xss = require("xss");
 
-function escapeHTML(s) {
+marked.setOptions({
+	kaTex: katex
+});
+
+async function escapeHTML(s) {
 	// Code from http://stackoverflow.com/questions/5251520/how-do-i-escape-some-html-in-javascript/5251551
 	return s.replace(/[^0-9A-Za-z ]/g, (c) => {
 		return "&#" + c.charCodeAt(0) + ";";
 	});
 }
-
-function highlightPygmentize(code, lang, cb) {
-	pygmentize({
-		lang: lang,
-		format: 'html',
-		options: {
-			nowrap: true,
-			classprefix: 'pl-'
-		}
-	}, code, (err, res) => {
-		if (err || res.toString() === 'undefined') {
-			cb(escapeHTML(code));
-		} else {
-			cb(res);
-		}
-	});
-}
-
-renderer.config.highlight = highlightPygmentize;
 
 module.exports = {
 	resolvePath(s) {
@@ -62,75 +49,22 @@ module.exports = {
 		a.unshift(__dirname);
 		return path.resolve.apply(null, a);
 	},
-	markdown(obj, keys, noReplaceUI) {
-		//obj = obj.replace(/</, "&lt;");
-		//obj = obj.replace(/>/, "&gt;");
-		//obj = obj.replace(/&/, "&amp;");
-		let XSS = require('xss');
-		let CSSFilter = require('cssfilter');
-		let whiteList = Object.assign({}, require('xss/lib/default').whiteList);
-		delete whiteList.audio;
-		delete whiteList.video;
-		for (let tag in whiteList) whiteList[tag] = whiteList[tag].concat(['style', 'class']);
-		let xss = new XSS.FilterXSS({
-			css: {
-				whiteList: Object.assign({}, require('cssfilter/lib/default').whiteList, {
-					'vertical-align': true,
-					top: true,
-					bottom: true,
-					left: true,
-					right: true,
-					"white-space": true
-				})
-			},
-			whiteList: whiteList,
-			stripIgnoreTag: true
-		});
-		let replaceXSS = s => {
-			s = xss.process(s);
-			if (s) {
-				s = `<div style="position: relative; overflow: hidden; ">${s}</div>`;
-			}
-			return s;
-		};
-		let replaceUI = s => {
-			if (noReplaceUI) return s;
+	async markdown(obj) {
+		if (!obj || !obj.trim()) return "";
 
-			s = s.split('<pre>').join('<div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; ">').split('</pre>').join('</pre></div>')
-				.split('<table>').join('<table class="ui celled table">')
-				.split('<blockquote>').join('<div class="ui message">').split('</blockquote>').join('</div>');
+		obj = await marked(obj);
+		let replaceUI = async s =>
+			new Promise(function (resolve, reject) {
+				s = s.split('<table>').join('<table class="ui celled table">')
+					.split('<blockquote>').join('<div class="ui message">').split('</blockquote>').join('</div>');
 
-			let cheerio = require('cheerio');
-			let $ = cheerio.load('<html><head></head><body></body></html>');
-			let body = $('body');
-			body.html(s);
+				resolve(s);
+			});
+		obj = await replaceUI(obj);
 
-			let a = $('img:only-child');
-			for (let img of Array.from(a)) {
-				if (!img.prev && !img.next) {
-					$(img).css('display', 'block');
-					$(img).css('margin', '0 auto');
-				}
-			}
+		//obj = await xss(obj);
 
-			return body.html();
-		};
-		return new Promise((resolve, reject) => {
-			if (!keys) {
-				if (!obj || !obj.trim()) resolve("");
-				else renderer(obj, { mathjaxUseHtml: true }, s => {
-					resolve(replaceUI(replaceXSS(s)));
-				});
-			} else {
-				let res = obj, cnt = keys.length;
-				for (let key of keys) {
-					renderer(res[key], { mathjaxUseHtml: true }, (s) => {
-						res[key] = replaceUI(replaceXSS(s));
-						if (!--cnt) resolve(res);
-					});
-				}
-			}
-		});
+		return obj;
 	},
 	formatDate(ts, format) {
 		let m = moment(ts * 1000);
@@ -182,12 +116,9 @@ module.exports = {
 		return res;
 	},
 	escapeHTML: escapeHTML,
-	highlight(code, lang) {
-		return new Promise((resolve, reject) => {
-			highlightPygmentize(code, lang, res => {
-				resolve(res);
-			});
-		});
+	async highlight(code, lang) {
+		code = await escapeHTML(code);
+		return `<pre class="language-${lang}" style="box-shadow: none;"><code class="language-${lang}">${code}</code></pre>`;
 	},
 	gravatar(email, size) {
 		return gravatar.url(email, { s: size, d: 'mm' });

@@ -136,8 +136,8 @@ app.get('/submission/:id', async (req, res) => {
 		judge.allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
 		judge.allowedManage = await judge.problem.isAllowedManageBy(res.locals.user);
 
-			judge.codeLength = judge.code.length;
-			judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
+		judge.codeLength = judge.code.length;
+		judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
 		// judge.allowedSeeCode |= judge.problem.judge_state.result.status == 'Accepted';
 
 		let hideScore = false;
@@ -182,9 +182,9 @@ app.get('/submission/:id/ajax', async (req, res) => {
 
 		await judge.loadRelationships();
 
-			judge.codeLength = judge.code.length;
-			judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
-			
+		judge.codeLength = judge.code.length;
+		judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
+
 		judge.allowedSeeCode = await judge.isAllowedSeeCodeBy(res.locals.user);
 		judge.allowedSeeCase = await judge.isAllowedSeeCaseBy(res.locals.user);
 		judge.allowedSeeData = await judge.isAllowedSeeDataBy(res.locals.user);

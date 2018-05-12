@@ -127,9 +127,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
   window.applyTextFit();
   </script>
   <% if (judge.allowedSeeCode) { %>
-    <div class="ui existing segment" style="position: relative; ">
-      <pre style="margin-top: 0; margin-bottom: 0; "><code id="code"><%- judge.code %></code></pre>
-    </div>
+    <%- judge.code %>
     <script>
       document.addEventListener('keydown', function (event) {
         if ((event.ctrlKey || event.metaKey) && event.key === 'a') {

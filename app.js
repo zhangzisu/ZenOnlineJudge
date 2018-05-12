@@ -68,13 +68,6 @@ global.zoj = {
 
 		// This should before load api_v2, to init the `res.locals.user`
 		this.loadHooks();
-		// Trick to bypass CSRF for APIv2
-		app.use((() => {
-			let router = new Express.Router();
-			app.apiRouter = router;
-			require('./modules/api2');
-			return router;
-		})());
 
 		let csurf = require('csurf');
 		app.use(csurf({ cookie: true }));
