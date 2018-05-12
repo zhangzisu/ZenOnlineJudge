@@ -1,0 +1,81 @@
+<% this.title = contest.title + ' - Estimate Config' %>
+<% include header %>
+<style>
+    .ui.label.pointing.below.left::before { left: 12%; }
+    .ui.label.pointing.below.right::before { left: 88%; }
+    .ui.label.pointing.below.left { margin-bottom: 0; }
+    .ui.label.pointing.below.right { margin-bottom: 0; float: right; }
+</style>
+<div class="padding">
+  <h1><%= contest.title %></h1>
+  <div style="margin-bottom: 30px;"><%- contest.subtitle %></div>
+  <% let unveiled = (contest.allowedEdit || zoj.utils.getCurrentDate() >= contest.start_time); %>
+  <% let start = zoj.utils.formatDate(contest.start_time), end = zoj.utils.formatDate(contest.end_time); %>
+  <% if (contest.running && start.split(' ')[0] === end.split(' ')[0]) {
+    start = start.split(' ')[1]; end = end.split(' ')[1];
+  } %>
+  <div class="ui pointing below left label"><%= start %></div>
+  <div class="ui pointing below right label"><%= end %></div>
+  <% let timePercentage = Math.floor(Math.min(1, (zoj.utils.getCurrentDate() - contest.start_time) / (contest.end_time - contest.start_time)) * 100); %>
+  <div id="timer-progress" class="ui tiny indicating progress<% if (timePercentage == 100) { %> success<% } %>" data-percent="<%= timePercentage %>">
+    <div class="bar" style="width: <%= timePercentage %>%;"></div>
+  </div>
+  <div class="ui grid">
+  <% if (contest.allowedEdit || (unveiled && (!contest.running || contest.type === 'acm'))) { %>
+    <div class="row">
+      <div class="column">
+        <div class="ui buttons">
+          <a class="ui small blue button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'ranklist']) %>">Ranklist</a>
+          <a class="ui small positive button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions']) %>">Submissions</a>
+          <a class="ui small negative button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'estimate']) %>">Estimate Config</a>
+          <% if (contest.allowedEdit) { %>
+            <a class="ui small button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'edit']) %>">Edit This Contest</a>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  <% } %>
+  <% if (unveiled) { %>
+    <div class="row">
+      <div class="column">
+        <form method="post" class="ui form">
+         <table class="ui selectable celled table">
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th class="one wide center aligned">Estimate score</th>
+                <th class="one wide center aligned">Estimate time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (let problem of problems) { %>
+              <tr>
+                <% let p = problem.id; %>
+                <td><%= zoj.utils.removeTitleTag(problem.title) %></td>
+                <td><div class="ui input"><input name="s_<%=p%>" type="text" value="<%=player.score_details[p].self.score%>"></div></td>
+                <td><div class="ui input"><input name="t_<%=p%>" type="text" value="<%=player.score_details[p].self.time%>"></div></td>
+              </tr>
+            <% } %>
+            </tbody>
+        </table>
+        <div class="ui center aligned vertical segment" style="padding-bottom: 0; ">
+            <button id="submit" type="submit" class="ui button">Submit</button>
+        </div>
+      </form>
+      </div>
+    </div>
+  <% } %>
+  </div>
+</div>
+
+<script>
+$(function () {
+  setInterval(function () {
+    $('#timer-progress').progress({
+      value: Date.now() / 1000 - <%= contest.start_time %>,
+      total: <%= contest.end_time - contest.start_time %>
+    });
+  }, 5000);
+});
+</script>
+<% include footer %>

@@ -28,6 +28,7 @@
         <div class="ui buttons">
           <a class="ui small blue button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'ranklist']) %>">Ranklist</a>
           <a class="ui small positive button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions']) %>">Submissions</a>
+          <a class="ui small negative button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'estimate']) %>">Estimate Config</a>
           <% if (contest.allowedEdit) { %>
             <a class="ui small button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'edit']) %>">Edit This Contest</a>
           <% } %>
