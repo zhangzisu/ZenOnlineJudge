@@ -65,9 +65,13 @@ io.sockets.on('connection', function (socket) {
         if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
     });
     socket.on('free', async function (data) {
-        let id = socket.id;
-        if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
-        judge_client.status.free.add(id);
+        try {
+            await zoj.utils.lock('judger_state_update', async () => {
+                let id = socket.id;
+                if (judge_client.status.busy.has(id)) judge_client.status.busy.delete(id);
+                judge_client.status.free.add(id);
+            });
+        } catch (e) { console.log(e); socket.emit('terminate', {}); }
 
         try {
             let judge_state;
@@ -101,9 +105,13 @@ io.sockets.on('connection', function (socket) {
         }
     });
     socket.on('busy', async function (data) {
-        let id = socket.id;
-        if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
-        judge_client.status.busy.add(id);
+        try {
+            await zoj.utils.lock('judger_state_update', async () => {
+                let id = socket.id;
+                if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
+                judge_client.status.busy.add(id);
+            });
+        } catch (e) { console.log(e); socket.emit('terminate', {}); }
     });
     socket.on('update', async function (data) {
         try {
