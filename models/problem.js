@@ -80,11 +80,7 @@ class Problem extends Model {
 			is_public: false,
 			is_protected: true,
 
-			datainfo: `\
-time_limit: ${zoj.config.default.problem.time_limit},\
-memory_limit: ${zoj.config.default.problem.memory_limit},\
-testcases: []\
-`,
+			datainfo: '',
 			testdata_hash: ''
 		}, val)));
 	}
@@ -139,6 +135,7 @@ testcases: []\
 	async ValidDataInfo() {
 		if (!this.datainfo.time_limit) this.datainfo.time_limit = zoj.config.default.problem.time_limit;
 		if (!this.datainfo.memory_limit) this.datainfo.memory_limit = zoj.config.default.problem.memory_limit;
+		if (!this.datainfo.output_limit) this.datainfo.output_limit = zoj.config.default.problem.output_limit;
 		if (!this.datainfo.judge_method) this.datainfo.judge_method = "compare_text";
 		if (!this.datainfo || !this.datainfo.testcases || !this.datainfo.testcases.length) {
 			try {

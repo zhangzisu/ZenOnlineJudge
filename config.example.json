@@ -28,7 +28,8 @@
     "default": {
         "problem": {
             "time_limit": 1000,
-            "memory_limit": 256
+            "memory_limit": 256,
+            "output_limit": 1024000
         },
         "user": {
             "show": true,
