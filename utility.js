@@ -52,6 +52,8 @@ module.exports = {
 	async markdown(obj) {
 		if (!obj || !obj.trim()) return "";
 
+		obj = await xss(obj);
+
 		obj = await marked(obj);
 		let replaceUI = async s =>
 			new Promise(function (resolve, reject) {
@@ -61,8 +63,6 @@ module.exports = {
 				resolve(s);
 			});
 		obj = await replaceUI(obj);
-
-		//obj = await xss(obj);
 
 		return obj;
 	},
