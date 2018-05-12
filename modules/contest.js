@@ -75,7 +75,11 @@ app.post('/contest/:id/edit', async (req, res) => {
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 		contest.title = req.body.title;
 		contest.subtitle = req.body.subtitle;
-		let np = JSON.parse(req.body.problems), rsh = false;
+		let np = JSON.parse(req.body.problems), xp = [], rsh = false;
+		for (var p of np) {
+			if (p.id && await Problem.fromID(p.id)) xp.push(p);
+		}
+		np = xp;
 		if (contest.problems !== np) {
 			contest.problems = np;
 			rsh = true;
