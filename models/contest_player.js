@@ -155,6 +155,14 @@ class ContestPlayer extends Model {
 		await this.save();
 	}
 
+	async updateSelfInfo(pid, selfscore, selftime) {
+		if (!this.score_details[pid]) this.score_details[pid] = new Object();
+		this.score_details[pid].self = {
+			score: selfscore,
+			time: selftime
+		};
+	}
+
 	getModel() { return model; }
 }
 

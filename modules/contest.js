@@ -319,11 +319,86 @@ app.get('/contest/:id/submissions', async (req, res) => {
 	}
 });
 
+app.get('/contest/:id/estimate', async (req, res) => {
+	try {
+		if (!res.locals.user) throw new ErrorMessage('Please login.');
+		let contest_id = parseInt(req.params.id);
+		let contest = await Contest.fromID(contest_id);
+		if (!contest) throw new ErrorMessage('No such contest.');
+		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+
+		let problemset = await contest.getProblems();
+		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
+
+		let player = await ContestPlayer.findInContest({
+			contest_id: contest.id,
+			user_id: res.locals.user.id
+		});
+
+		for (var p of problems) {
+			if (!player.score_details[p.id].self) {
+				player.score_details[p.id].self = {
+					score: 0,
+					time: 0
+				};
+			}
+		}
+
+		res.render('estimate', {
+			player: player,
+			problems: problems,
+			contest: contest
+		});
+	} catch (e) {
+		zoj.log(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
+app.post('/contest/:id/estimate', async (req, res) => {
+	try {
+		if (!res.locals.user) throw new ErrorMessage('Please login.');
+		let contest_id = parseInt(req.params.id);
+		let contest = await Contest.fromID(contest_id);
+		if (!contest) throw new ErrorMessage('No such contest.');
+		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+
+		let problemset = await contest.getProblems();
+		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
+
+		let player = await ContestPlayer.findInContest({
+			contest_id: contest.id,
+			user_id: res.locals.user.id
+		});
+
+		for (var p of problems) {
+			let scoreName = `s_${p.id}`;
+			let timeName = `t_${p.id}`;
+			if (req.body[scoreName] && req.body[timeName]) {
+				await player.updateSelfInfo(p.id, req.body[scoreName], req.body[timeName]);
+			}
+		}
+
+		await player.save();
+
+		res.redirect(zoj.utils.makeUrl(['contest', contest_id, 'estimate']));
+	} catch (e) {
+		zoj.log(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
 app.get('/contest/:id/:pid', async (req, res) => {
 	try {
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
+
+		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
 		problems_id = await problems_id.mapAsync(x => (x.id));

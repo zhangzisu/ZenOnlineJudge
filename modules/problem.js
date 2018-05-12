@@ -402,7 +402,7 @@ app.post('/problem/:id/import', async (req, res) => {
 
 		if (req.body.type === 'SYZOJ') {
 			let json = await request({
-				rejectUnauthorized: false, 
+				rejectUnauthorized: false,
 				uri: req.body.url + (req.body.url.endsWith('/') ? 'export' : '/export'),
 				timeout: 5000,
 				json: true
@@ -440,7 +440,7 @@ app.post('/problem/:id/import', async (req, res) => {
 			}
 		} else if (req.body.type === 'ZOJ') {
 			let json = await request({
-				rejectUnauthorized: false, 
+				rejectUnauthorized: false,
 				uri: req.body.url + (req.body.url.endsWith('/') ? 'export' : '/export') + '/' + token,
 				timeout: 5000,
 				json: true
@@ -597,7 +597,7 @@ app.post('/problem/:id/dis_protect', async (req, res) => {
 	await setProtect(req, res, false);
 });
 
-app.post('/problem/:id/submit', app.multer.fields([{ name: 'answer', maxCount: 1 }]), async (req, res) => {
+app.post('/problem/:id/submit', async (req, res) => {
 	let id = parseInt(req.params.id);
 	let problem = await Problem.fromID(id);
 
