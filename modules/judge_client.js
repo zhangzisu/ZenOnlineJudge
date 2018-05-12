@@ -17,7 +17,7 @@ if (zoj.config.https) {
 let io = require('socket.io').listen(server);
 
 app.get('/', function (req, res) {
-    res.redirect('https://zhangzisu.cn');
+    res.send('<a href="https://zhangzisu.cn">Server status: All Clear</a>');
 });
 
 let ss = require('socket.io-stream');
