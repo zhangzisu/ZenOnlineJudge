@@ -72,13 +72,11 @@ class ContestPlayer extends Model {
 		await this.loadRelationships();
 		if (this.contest.type === 'ioi') {
 			if (!judge_state.pending) {
-				if (!this.score_details[judge_state.problem_id]) {
-					this.score_details[judge_state.problem_id] = {
-						score: judge_state.score,
-						// Score of this problem
-						judge_id: judge_state.id,
-						submissions: {}
-					};
+				if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
+				if (!this.score_details[judge_state.problem_id].score) {
+					this.score_details[judge_state.problem_id].score = judge_state.score;
+					this.score_details[judge_state.problem_id].judge_id = judge_state.id;
+					this.score_details[judge_state.problem_id].submissions = {};
 				}
 
 				this.score_details[judge_state.problem_id].submissions[judge_state.id] = {
@@ -108,25 +106,20 @@ class ContestPlayer extends Model {
 			// Current submittion is later than the recorded one.
 			if (this.score_details[judge_state.problem_id] && this.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
 
-			this.score_details[judge_state.problem_id] = {
-				score: judge_state.score,
-				// Score of this problem
-				judge_id: judge_state.id
-			};
+			if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
+			this.score_details[judge_state.problem_id].score = judge_state.score;
+			this.score_details[judge_state.problem_id].judge_id = judge_state.id;
 
 			await this.refreshScore(true);
 		} else if (this.contest.type === 'acm') {
 			if (!judge_state.pending) {
-				if (!this.score_details[judge_state.problem_id]) {
-					this.score_details[judge_state.problem_id] = {
-						accepted: false,
-						unacceptedCount: 0,
-						// The number of unaccepted times of this problem
-						acceptedTime: 0,
-						// The time from the contest began to the user accepted this problem
-						judge_id: 0,
-						submissions: {}
-					};
+				if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
+				if (!this.score_details[judge_state.problem_id].accepted) {
+					this.score_details[judge_state.problem_id].accepted = false;
+					this.score_details[judge_state.problem_id].unacceptedCount = 0;
+					this.score_details[judge_state.problem_id].acceptedTime = 0;
+					this.score_details[judge_state.problem_id].judge_id = 0;
+					this.score_details[judge_state.problem_id].submissions = {};
 				}
 
 				this.score_details[judge_state.problem_id].submissions[judge_state.id] = {
@@ -166,9 +159,15 @@ class ContestPlayer extends Model {
 	async refreshScore(loaded) {
 		if (!loaded) await this.loadRelationships();
 		this.score = 0;
-		for (let x of this.contest.problems) {
-			if (!this.score_details[x.id]) continue;
-			this.score += Math.round(this.score_details[x.id].score / 100 * x.score);
+		if (this.contest.type === 'acm') {
+			for (let x in this.score_details) {
+				if (this.score_details[x].accepted) this.score++;
+			}
+		} else {
+			for (let x of this.contest.problems) {
+				if (!this.score_details[x.id]) continue;
+				this.score += Math.round(this.score_details[x.id].score / 100 * x.score);
+			}
 		}
 		await this.save();
 	}

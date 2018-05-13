@@ -61,7 +61,7 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', async function (data) {
         let id = socket.id;
         console.log(`Client ${id} disconnected.`);
-        if(tasked.has(id))tasked.delete(id);
+        if (tasked.has(id)) tasked.delete(id);
         if (judge_client.judgers.has(id)) judge_client.judgers.delete(id);
         if (judge_client.ids.has(id)) judge_client.ids.delete(id);
         if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
@@ -77,7 +77,12 @@ io.sockets.on('connection', function (socket) {
         try {
             let judge_state;
             await zoj.utils.lock('judge_peek', async () => {
-                let waiting_judge = await WaitingJudge.findOne({ order: [['priority', 'ASC'], ['id', 'ASC']] });
+                let waiting_judge = await WaitingJudge.findOne({
+                    order: [
+                        ['priority', 'ASC'],
+                        ['id', 'ASC']
+                    ]
+                });
                 if (!waiting_judge) {
                     return;
                 }
