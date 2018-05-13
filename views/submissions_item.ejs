@@ -28,7 +28,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
     <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / Hide</td>
   <% } %>
 <% } %>
-<td><a href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a></td>
+<td><a user href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a></td>
 <td><%= zoj.utils.formatDate(judge.submit_time) %>
 </td>
 <td><%= judge.result.judger %></td>

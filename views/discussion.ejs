@@ -42,7 +42,7 @@
     <% for (let article of articles) { %>
         <tr>
             <td class="left aligned"><a href="<%= zoj.utils.makeUrl(['article', article.id]) %>"><%= article.title %></a></td>
-            <td><a href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>"><%= article.user.username %></a></td>
+            <td><a user href="<%= zoj.utils.makeUrl(['user', article.user_id]) %>"><%= article.user.username %></a></td>
             <td><%= zoj.utils.formatDate(article.public_time) %></td>
         </tr>
     <% } %>

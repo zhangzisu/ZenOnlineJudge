@@ -3,7 +3,8 @@ const version = '10.3.0';
 var addUrlParam = function (url, key, val) {
 	var newParam = encodeURIComponent(key) + '=' + encodeURIComponent(val);
 	url = url.split('#')[0];
-	var twoPart = url.split('?'), params = {};
+	var twoPart = url.split('?'),
+		params = {};
 	var tmp = twoPart[1] ? twoPart[1].split('&') : [];
 	for (let i in tmp) {
 		let a = tmp[i].split('=');
@@ -37,6 +38,7 @@ $(function () {
 		this.action = addUrlParam(this.action || location.href, '_csrf', document.head.getAttribute('data-csrf-token'));
 	});
 });
+
 function Notificate(text) {
 	if (Notification.permission === 'granted') {
 		var options = {
@@ -50,6 +52,7 @@ function Notificate(text) {
 		alert(text);
 	}
 }
+
 function initWebSocket(id) {
 	user_id = parseInt(id);
 	if (!Notification) {
@@ -97,4 +100,73 @@ function initWebSocket(id) {
 			$('#wsstatus').text('Error');
 			$('#wsstatus').css('color', '#c72124');
 		});
+}
+
+function colorByRating(rating, element) {
+	rating = parseInt(rating) || 0;
+	console.log(rating);
+	let jQ = $(element);
+	if (rating <= 1500) {
+		//Newbie
+		jQ.attr('title', 'Newbie');
+		jQ.addClass('newbie');
+	} else if (rating <= 1700) {
+		//Pupil
+		jQ.attr('title', 'Pupil');
+		jQ.addClass('pupil');
+	} else if (rating <= 1900) {
+		//Specialist
+		jQ.attr('title', 'Specialist');
+		jQ.addClass('specialist');
+	} else if (rating <= 2200) {
+		//Expert
+		jQ.attr('title', 'Expert');
+		jQ.addClass('expert');
+	} else if (rating <= 2500) {
+		//Candidate Master
+		jQ.attr('title', 'Candidate Master');
+		jQ.addClass('candidate');
+	} else if (rating <= 2600) {
+		//Master
+		jQ.attr('title', 'Master');
+		jQ.addClass('master');
+	} else if (rating <= 2700) {
+		//International Master
+		jQ.attr('title', 'International Master');
+		jQ.addClass('master');
+	} else if (rating <= 2900) {
+		//Grandmaster
+		jQ.attr('title', 'Grandmaster');
+		jQ.addClass('grandmaster');
+	} else if (rating <= 3200) {
+		//International Grandmaster
+		jQ.attr('title', 'International Grandmaster');
+		jQ.addClass('grandmaster');
+	} else if (rating) {
+		//Legendary Grandmaster
+		jQ.attr('title', 'Legendary Grandmaster');
+		jQ.addClass('grandmaster');
+		let name = jQ.text().trim();
+		jQ.html(`<span class="legendary">${name[0]}</span>${name.substring(1)}`);
+	}
+}
+
+window.onload = function () {
+	let users = document.querySelectorAll('[user]');
+	let unique = new Set();
+	for (var user of users) {
+		let id = user.href.split('/');
+		id = parseInt(id[id.lastIndexOf("user") + 1]) || 0;
+		$(user).attr('user_id', id);
+		if (!unique.has(id)) unique.add(id);
+	}
+
+	for (var id of unique) {
+		$.getJSON(`/api/userrating/${id}`, function (result) {
+			let user_elements = document.querySelectorAll(`[user_id="${result.id}"]`);
+			for (var element of user_elements) {
+				colorByRating(result.rating, element);
+			}
+		});
+	}
 }

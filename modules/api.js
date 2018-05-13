@@ -16,17 +16,27 @@ app.post('/api/login', async (req, res) => {
 		res.setHeader('Content-Type', 'application/json');
 		let user = await User.fromName(req.body.username);
 
-		if (!user) res.send({ error_code: 1001 });
-		else if (!await user.is_show) res.send({ error_code: 1003 });
-		else if (user.password !== req.body.password) res.send({ error_code: 1002 });
+		if (!user) res.send({
+			error_code: 1001
+		});
+		else if (!await user.is_show) res.send({
+			error_code: 1003
+		});
+		else if (user.password !== req.body.password) res.send({
+			error_code: 1002
+		});
 		else {
 			req.session.user_id = user.id;
 			setLoginCookie(user.username, user.password, res);
-			res.send({ error_code: 1 });
+			res.send({
+				error_code: 1
+			});
 		}
 	} catch (e) {
 		zoj.log(e);
-		res.send({ error_code: e });
+		res.send({
+			error_code: e
+		});
 	}
 });
 
@@ -44,7 +54,9 @@ app.post('/api/forget', async (req, res) => {
 			expiresIn: '1h'
 		});
 
-		const vurl = zoj.config.hostname + zoj.utils.makeUrl(['api', 'forget_confirm'], { token: token });
+		const vurl = zoj.config.hostname + zoj.utils.makeUrl(['api', 'forget_confirm'], {
+			token: token
+		});
 		try {
 			await Email.send(user.email,
 				`Reset password for ${user.username} in ${zoj.config.title}`,
@@ -58,10 +70,14 @@ app.post('/api/forget', async (req, res) => {
 			return null;
 		}
 
-		res.send({ error_code: 1 });
+		res.send({
+			error_code: 1
+		});
 	} catch (e) {
 		zoj.log(e);
-		res.send(JSON.stringify({ error_code: e }));
+		res.send(JSON.stringify({
+			error_code: e
+		}));
 	}
 });
 
@@ -71,7 +87,11 @@ app.post('/api/sign_up', async (req, res) => {
 		res.setHeader('Content-Type', 'application/json');
 		let user = await User.fromName(req.body.username);
 		if (user) throw 2008;
-		user = await User.findOne({ where: { email: req.body.email } });
+		user = await User.findOne({
+			where: {
+				email: req.body.email
+			}
+		});
 		if (user) throw 2009;
 
 
@@ -90,7 +110,9 @@ app.post('/api/sign_up', async (req, res) => {
 				expiresIn: '1h'
 			});
 
-			const vurl = zoj.config.hostname + zoj.utils.makeUrl(['api', 'sign_up_confirm'], { token: token });
+			const vurl = zoj.config.hostname + zoj.utils.makeUrl(['api', 'sign_up_confirm'], {
+				token: token
+			});
 			try {
 				await Email.send(req.body.email,
 					`Sign up for ${req.body.username} in ${zoj.config.title}`,
@@ -103,7 +125,9 @@ app.post('/api/sign_up', async (req, res) => {
 				});
 			}
 
-			res.send(JSON.stringify({ error_code: 2 }));
+			res.send(JSON.stringify({
+				error_code: 2
+			}));
 		} else {
 			user = await User.create({
 				username: req.body.username,
@@ -113,18 +137,24 @@ app.post('/api/sign_up', async (req, res) => {
 			});
 			await user.save();
 
-			res.send(JSON.stringify({ error_code: 1 }));
+			res.send(JSON.stringify({
+				error_code: 1
+			}));
 		}
 	} catch (e) {
 		zoj.log(e);
-		res.send(JSON.stringify({ error_code: e }));
+		res.send(JSON.stringify({
+			error_code: e
+		}));
 	}
 });
 
 app.get('/api/forget_confirm', async (req, res) => {
 	try {
 		try {
-			WebToken.verify(req.query.token, zoj.config.session_secret, { subject: 'forget' });
+			WebToken.verify(req.query.token, zoj.config.session_secret, {
+				subject: 'forget'
+			});
 		} catch (e) {
 			throw new ErrorMessage("Token incorrect.");
 		}
@@ -144,7 +174,9 @@ app.post('/api/reset_password', async (req, res) => {
 		res.setHeader('Content-Type', 'application/json');
 		let obj;
 		try {
-			obj = WebToken.verify(req.body.token, zoj.config.session_secret, { subject: 'forget' });
+			obj = WebToken.verify(req.body.token, zoj.config.session_secret, {
+				subject: 'forget'
+			});
 		} catch (e) {
 			throw 3001;
 		}
@@ -153,13 +185,19 @@ app.post('/api/reset_password', async (req, res) => {
 		user.password = req.body.password;
 		await user.save();
 
-		res.send(JSON.stringify({ error_code: 1 }));
+		res.send(JSON.stringify({
+			error_code: 1
+		}));
 	} catch (e) {
 		zoj.log(e);
 		if (typeof e === 'number') {
-			res.send(JSON.stringify({ error_code: e }));
+			res.send(JSON.stringify({
+				error_code: e
+			}));
 		} else {
-			res.send(JSON.stringify({ error_code: 1000 }));
+			res.send(JSON.stringify({
+				error_code: 1000
+			}));
 		}
 	}
 });
@@ -168,14 +206,20 @@ app.get('/api/sign_up_confirm', async (req, res) => {
 	try {
 		let obj;
 		try {
-			obj = WebToken.verify(req.query.token, zoj.config.session_secret, { subject: 'register' });
+			obj = WebToken.verify(req.query.token, zoj.config.session_secret, {
+				subject: 'register'
+			});
 		} catch (e) {
 			throw new ErrorMessage('Invalid registration verification link: ' + e.toString());
 		}
 
 		let user = await User.fromName(obj.username);
 		if (user) throw new ErrorMessage('Username has been used.');
-		user = await User.findOne({ where: { email: obj.email } });
+		user = await User.findOne({
+			where: {
+				email: obj.email
+			}
+		});
 		if (user) throw new ErrorMessage('E-mail address has been used.');
 
 		if (!(obj.email = obj.email.trim())) throw new ErrorMessage('E-mail address cannot be empty.');
@@ -215,8 +259,12 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 
 		let keyword = req.params.keyword || '';
 		let problems = await Problem.query(null, {
-			title: { like: `%${req.params.keyword}%` }
-		}, [['id', 'asc']]);
+			title: {
+				like: `%${req.params.keyword}%`
+			}
+		}, [
+			['id', 'asc']
+		]);
 
 		let result = [];
 
@@ -233,11 +281,20 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 			}
 		});
 
-		result = result.map(x => ({ name: `#${x.id}. ${x.title}`, value: x.id, url: zoj.utils.makeUrl(['problem', x.id]) }));
-		res.send({ success: true, results: result });
+		result = result.map(x => ({
+			name: `#${x.id}. ${x.title}`,
+			value: x.id,
+			url: zoj.utils.makeUrl(['problem', x.id])
+		}));
+		res.send({
+			success: true,
+			results: result
+		});
 	} catch (e) {
 		zoj.log(e);
-		res.send({ success: false });
+		res.send({
+			success: false
+		});
 	}
 });
 
@@ -248,16 +305,28 @@ app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 
 		let keyword = req.params.keyword || '';
 		let tags = await ProblemTag.query(null, {
-			name: { like: `%${req.params.keyword}%` }
-		}, [['name', 'asc']]);
+			name: {
+				like: `%${req.params.keyword}%`
+			}
+		}, [
+			['name', 'asc']
+		]);
 
 		let result = tags.slice(0, zoj.config.page.edit_problem_tag_list);
 
-		result = result.map(x => ({ name: x.name, value: x.id }));
-		res.send({ success: true, results: result });
+		result = result.map(x => ({
+			name: x.name,
+			value: x.id
+		}));
+		res.send({
+			success: true,
+			results: result
+		});
 	} catch (e) {
 		zoj.log(e);
-		res.send({ success: false });
+		res.send({
+			success: false
+		});
 	}
 });
 
@@ -269,6 +338,23 @@ app.get('/api/outsidecontests', async (req, res) => {
 		res.send(outsideContests);
 	} catch (e) {
 		zoj.log(e);
+		res.send(e);
+	}
+});
+
+app.get('/api/userrating/:id', async (req, res) => {
+	try {
+		let id = parseInt(req.params.id);
+		let user = await User.fromID(id);
+		if (!user || !user.is_show) res.send({
+			id: id,
+			rating: 0
+		});
+		res.send({
+			id: id,
+			rating: user.rating
+		});
+	} catch (e) {
 		res.send(e);
 	}
 });
