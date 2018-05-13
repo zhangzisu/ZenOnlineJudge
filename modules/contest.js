@@ -7,6 +7,14 @@ let Problem = zoj.model('problem');
 let JudgeState = zoj.model('judge_state');
 let User = zoj.model('user');
 
+function hasRecord(player, id) {
+	if (player && id) {
+		return player.score_details[id] &&
+			(player.score_details[id].score || player.score_details[id].accepted);
+	}
+	return false;
+}
+
 app.get('/contests', async (req, res) => {
 	try {
 		let where;
@@ -155,7 +163,7 @@ app.get('/contest/:id', async (req, res) => {
 		if (player) {
 			for (let problem of problems) {
 				if (contest.type === 'noi') {
-					if (player.score_details[problem.problem.id] && player.score_details[problem.problem.id].score) {
+					if (hasRecord(player, problem.problem.id)) {
 						let judge_state = await JudgeState.fromID(player.score_details[problem.problem.id].judge_id);
 						problem.status = judge_state.status;
 						if (!contest.ended && !await problem.problem.isAllowedEditBy(res.locals.user) && !['Compile Error', 'Waiting', 'Compiling'].includes(problem.status)) {
@@ -164,13 +172,13 @@ app.get('/contest/:id', async (req, res) => {
 						problem.judge_id = player.score_details[problem.problem.id].judge_id;
 					}
 				} else if (contest.type === 'ioi') {
-					if (player.score_details[problem.problem.id] && player.score_details[problem.problem.id].score) {
+					if (hasRecord(player, problem.problem.id)) {
 						let judge_state = await JudgeState.fromID(player.score_details[problem.problem.id].judge_id);
 						problem.status = judge_state.status;
 						problem.judge_id = player.score_details[problem.problem.id].judge_id;
 					}
 				} else if (contest.type === 'acm') {
-					if (player.score_details[problem.problem.id] && player.score_details[problem.problem.id].score) {
+					if (hasRecord(player, problem.problem.id)) {
 						problem.status = {
 							accepted: player.score_details[problem.problem.id].accepted,
 							unacceptedCount: player.score_details[problem.problem.id].unacceptedCount
@@ -200,7 +208,7 @@ app.get('/contest/:id', async (req, res) => {
 				}
 
 				for (let player of players) {
-					if (player.score_details[problem.problem.id] && player.score_details[problem.problem.id].score) {
+					if (hasRecord(player, problem.problem.id)) {
 						problem.statistics.attempt++;
 						if ((contest.type === 'acm' && player.score_details[problem.problem.id].accepted) ||
 							((contest.type === 'noi' || contest.type === 'ioi') && player.score_details[problem.problem.id].score === 100)) {
@@ -261,7 +269,8 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 		res.render('contest_ranklist', {
 			contest: contest,
 			ranklist: ranklist,
-			problems: problems
+			problems: problems,
+			hasRecord: hasRecord
 		});
 	} catch (e) {
 		zoj.log(e);

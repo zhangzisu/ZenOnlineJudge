@@ -7,15 +7,20 @@ let User = zoj.model('user');
 let Problem = zoj.model('problem');
 let ContestPlayer = zoj.model('contest_player');
 
-let model = db.define('contest_ranklist',
-	{
-		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-		ranklist: { type: Sequelize.TEXT, json: true }
-	}, {
-		timestamps: false,
-		tableName: 'contest_ranklist'
+let model = db.define('contest_ranklist', {
+	id: {
+		type: Sequelize.INTEGER,
+		primaryKey: true,
+		autoIncrement: true
+	},
+	ranklist: {
+		type: Sequelize.TEXT,
+		json: true
 	}
-);
+}, {
+	timestamps: false,
+	tableName: 'contest_ranklist'
+});
 
 let Model = require('./common');
 class ContestRanklist extends Model {
@@ -34,7 +39,8 @@ class ContestRanklist extends Model {
 	}
 
 	async updatePlayer(contest, player) {
-		let players = await this.getPlayers(), newPlayer = true;
+		let players = await this.getPlayers(),
+			newPlayer = true;
 		for (let x of players) {
 			if (x.user_id === player.user_id) {
 				newPlayer = false;
@@ -52,6 +58,7 @@ class ContestRanklist extends Model {
 			for (let player of players) {
 				player.latest = 0;
 				for (let i in player.score_details) {
+					if (!player.score_details[i].score) continue;
 					let judge_state = await JudgeState.fromID(player.score_details[i].judge_id);
 					player.latest = Math.max(player.latest, judge_state.submit_time);
 				}
@@ -68,6 +75,7 @@ class ContestRanklist extends Model {
 			for (let player of players) {
 				player.timeSum = 0;
 				for (let i in player.score_details) {
+					if (!player.score_details[i].score) continue;
 					if (player.score_details[i].accepted) {
 						player.timeSum += (player.score_details[i].acceptedTime - contest.start_time) + (player.score_details[i].unacceptedCount * 20 * 60);
 					}
@@ -83,11 +91,15 @@ class ContestRanklist extends Model {
 			});
 		}
 
-		this.ranklist = { player_num: players.length };
+		this.ranklist = {
+			player_num: players.length
+		};
 		for (let i = 0; i < players.length; i++) this.ranklist[i + 1] = players[i].id;
 	}
 
-	getModel() { return model; }
+	getModel() {
+		return model;
+	}
 }
 
 ContestRanklist.model = model;

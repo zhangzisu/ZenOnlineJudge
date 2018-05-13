@@ -97,7 +97,7 @@
                   <% } else { %>
                     <td>
                   <% } %>
-                  <% if (!item.player.score_details[problem.id]||!item.player.score_details[problem.id].score) { %>
+                  <% if (!hasRecord(item.player, problem.id)) { %>
                     </td>
                   <% } else if (contest.type === 'acm') { %>
                       <a href="<%= zoj.utils.makeUrl(['submission', item.player.score_details[problem.id].judge_id]) %>">
