@@ -52,7 +52,7 @@
               <div class="ui simple dropdown item">
                 <i class="power icon"></i>
                 <div class="menu">
-                  <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id]) %>"><i class="user circle outline icon"></i><%= user.username %></a>
+                  <span class="item"><i class="user circle outline icon"></i><a user href="<%= zoj.utils.makeUrl(['user', user.id]) %>"><%= user.username %></a></span>
                   <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id, 'edit']) %>"><i class="edit icon"></i>Edit profile</a>
                   <% if (user.admin >= 4) { %>
                     <a class="item" href="<%= zoj.utils.makeUrl(['admin', 'info']) %>"><i class="settings icon"></i>Console</a>
