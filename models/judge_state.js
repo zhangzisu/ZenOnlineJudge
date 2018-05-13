@@ -142,7 +142,7 @@ class JudgeState extends Model {
 		else if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
-				return user && (contest.type === 'ioi' && user.id === this.user_id) || ser.admin >= 3 || user.id === contest.holder_id;
+				return user && (contest.type === 'ioi' && user.id === this.user_id) || user.admin >= 3 || user.id === contest.holder_id;
 			} else {
 				return true;
 			}
