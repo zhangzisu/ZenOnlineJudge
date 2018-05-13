@@ -6,27 +6,43 @@ let db = zoj.db;
 let User = zoj.model('user');
 let Problem = zoj.model('problem');
 
-let model = db.define('contest_player',
-	{
-		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-		contest_id: { type: Sequelize.INTEGER },
-		user_id: { type: Sequelize.INTEGER },
+let model = db.define('contest_player', {
+	id: {
+		type: Sequelize.INTEGER,
+		primaryKey: true,
+		autoIncrement: true
+	},
+	contest_id: {
+		type: Sequelize.INTEGER
+	},
+	user_id: {
+		type: Sequelize.INTEGER
+	},
 
-		score: { type: Sequelize.INTEGER },
-		// Sum score
-		score_details: { type: Sequelize.TEXT, json: true },
-		// Score of every problem
-		time_spent: { type: Sequelize.INTEGER }
-		// Total time
-	}, {
-		timestamps: false,
-		tableName: 'contest_player',
-		indexes: [
-			{ fields: ['contest_id'], },
-			{ fields: ['user_id'], }
-		]
+	score: {
+		type: Sequelize.INTEGER
+	},
+	// Sum score
+	score_details: {
+		type: Sequelize.TEXT,
+		json: true
+	},
+	// Score of every problem
+	time_spent: {
+		type: Sequelize.INTEGER
 	}
-);
+	// Total time
+}, {
+	timestamps: false,
+	tableName: 'contest_player',
+	indexes: [{
+			fields: ['contest_id'],
+		},
+		{
+			fields: ['user_id'],
+		}
+	]
+});
 
 let Model = require('./common');
 class ContestPlayer extends Model {
@@ -41,7 +57,9 @@ class ContestPlayer extends Model {
 	}
 
 	static async findInContest(where) {
-		return ContestPlayer.findOne({ where: where });
+		return ContestPlayer.findOne({
+			where: where
+		});
 	}
 
 	async loadRelationships() {
@@ -163,7 +181,9 @@ class ContestPlayer extends Model {
 		};
 	}
 
-	getModel() { return model; }
+	getModel() {
+		return model;
+	}
 }
 
 ContestPlayer.model = model;

@@ -11,11 +11,20 @@ app.get('/contests', async (req, res) => {
 	try {
 		let where;
 		if (res.locals.user && await res.locals.user.admin >= 3) where = {}
-		else if (res.locals.user && await res.locals.user.admin >= 1) where = { is_public: true };
-		else where = { $and: { is_public: true, is_protected: false } };
+		else if (res.locals.user && await res.locals.user.admin >= 1) where = {
+			is_public: true
+		};
+		else where = {
+			$and: {
+				is_public: true,
+				is_protected: false
+			}
+		};
 
 		let paginate = zoj.utils.paginate(await Contest.count(where), req.query.page, zoj.config.page.contest);
-		let contests = await Contest.query(paginate, where, [['start_time', 'desc']]);
+		let contests = await Contest.query(paginate, where, [
+			['start_time', 'desc']
+		]);
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
 
@@ -75,7 +84,9 @@ app.post('/contest/:id/edit', async (req, res) => {
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 		contest.title = req.body.title;
 		contest.subtitle = req.body.subtitle;
-		let np = JSON.parse(req.body.problems), xp = [], rsh = false;
+		let np = JSON.parse(req.body.problems),
+			xp = [],
+			rsh = false;
 		for (var p of np) {
 			if (p.id && await Problem.fromID(p.id)) xp.push(p);
 		}
@@ -94,7 +105,9 @@ app.post('/contest/:id/edit', async (req, res) => {
 		await contest.save();
 
 		if (rsh) {
-			let players = await ContestPlayer.query(null, { contest_id: contest.id });
+			let players = await ContestPlayer.query(null, {
+				contest_id: contest.id
+			});
 			for (var x of players) x.refreshScore();
 		}
 
@@ -133,7 +146,12 @@ app.get('/contest/:id', async (req, res) => {
 			});
 		}
 
-		problems = problems.map(x => ({ problem: x, status: null, judge_id: null, statistics: null }));
+		problems = problems.map(x => ({
+			problem: x,
+			status: null,
+			judge_id: null,
+			statistics: null
+		}));
 		if (player) {
 			for (let problem of problems) {
 				if (contest.type === 'noi') {
@@ -172,7 +190,10 @@ app.get('/contest/:id', async (req, res) => {
 			await contest.loadRelationships();
 			let players = await contest.ranklist.getPlayers();
 			for (let problem of problems) {
-				problem.statistics = { attempt: 0, accepted: 0 };
+				problem.statistics = {
+					attempt: 0,
+					accepted: 0
+				};
 
 				if (contest.type === 'ioi' || contest.type === 'noi') {
 					problem.statistics.partially = 0;
@@ -181,8 +202,8 @@ app.get('/contest/:id', async (req, res) => {
 				for (let player of players) {
 					if (player.score_details[problem.problem.id]) {
 						problem.statistics.attempt++;
-						if ((contest.type === 'acm' && player.score_details[problem.problem.id].accepted)
-							|| ((contest.type === 'noi' || contest.type === 'ioi') && player.score_details[problem.problem.id].score === 100)) {
+						if ((contest.type === 'acm' && player.score_details[problem.problem.id].accepted) ||
+							((contest.type === 'noi' || contest.type === 'ioi') && player.score_details[problem.problem.id].score === 100)) {
 							problem.statistics.accepted++;
 						}
 
@@ -286,11 +307,15 @@ app.get('/contest/:id/submissions', async (req, res) => {
 			}
 
 			if (req.query.language) where.language = req.query.language;
-			if (req.query.status) where.status = { $like: req.query.status + '%' };
+			if (req.query.status) where.status = {
+				$like: req.query.status + '%'
+			};
 		}
 
 		let paginate = zoj.utils.paginate(await JudgeState.count(where), req.query.page, zoj.config.page.judge_state);
-		let judge_state = await JudgeState.query(paginate, where, [['submit_time', 'desc']]);
+		let judge_state = await JudgeState.query(paginate, where, [
+			['submit_time', 'desc']
+		]);
 
 		await judge_state.forEachAsync(async obj => obj.allowedSeeCode = await obj.isAllowedSeeCodeBy(res.locals.user));
 		await judge_state.forEachAsync(async obj => {
@@ -336,6 +361,7 @@ app.get('/contest/:id/estimate', async (req, res) => {
 		});
 
 		for (var p of problems) {
+			if (!player.score_details[p.id]) player.score_details[p.id] = new Object();
 			if (!player.score_details[p.id].self) {
 				player.score_details[p.id].self = {
 					score: 0,
