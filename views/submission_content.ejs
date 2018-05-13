@@ -270,6 +270,7 @@ function update_submission() {
         }
       }
       else if (!x.find('#not_pending').length) update_submission();
+      Prism.highlightAll();
     });
   }, 500);
 }
