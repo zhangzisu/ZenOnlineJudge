@@ -33,8 +33,8 @@ function getAverageRank(contestant, allContestants) {
 function getRatingToRank(contestantIndex, allContestants) {
     let averageRank = getAverageRank(contestantIndex, allContestants);
 
-    let left = 1;// contestant.getPrevRating() - 2 * minDelta;
-    let right = 8000;// contestant.getPrevRating() + 2 * maxDelta;
+    let left = 1; // contestant.getPrevRating() - 2 * minDelta;
+    let right = 8000; // contestant.getPrevRating() + 2 * maxDelta;
 
     while (right - left > 1) {
         const mid = (left + right) / 2;
@@ -66,11 +66,16 @@ function calculateDeltas(allContestants) {
     const deltaSum2 = _.sum(deltas.slice(0, zeroSumCount));
     const inc2 = Math.min(Math.max(-deltaSum2 / zeroSumCount, -10), 0);
     deltas = deltas.map(d => d + inc2);
+    deltas = deltas.map(d => Math.round(d));
 
     return deltas;
 }
 
-module.exports = function(allContestants) {
+module.exports = function (allContestants) {
     const deltas = calculateDeltas(allContestants);
-    return allContestants.map((contestant, i) => ({ user: contestant.user, rank: contestant.rank, currentRating: contestant.currentRating + deltas[i] }));
+    return allContestants.map((contestant, i) => ({
+        user: contestant.user,
+        rank: contestant.rank,
+        currentRating: contestant.currentRating + deltas[i]
+    }));
 }
