@@ -598,15 +598,16 @@ app.post('/problem/:id/dis_protect', async (req, res) => {
 });
 
 app.post('/problem/:id/submit', async (req, res) => {
-	let id = parseInt(req.params.id);
-	let problem = await Problem.fromID(id);
-
-	if (!problem) throw new ErrorMessage('No such problem.');
-	if (!zoj.config.languages[req.body.language]) throw new ErrorMessage('Permission denied.');
-	if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': zoj.utils.makeUrl(['problem', id]) }) });
-
-	let judge_state;
 	try {
+		let id = parseInt(req.params.id);
+		let problem = await Problem.fromID(id);
+
+		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!zoj.config.languages[req.body.language]) throw new ErrorMessage('Permission denied.');
+		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': zoj.utils.makeUrl(['problem', id]) }) });
+
+		let judge_state;
+
 		let code;
 		if (req.body.code.length > zoj.config.limit.submit_code) throw new ErrorMessage('Your code is too long.');
 		code = req.body.code;
