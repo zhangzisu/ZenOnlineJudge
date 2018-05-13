@@ -183,7 +183,7 @@ div[class*=ace_br] {
           if (contest) formUrl = zoj.utils.makeUrl(['problem', problem.id, 'submit'], { contest_id: contest.id });
           else formUrl = zoj.utils.makeUrl(['problem', problem.id, 'submit']);
           %>
-          <form class="ui form" action="<%= formUrl %>" method="post" onsubmit="return submit_code()" id="submit_code" enctype="multipart/form-data">
+          <form class="ui form" action="<%= formUrl %>" method="post" onsubmit="return submit_code()" id="submit_code">
               <input name="language" type="hidden" id="form">
               <input name="code" type="hidden">
               <div class="ui grid">
