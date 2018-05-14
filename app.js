@@ -66,7 +66,6 @@ global.zoj = {
 		let multer = require('multer');
 		app.multer = multer({ dest: zoj.utils.resolvePath(zoj.config.upload_dir, 'tmp') });
 
-		// This should before load api_v2, to init the `res.locals.user`
 		this.loadHooks();
 
 		let csurf = require('csurf');

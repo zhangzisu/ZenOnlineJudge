@@ -22,6 +22,7 @@ let db = zoj.db;
 
 let User = zoj.model('user');
 let File = zoj.model('file');
+let Group = zoj.model('group');
 
 let model = db.define('problem',
 	{
@@ -51,8 +52,9 @@ let model = db.define('problem',
 
 		ac_num: { type: Sequelize.INTEGER },
 		submit_num: { type: Sequelize.INTEGER },
-		is_public: { type: Sequelize.BOOLEAN },
-		is_protected: { type: Sequelize.BOOLEAN },
+
+		groups_exlude_config: { type: Sequelize.TEXT, json: true },
+		groups_include_config: { type: Sequelize.TEXT, json: true },
 
 		datainfo: { type: Sequelize.TEXT, json: true }
 	}, {
@@ -89,33 +91,50 @@ class Problem extends Model {
 		this.user = await User.fromID(this.user_id);
 		this.publicizer = await User.fromID(this.publicizer_id);
 		this.additional_file = await File.fromID(this.additional_file_id);
+		this.groups_exlude = [];
+		for (var group of this.groups_exlude_config) {
+			this.groups_exlude.push(await Group.fromID(group));
+		}
+		this.groups_include = [];
+		for (var group of this.groups_include_config) {
+			this.groups_include.push(await Group.fromID(group));
+		}
+	}
+
+	static async match(gA, gB) {
+		gA.sort((a, b) => { a.id < b.id });
+		gB.sort((a, b) => { a.id < b.id });
+		let idA = 0, idB = 0;
+		while (idA < gA.length && idB < gB.length) {
+			if (gA[idA].id === gB[idB].id) return true;
+			if (gA[idA].id < gB[idB].id) idA++;
+			else idB++;
+		}
+		return false;
 	}
 
 	async isAllowedEditBy(user) {
 		if (!user) return false;
-		if (await user.admin >= 3) return true;
-		return this.user_id === user.id;
-		// 1. The user is teacher/system admin
-		// 2. The user is the creator of this problem
+		if (this.user_id === user.id) return true;
+		await user.loadRelationships();
+		return user.haveAccess('problem_manage');
 	}
 
 	async isAllowedUseBy(user) {
-		if (this.is_public && !this.is_protected) return true;
 		if (!user) return false;
 		if (this.user_id === user.id) return true;
-		if (this.is_public && this.is_protected) return user.admin >= 1;
-		if (user.admin >= 3) return true;
+		await user.loadRelationships();
+		if(user.haveAccess('problem_manage'))return true;
+		if(await match(user.groups, this.groups_exlude))return false;
+		if(await match(user.groups, this.groups_include))return true;
 		return false;
-		// 1. The problem is publid and not protected
-		// 2. The user is the creator of the problem
-		// 3. The problem is public and the user the indoor student/student admin
-		// 4. The user is teacher/system admin
 	}
 
 	async isAllowedManageBy(user) {
 		if (!user) return false;
-		return (this.user_id === user.id || user.admin >= 3);
-		// The user is teacher/system admin
+		if (this.user_id === user.id) return true;
+		await user.loadRelationships();
+		return user.haveAccess('problem_manage');
 	}
 
 	getTestdataPath() {

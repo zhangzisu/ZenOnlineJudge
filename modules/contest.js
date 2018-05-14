@@ -17,24 +17,19 @@ function hasRecord(player, id) {
 
 app.get('/contests', async (req, res) => {
 	try {
-		let where;
-		if (res.locals.user && await res.locals.user.admin >= 3) where = {}
-		else if (res.locals.user && await res.locals.user.admin >= 1) where = {
-			is_public: true
-		};
-		else where = {
-			$and: {
-				is_public: true,
-				is_protected: false
-			}
-		};
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 
-		let paginate = zoj.utils.paginate(await Contest.count(where), req.query.page, zoj.config.page.contest);
-		let contests = await Contest.query(paginate, where, [
+		let paginate = zoj.utils.paginate(await Contest.count({}), req.query.page, zoj.config.page.contest);
+		let contests = await Contest.query(paginate, {}, [
 			['start_time', 'desc']
 		]);
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
+
+		for (var i in contests) {
+			await contests[i].loadRelationships();
+			if (! await contests[i].isAllowedUseBy(user)) delete contests[i];
+		}
 
 		res.render('contests', {
 			contests: contests,
@@ -50,7 +45,8 @@ app.get('/contests', async (req, res) => {
 
 app.get('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
@@ -75,7 +71,8 @@ app.get('/contest/:id/edit', async (req, res) => {
 
 app.post('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
@@ -130,11 +127,15 @@ app.post('/contest/:id/edit', async (req, res) => {
 
 app.get('/contest/:id', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+
 		let contest_id = parseInt(req.params.id);
 
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+		await contest.loadRelationships();
+
+		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		contest.allowedEdit = await contest.isAllowedEditBy(res.locals.user);
 		contest.running = await contest.isRunning();
@@ -192,7 +193,7 @@ app.get('/contest/:id', async (req, res) => {
 		}
 
 		let hasStatistics = false;
-		if (contest.ended || (res.locals.user && res.locals.user.admin >= 3)) {
+		if (await contest.isAllowedSeeResultBy(res.locals.user)) {
 			hasStatistics = true;
 
 			await contest.loadRelationships();
@@ -238,6 +239,7 @@ app.get('/contest/:id', async (req, res) => {
 
 app.get('/contest/:id/ranklist', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
@@ -282,10 +284,13 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 
 app.get('/contest/:id/submissions', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
 		if (!contest) throw new ErrorMessage('No such contest.');
+		await contest.loadRelationships();
+
 		if (!await contest.isAllowedSeeResultBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		contest.ended = await contest.isEnded();
@@ -300,20 +305,18 @@ app.get('/contest/:id/submissions', async (req, res) => {
 		where.type = 1;
 		where.type_info = contest_id;
 
-		if (contest.ended || (res.locals.user && res.locals.user.admin >= 3)) {
-			if (!((!res.locals.user || !res.locals.user.admin >= 3) && !contest.ended && contest.type === 'acm')) {
-				let minScore = parseInt(req.query.min_score);
-				if (isNaN(minScore)) minScore = 0;
-				let maxScore = parseInt(req.query.max_score);
-				if (isNaN(maxScore)) maxScore = 100;
+		if (await contest.isAllowedSeeResultBy(res.locals.user)) {
+			let minScore = parseInt(req.query.min_score);
+			if (isNaN(minScore)) minScore = 0;
+			let maxScore = parseInt(req.query.max_score);
+			if (isNaN(maxScore)) maxScore = 100;
 
-				where.score = {
-					$and: {
-						$gte: parseInt(minScore),
-						$lte: parseInt(maxScore)
-					}
-				};
-			}
+			where.score = {
+				$and: {
+					$gte: parseInt(minScore),
+					$lte: parseInt(maxScore)
+				}
+			};
 
 			if (req.query.language) where.language = req.query.language;
 			if (req.query.status) where.status = {
@@ -355,11 +358,13 @@ app.get('/contest/:id/submissions', async (req, res) => {
 
 app.get('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.');
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+
+		await contest.loadRelationships();
+		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problemset = await contest.getProblems();
 		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
@@ -394,11 +399,13 @@ app.get('/contest/:id/estimate', async (req, res) => {
 
 app.post('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.');
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+
+		await contest.loadRelationships();
+		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problemset = await contest.getProblems();
 		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
@@ -429,11 +436,13 @@ app.post('/contest/:id/estimate', async (req, res) => {
 
 app.get('/contest/:id/:pid', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
 
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+		await contest.loadRelationships();
+		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
 		problems_id = await problems_id.mapAsync(x => (x.id));
@@ -476,9 +485,13 @@ app.get('/contest/:id/:pid', async (req, res) => {
 
 app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let id = parseInt(req.params.id);
 		let contest = await Contest.fromID(id);
 		if (!contest) throw new ErrorMessage('No such contest.');
+
+		await contest.loadRelationships();
+		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
 		problems_id = await problems_id.mapAsync(x => (x.id));

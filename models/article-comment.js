@@ -50,10 +50,11 @@ class ArticleComment extends Model {
 	}
 
 	async isAllowedEditBy(user) {
-		await this.loadRelationships();
-		return user && (user.admin >= 2 || this.user_id === user.id || user.id === this.article.user_id);
-		// 1.The user is student/teacher/system admin
-		// 2.The user is the owner of this article/comment
+		if(!user)return false;
+		await this.loadRelationships(); 
+		if(this.user_id === user.id || user.id === this.article.user_id)return true;
+		await user.loadRelationships();
+		return await user.haveAccess('comment-edit'); 
 	}
 
 	getModel() { return model; }

@@ -7,6 +7,7 @@ let User = zoj.model('user');
 
 app.get('/discussion', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let where = { problem_id: null };
 		let paginate = zoj.utils.paginate(await Article.count(where), req.query.page, zoj.config.page.discussion);
 		let articles = await Article.query(paginate, where, [['public_time', 'desc']]);
@@ -28,6 +29,7 @@ app.get('/discussion', async (req, res) => {
 
 app.get('/problem/:pid/discussion', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let pid = parseInt(req.params.pid);
 		let problem = await Problem.fromID(pid);
 		if (!problem) throw new ErrorMessage('No such problem.');
@@ -56,6 +58,7 @@ app.get('/problem/:pid/discussion', async (req, res) => {
 
 app.get('/article/:id', async (req, res) => {
 	try {
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
 		if (!article) throw new ErrorMessage('No such article.');
@@ -102,7 +105,7 @@ app.get('/article/:id', async (req, res) => {
 
 app.get('/article/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'Login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -128,7 +131,7 @@ app.get('/article/:id/edit', async (req, res) => {
 
 app.post('/article/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -154,7 +157,6 @@ app.post('/article/:id/edit', async (req, res) => {
 		article.title = req.body.title;
 		article.content = req.body.content;
 		article.update_time = time;
-		article.is_notice = res.locals.user && res.locals.user.admin >= 2 && req.body.is_notice === 'on';
 
 		await article.save();
 
@@ -169,7 +171,7 @@ app.post('/article/:id/edit', async (req, res) => {
 
 app.post('/article/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -193,7 +195,7 @@ app.post('/article/:id/delete', async (req, res) => {
 
 app.post('/article/:id/comment', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -224,7 +226,7 @@ app.post('/article/:id/comment', async (req, res) => {
 
 app.post('/article/:article_id/comment/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
 
 		let id = parseInt(req.params.id);
 		let comment = await ArticleComment.fromID(id);

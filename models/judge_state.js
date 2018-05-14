@@ -6,6 +6,7 @@ let db = zoj.db;
 let User = zoj.model('user');
 let Problem = zoj.model('problem');
 let Contest = zoj.model('contest');
+let Group = zoj.model('group');
 
 let model = db.define('judge_state',
 	{
@@ -32,7 +33,11 @@ let model = db.define('judge_state',
 		 * "type" indicate it's contest's submission(type = 1) or normal submission(type = 0)
 		 * "type_info" will be the contest id if it's a contest's submission
 		 */
-		type_info: { type: Sequelize.INTEGER }
+		type_info: { type: Sequelize.INTEGER },
+
+		groups_exlude_config: { type: Sequelize.TEXT, json: true },
+		groups_include_config: { type: Sequelize.TEXT, json: true }
+
 	}, {
 		timestamps: false,
 		tableName: 'judge_state',
@@ -64,13 +69,35 @@ class JudgeState extends Model {
 			total_time: 0,
 			max_memory: 0,
 			status: 'Waiting',
-			result: '{ "status": "Waiting", "total_time": 0, "max_memory": 0, "score": 0, "case_num": 0, "compiler_output": "", "pending": true, "judger": "" }'
+			result: '{ "status": "Waiting", "total_time": 0, "max_memory": 0, "score": 0, "case_num": 0, "compiler_output": "", "pending": true, "judger": "" }',
+			groups_exlude_config: ''
+
 		}, val)));
 	}
 
 	async loadRelationships() {
 		this.user = await User.fromID(this.user_id);
 		if (this.problem_id) this.problem = await Problem.fromID(this.problem_id);
+		groups_exlude = [];
+		for (var group of groups_exlude_config) {
+			groups_exlude.push(await Group.fromID(group));
+		}
+		groups_include = [];
+		for (var group of groups_include_config) {
+			groups_include.push(await Group.fromID(group));
+		}
+	}
+
+	static async match(gA, gB) {
+		gA.sort((a, b) => { a.id < b.id });
+		gB.sort((a, b) => { a.id < b.id });
+		let idA = 0, idB = 0;
+		while (idA < gA.length && idB < gB.length) {
+			if (gA[idA].id === gB[idB].id) return true;
+			if (gA[idA].id < gB[idB].id) idA++;
+			else idB++;
+		}
+		return false;
 	}
 
 	async isAllowedVisitBy(user) {
@@ -83,6 +110,7 @@ class JudgeState extends Model {
 		if (user.id === this.user_id) return true;
 		// The user is the submitter.
 		if (this.type === 0) {
+			// TODO
 			if (user.admin < 1) return this.problem.is_public && !this.problem.is_protected;
 			if (user.admin < 3) return this.problem.is_public;
 			return true;

@@ -28,7 +28,8 @@ let model = db.define('contest',
 
 		information: { type: Sequelize.TEXT },
 		problems: { type: Sequelize.TEXT, json: true },
-
+		groups_exlude_config: { type: Sequelize.TEXT, json: true },
+		groups_include_config: { type: Sequelize.TEXT, json: true },
 		ranklist_id: {
 			type: Sequelize.INTEGER,
 			references: {
@@ -37,8 +38,6 @@ let model = db.define('contest',
 			}
 		},
 
-		is_public: { type: Sequelize.BOOLEAN },
-		is_protected: { type: Sequelize.BOOLEAN }
 	}, {
 		timestamps: false,
 		tableName: 'contest',
@@ -60,25 +59,57 @@ class Contest extends Model {
 			type: '',
 			start_time: 0,
 			end_time: 0,
-			holder: 0,
+			holder_id: 0,
 			ranklist_id: 0,
-			is_public: false,
-			is_protected: true
+			groups_exlude_config: '',
+			groups_include_config: ''
 		}, val)));
 	}
 
 	async loadRelationships() {
 		this.holder = await User.fromID(this.holder_id);
 		this.ranklist = await ContestRanklist.fromID(this.ranklist_id);
+		this.groups_exlude = [];
+		for (var group of this.groups_exlude_config) {
+			this.groups_exlude.push(await Group.fromID(group));
+		}
+		this.groups_include = [];
+		for (var group of this.groups_include_config) {
+			this.groups_include.push(await Group.fromID(group));
+		}
+	}
+
+	static async match(gA, gB) {
+		gA.sort((a, b) => { a.id < b.id });
+		gB.sort((a, b) => { a.id < b.id });
+		let idA = 0, idB = 0;
+		while (idA < gA.length && idB < gB.length) {
+			if (gA[idA].id === gB[idB].id) return true;
+			if (gA[idA].id < gB[idB].id) idA++;
+			else idB++;
+		}
+		return false;
 	}
 
 	async isAllowedEditBy(user) {
-		return user && (user.admin >= 3 || this.holder_id === user.id);
+		if (!user) return false;
+		if (this.holder_id === user.id) return true;
+		return user.haveAccess('contest_manage');
+	}
+
+	async isAllowedUseBy(user){
+		if (!user) return false;
+		if (this.holder_id === user.id) return true;
+		if(user.haveAccess('contest_manage'))return true;
+		if(await match(user.groups, this.groups_exlude))return false;
+		if(await match(user.groups, this.groups_include))return true;
+		return false;
 	}
 
 	async isAllowedSeeResultBy(user) {
-		if (this.type == 'ioi') return true;
-		return (user && (user.admin >= 3 || this.holder_id === user.id)) || !(await this.isRunning());
+		if (this.type == 'ioi' || !(await this.isRunning())) return true;
+		if (this.holder_id === user.id) return true;
+		return await user.haveAccess('contest_result');
 	}
 
 	async getProblems() {

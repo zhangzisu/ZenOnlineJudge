@@ -34,7 +34,8 @@
         "user": {
             "show": true,
             "rating": 1500
-        }
+        },
+        "group": {}
     },
     "sorting": {
         "ranklist": {
