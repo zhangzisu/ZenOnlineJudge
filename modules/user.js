@@ -87,7 +87,6 @@ app.get('/forget', async (req, res) => {
 app.get('/user/:id', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
@@ -137,7 +136,6 @@ app.get('/user/:id', async (req, res) => {
 app.get('/user/:id/edit', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
@@ -167,7 +165,7 @@ app.post('/user/:id/edit', async (req, res) => {
 	let user;
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+
 
 		let id = parseInt(req.params.id);
 		user = await User.fromID(id);
@@ -193,14 +191,14 @@ app.post('/user/:id/edit', async (req, res) => {
 		user.theme = req.body.theme;
 
 		if (await res.locals.user.haveAccess('user_edit')) {
-			if (req.body.groups) {
-				if (!Array.isArray(req.body.groups)) req.body.groups = [req.body.groups];
-				let groups = await req.body.groups.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
-				user.group_config = groups;
-			}
+			if (!req.body.groups) req.body.groups = [];
+			if (!Array.isArray(req.body.groups)) req.body.groups = [req.body.groups];
+			let groups = await req.body.groups.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+			user.group_config = groups;
 		}
 
 		await user.save();
+		await user.loadRelationships();
 		if (user.id === res.locals.user.id) res.locals.user = user;
 
 		res.redirect('/user/' + id);

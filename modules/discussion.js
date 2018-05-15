@@ -106,7 +106,7 @@ app.get('/article/:id', async (req, res) => {
 app.get('/article/:id/edit', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+		
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);

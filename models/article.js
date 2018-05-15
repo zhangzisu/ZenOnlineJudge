@@ -60,7 +60,7 @@ class Article extends Model {
 	async isAllowedEditBy(user) {
 		if (!user) return false;
 		if (this.user_id === user.id) return true;
-		await user.loadRelationships();
+		
 		return await user.haveAccess('article_edit');
 	}
 
@@ -68,7 +68,7 @@ class Article extends Model {
 		if (!user) return false;
 		if (this.allow_comment) return true;
 		if (this.user_id === user.id) return true;
-		await user.loadRelationships();
+		
 		return await user.haveAccess('article_comment');
 	}
 

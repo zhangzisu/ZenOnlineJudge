@@ -1,6 +1,7 @@
 'use strict';
 
 let Contest = zoj.model('contest');
+let Group = zoj.model('group');
 let ContestRanklist = zoj.model('contest_ranklist');
 let ContestPlayer = zoj.model('contest_player');
 let Problem = zoj.model('problem');
@@ -18,7 +19,7 @@ function hasRecord(player, id) {
 app.get('/contests', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+
 
 		let paginate = zoj.utils.paginate(await Contest.count({}), req.query.page, zoj.config.page.contest);
 		let contests = await Contest.query(paginate, {}, [
@@ -49,7 +50,7 @@ app.get('/contests', async (req, res) => {
 app.get('/contest/:id/edit', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+
 		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
@@ -77,7 +78,7 @@ app.get('/contest/:id/edit', async (req, res) => {
 app.post('/contest/:id/edit', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+
 		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
@@ -111,6 +112,16 @@ app.post('/contest/:id/edit', async (req, res) => {
 		contest.end_time = zoj.utils.parseDate(req.body.end_time);
 		contest.type = req.body.type;
 
+		if (!req.body.groups_exlude) req.body.groups_exlude = [];
+		if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
+		let new_groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+		contest.groups_exlude_config = new_groups;
+
+		if (!req.body.groups_include) req.body.groups_include = [];
+		if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
+		new_groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+		contest.groups_include_config = new_groups;
+
 		await contest.save();
 
 		if (rsh) {
@@ -133,13 +144,14 @@ app.get('/contest/:id', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
 
+
 		let contest_id = parseInt(req.params.id);
 
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
 		await contest.loadRelationships();
 
-		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		contest.allowedEdit = await contest.isAllowedEditBy(res.locals.user);
 		contest.running = await contest.isRunning();
@@ -368,7 +380,7 @@ app.get('/contest/:id/estimate', async (req, res) => {
 		if (!contest) throw new ErrorMessage('No such contest.');
 
 		await contest.loadRelationships();
-		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problemset = await contest.getProblems();
 		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
@@ -377,6 +389,13 @@ app.get('/contest/:id/estimate', async (req, res) => {
 			contest_id: contest.id,
 			user_id: res.locals.user.id
 		});
+
+		if (!player) {
+			player = await ContestPlayer.create({
+				contest_id: this.id,
+				user_id: res.locals.user.id
+			});
+		}
 
 		for (var p of problems) {
 			if (!player.score_details[p.id]) player.score_details[p.id] = new Object();
@@ -409,7 +428,7 @@ app.post('/contest/:id/estimate', async (req, res) => {
 		if (!contest) throw new ErrorMessage('No such contest.');
 
 		await contest.loadRelationships();
-		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problemset = await contest.getProblems();
 		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
@@ -418,6 +437,13 @@ app.post('/contest/:id/estimate', async (req, res) => {
 			contest_id: contest.id,
 			user_id: res.locals.user.id
 		});
+
+		if (!player) {
+			player = await ContestPlayer.create({
+				contest_id: this.id,
+				user_id: judge_state.user_id
+			});
+		}
 
 		for (var p of problems) {
 			let scoreName = `s_${p.id}`;
@@ -446,7 +472,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 		if (!contest) throw new ErrorMessage('No such contest.');
 
 		await contest.loadRelationships();
-		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
 		problems_id = await problems_id.mapAsync(x => (x.id));
@@ -495,7 +521,7 @@ app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 		if (!contest) throw new ErrorMessage('No such contest.');
 
 		await contest.loadRelationships();
-		if (!contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
 		problems_id = await problems_id.mapAsync(x => (x.id));

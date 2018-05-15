@@ -53,7 +53,7 @@ class ArticleComment extends Model {
 		if(!user)return false;
 		await this.loadRelationships(); 
 		if(this.user_id === user.id || user.id === this.article.user_id)return true;
-		await user.loadRelationships();
+		
 		return await user.haveAccess('comment-edit'); 
 	}
 

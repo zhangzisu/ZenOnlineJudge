@@ -38,7 +38,7 @@ app.get('/submissions', async (req, res) => {
 		let judge_state = await JudgeState.query(paginate, where, [['submit_time', 'desc']]);
 
 		await judge_state.forEachAsync(async obj => obj.loadRelationships());
-		await res.locals.user.loadRelationships();
+		
 		await judge_state.forEachAsync(async obj => obj.allowedSeeCode = await obj.isAllowedSeeCodeBy(res.locals.user));
 		await judge_state.forEachAsync(async obj => obj.allowedSeeData = await obj.isAllowedSeeDataBy(res.locals.user));
 		
@@ -222,7 +222,7 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
 
-		await res.locals.user.loadRelationships();
+		
 		if (judge.pending && !await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('The submittion is judging.');
 
 		await judge.loadRelationships();

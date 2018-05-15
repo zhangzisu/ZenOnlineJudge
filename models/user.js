@@ -44,7 +44,7 @@ class User extends Model {
 			sex: 0,
 			rating: zoj.config.default.user.rating,
 			theme: 'light',
-			group_config:'[1]'
+			group_config: '[1]'
 		}, val)));
 	}
 
@@ -71,9 +71,10 @@ class User extends Model {
 		}
 	}
 
-	async haveAccess(name){
-		for(var group of this.groups){
-			if(await group.getAccess(name))return true;
+	async haveAccess(name) {
+		if (!this.groups) await this.loadRelationships();
+		for (var group of this.groups) {
+			if (await group.getAccess(name)) return true;
 		}
 		return false;
 	}

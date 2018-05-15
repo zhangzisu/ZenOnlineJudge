@@ -15,7 +15,7 @@ app.get('/problems', async (req, res) => {
 
 		let paginate = zoj.utils.paginate(await Problem.count({}), req.query.page, zoj.config.page.problem);
 		let problems = await Problem.query(paginate, {});
-		await res.locals.user.loadRelationships();
+		
 
 		let tmp = [];
 		for (var p of problems) {
@@ -46,7 +46,7 @@ app.get('/problems', async (req, res) => {
 app.get('/problems/search', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+		
 
 		let id = parseInt(req.query.keyword) || 0;
 
@@ -91,7 +91,7 @@ app.get('/problems/search', async (req, res) => {
 app.get('/problems/tag/:tagIDs', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+		
 
 		let tagIDs = Array.from(new Set(req.params.tagIDs.split(',').map(x => parseInt(x))));
 		let tags = await tagIDs.mapAsync(async tagID => ProblemTag.fromID(tagID));
@@ -145,7 +145,7 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 app.get('/problem/:id', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+		
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -208,7 +208,7 @@ app.get('/problem/:id/export/:token?', async (req, res) => {
 app.get('/problem/:id/edit', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		await res.locals.user.loadRelationships();
+		
 
 		let id = parseInt(req.params.id) || 0;
 		let problem = await Problem.fromID(id);
@@ -246,7 +246,7 @@ app.post('/problem/:id/edit', async (req, res) => {
 
 		let id = parseInt(req.params.id) || 0;
 		let problem = await Problem.fromID(id);
-		await res.locals.user.loadRelationships();
+		
 
 		if (!problem) {
 			problem = await Problem.create();
@@ -291,17 +291,15 @@ app.post('/problem/:id/edit', async (req, res) => {
 		await problem.setTags(newTagIDs);
 
 		if (await res.locals.user.haveAccess('problem_edit')) {
-			if (req.body.groups_exlude) {
-				if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
-				let groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
-				problem.groups_exlude_config = groups;
-			}
+			if (!req.body.groups_exlude) req.body.groups_exlude = [];
+			if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
+			let new_groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+			problem.groups_exlude_config = new_groups;
 
-			if (req.body.groups_include) {
-				if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
-				let groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
-				problem.groups_include_config = groups;
-			}
+			if (!req.body.groups_include) req.body.groups_include = [];
+			if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
+			new_groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+			problem.groups_include_config = new_groups;
 		}
 
 		await problem.save();
@@ -481,7 +479,7 @@ app.post('/problem/:id/manage', app.multer.fields([{ name: 'testdata', maxCount:
 
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
-		await res.locals.user.loadRelationships();
+		
 
 		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
@@ -576,7 +574,7 @@ app.post('/problem/:id/delete', async (req, res) => {
 		let problem = await Problem.fromID(id);
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
-		await res.locals.user.loadRelationships();
+		
 		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		await problem.delete();
@@ -599,7 +597,7 @@ app.get('/problem/:id/testdata', async (req, res) => {
 
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
-		await res.locals.user.loadRelationships();
+		
 		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		let testdata = await problem.listTestdata();
@@ -628,7 +626,7 @@ app.post('/problem/:id/testdata/upload', app.multer.array('file'), async (req, r
 
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
-		await res.locals.user.loadRelationships();
+		
 		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		if (req.files) {
@@ -655,7 +653,7 @@ app.post('/problem/:id/testdata/delete/:filename', async (req, res) => {
 
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
-		await res.locals.user.loadRelationships();
+		
 		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		await problem.deleteTestdataSingleFile(req.params.filename);
@@ -678,7 +676,7 @@ app.get('/problem/:id/testdata/download/:filename?', async (req, res) => {
 
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
-		await res.locals.user.loadRelationships();
+		
 		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		if (!req.params.filename) {
@@ -770,7 +768,7 @@ app.get('/problem/:id/statistics/:type', async (req, res) => {
 
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
-		await res.locals.user.loadRelationships();
+		
 		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		let count = await problem.countStatistics(req.params.type);
