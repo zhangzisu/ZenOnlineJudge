@@ -9,16 +9,16 @@
     },
     "hostname": "http://localhost",
     "db": {
-        "database": "zoj",
-        "username": "root",
-        "password": "1415926535897932",
+        "database": "",
+        "username": "",
+        "password": "",
         "host": null,
-        "dialect": "mysql",
+        "dialect": "",
         "storage": ""
     },
     "register_mail": {
         "enabled": false,
-        "host": "smtp-mail.outlook.com",
+        "host": "",
         "port": 587,
         "username": "",
         "password": "",
