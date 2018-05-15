@@ -33,7 +33,7 @@ class UserGroup extends Model {
 			if (zoj.config.default.group[name]) {
 				this.config[name] = zoj.config.default.group[name];
 			} else {
-				this.config[name] = false;
+				this.config[name] = (this.name === "Administrators" ? true : false);
 			}
 			await this.save();
 			return this.config[name];

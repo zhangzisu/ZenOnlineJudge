@@ -44,7 +44,7 @@ class User extends Model {
 			sex: 0,
 			rating: zoj.config.default.user.rating,
 			theme: 'light',
-			group_config: '[1]'
+			group_config: '[2]'
 		}, val)));
 	}
 
