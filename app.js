@@ -226,7 +226,7 @@ if (firstRun) {
 
 		let user = await User.create({
 			username: 'administrator',
-			password: conif.getConsoleInput("Default Administrator password: ", false).trim(),
+			password: zoj.utils.md5(conif.getConsoleInput("Default Administrator password: ", false).trim()),
 			email: conif.getConsoleInput("Default Administrator email: ", false).trim(),
 			public_email: true,
 			group_config: '[1]'
