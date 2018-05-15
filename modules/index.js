@@ -20,10 +20,12 @@ app.get('/', async (req, res) => {
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
 
-		for (var i = 0; i < contests.length; i++) {
-			await contests[i].loadRelationships();
-			if (! await contests[i].isAllowedUseBy(res.locals.user)) delete contests[i];
+		let tmp = [];
+		for (var c of contests) {
+			await c.loadRelationships();
+			if (await c.isAllowedUseBy(res.locals.user)) tmp.push(c);
 		}
+		contests = tmp;
 
 		res.render('index', {
 			ranklist: ranklist,

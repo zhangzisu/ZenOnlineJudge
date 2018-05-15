@@ -202,7 +202,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
                 <strong>Standard Error</strong>
                 <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.user_err %></code></pre></div>
               <% } %>
-              <% if (testcase.runner_message && judge.allowedManage) { %>
+              <% if (testcase.runner_message && judge.allowedRejudge) { %>
                 <strong>Debugging Information</strong>
                 <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.runner_message %></code></pre></div>
               <% } %>

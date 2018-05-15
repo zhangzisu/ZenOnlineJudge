@@ -79,8 +79,6 @@ class Problem extends Model {
 
 			ac_num: 0,
 			submit_num: 0,
-			is_public: false,
-			is_protected: true,
 
 			datainfo: '',
 			testdata_hash: '',
@@ -104,7 +102,7 @@ class Problem extends Model {
 		}
 	}
 
-	static async match(gA, gB) {
+	async match(gA, gB) {
 		gA.sort((a, b) => { a.id < b.id });
 		gB.sort((a, b) => { a.id < b.id });
 		let idA = 0, idB = 0;
@@ -125,9 +123,9 @@ class Problem extends Model {
 	async isAllowedUseBy(user) {
 		if (!user) return false;
 		if (this.user_id === user.id) return true;
-		if (user.haveAccess('problem_manage')) return true;
-		if (await match(user.groups, this.groups_exlude)) return false;
-		if (await match(user.groups, this.groups_include)) return true;
+		if (await user.haveAccess('problem_manage')) return true;
+		if (await this.match(user.groups, this.groups_exlude)) return false;
+		if (await this.match(user.groups, this.groups_include)) return true;
 		return false;
 	}
 

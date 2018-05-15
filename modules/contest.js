@@ -27,10 +27,12 @@ app.get('/contests', async (req, res) => {
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
 
-		for (var i = 0; i < contests.length; i++) {
-			await contests[i].loadRelationships();
-			if (!await contests[i].isAllowedUseBy(res.locals.user)) delete contests[i];
+		let tmp = [];
+		for (var c of contests) {
+			await c.loadRelationships();
+			if (await c.isAllowedUseBy(res.locals.user)) tmp.push(c);
 		}
+		contests = tmp;
 
 		res.render('contests', {
 			contests: contests,
@@ -107,8 +109,6 @@ app.post('/contest/:id/edit', async (req, res) => {
 		contest.information = req.body.information;
 		contest.start_time = zoj.utils.parseDate(req.body.start_time);
 		contest.end_time = zoj.utils.parseDate(req.body.end_time);
-		contest.is_public = req.body.is_public === 'on';
-		contest.is_protected = req.body.is_protected == 'on';
 		contest.type = req.body.type;
 
 		await contest.save();

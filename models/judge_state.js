@@ -99,7 +99,7 @@ class JudgeState extends Model {
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
 		if (this.type === 0) {
-			if (problem.isAllowedVisitBy(user)) return true;
+			if (await this.problem.isAllowedUseBy(user)) return true;
 			return await user.haveAccess('others_submission');
 		}
 		if (this.type === 1) {
@@ -118,7 +118,7 @@ class JudgeState extends Model {
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
 		if (this.type === 0) {
-			if (problem.isAllowedVisitBy(user)) return true;
+			if (await this.problem.isAllowedVisitBy(user)) return true;
 			return await user.haveAccess('others_submission');
 		}
 		if (this.type === 1) {
@@ -137,7 +137,7 @@ class JudgeState extends Model {
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
 		if (this.type === 0) {
-			if (problem.isAllowedVisitBy(user)) return true;
+			if (await this.problem.isAllowedUseBy(user)) return true;
 			return await user.haveAccess('others_submission');
 		}
 		if (this.type === 1) {

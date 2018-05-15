@@ -79,7 +79,7 @@ app.post('/admin/group/:id', async (req, res) => {
 			await group.save();
 		}
 
-		res.redirect(`/admin/group/${id}`);
+		res.redirect(`/admin/group/${group.id}`);
 	} catch (e) {
 		zoj.log(e);
 		res.render('error', {
@@ -110,7 +110,7 @@ app.post('/admin/message', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; }
 		await res.locals.user.loadRelationships();
 		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this.');
-
+		let id = parseInt(req.body.user_id) || null;
 		io.emit(req.body.type, {
 			user_id: id,
 			data: req.body.message

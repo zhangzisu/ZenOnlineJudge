@@ -17,10 +17,12 @@ app.get('/problems', async (req, res) => {
 		let problems = await Problem.query(paginate, {});
 		await res.locals.user.loadRelationships();
 
-		for (var i = 0; i < problems.length; i++) {
-			await problems[i].loadRelationships();
-			if (! await problems[i].isAllowedUseBy(res.locals.user)) delete problems[i];
+		let tmp = [];
+		for (var p of problems) {
+			await p.loadRelationships();
+			if (await p.isAllowedUseBy(res.locals.user)) tmp.push(p);
 		}
+		problems = tmp;
 
 		await problems.forEachAsync(async problem => {
 			problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
@@ -60,10 +62,12 @@ app.get('/problems/search', async (req, res) => {
 		let paginate = zoj.utils.paginate(await Problem.count(where), req.query.page, zoj.config.page.problem);
 		let problems = await Problem.query(paginate, where, order);
 
-		for (var i in problems) {
-			await problems[i].loadRelationships();
-			if (! await problems[i].isAllowedUseBy(res.locals.user)) delete problems[i];
+		let tmp = [];
+		for (var p of problems) {
+			await p.loadRelationships();
+			if (await p.isAllowedUseBy(res.locals.user)) tmp.push(p);
 		}
+		problems = tmp;
 
 		await problems.forEachAsync(async problem => {
 			problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
@@ -111,10 +115,12 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 		let paginate = zoj.utils.paginate(await Problem.count(sql), req.query.page, zoj.config.page.problem);
 		let problems = await Problem.query(sql + paginate.toSQL());
 
-		for (var i in problems) {
-			await problems[i].loadRelationships();
-			if (! await problems[i].isAllowedUseBy(res.locals.user)) delete problems[i];
+		let tmp = [];
+		for (var p of problems) {
+			await p.loadRelationships();
+			if (await p.isAllowedUseBy(res.locals.user)) tmp.push(p);
 		}
+		problems = tmp;
 
 		await problems.forEachAsync(async problem => {
 			problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
@@ -139,6 +145,7 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 app.get('/problem/:id', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
+		await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -205,7 +212,6 @@ app.get('/problem/:id/edit', async (req, res) => {
 
 		let id = parseInt(req.params.id) || 0;
 		let problem = await Problem.fromID(id);
-		await problem.loadRelationships();
 
 		if (!problem) {
 			problem = await Problem.create();
@@ -213,7 +219,9 @@ app.get('/problem/:id/edit', async (req, res) => {
 			problem.allowedEdit = true;
 			problem.tags = [];
 			problem.new = true;
+			await problem.loadRelationships();
 		} else {
+			await problem.loadRelationships();
 			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 			problem.allowedEdit = true;
 			problem.tags = await problem.getTags();
@@ -282,16 +290,18 @@ app.post('/problem/:id/edit', async (req, res) => {
 		let newTagIDs = await req.body.tags.map(x => parseInt(x)).filterAsync(async x => ProblemTag.fromID(x));
 		await problem.setTags(newTagIDs);
 
-		if (req.body.groups_exlude) {
-			if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
-			let groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
-			problem.groups_exlude_config = groups;
-		}
+		if (await res.locals.user.haveAccess('problem_edit')) {
+			if (req.body.groups_exlude) {
+				if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
+				let groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+				problem.groups_exlude_config = groups;
+			}
 
-		if (req.body.groups_include) {
-			if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
-			let groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
-			problem.groups_include_config = groups;
+			if (req.body.groups_include) {
+				if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
+				let groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+				problem.groups_include_config = groups;
+			}
 		}
 
 		await problem.save();

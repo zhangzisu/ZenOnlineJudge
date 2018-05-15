@@ -1,6 +1,7 @@
 'use strict';
 
 let User = zoj.model('user');
+let Group = zoj.model('group');
 const RatingCalculation = zoj.model('rating_calculation');
 const RatingHistory = zoj.model('rating_history');
 const Contest = zoj.model('contest');
@@ -91,6 +92,8 @@ app.get('/user/:id', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
 		if (!user) throw new ErrorMessage('No such user.');
+		await user.loadRelationships();
+
 		user.ac_problems = await user.getACProblems();
 		user.articles = await user.getArticles();
 		user.allowedEdit = await user.isAllowedEditBy(res.locals.user);
@@ -139,6 +142,7 @@ app.get('/user/:id/edit', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
 		if (!user) throw new ErrorMessage('No such user.');
+		await user.loadRelationships();
 
 		let allowedEdit = await user.isAllowedEditBy(res.locals.user);
 		if (!allowedEdit) {
@@ -188,16 +192,20 @@ app.post('/user/:id/edit', async (req, res) => {
 		user.public_email = (req.body.public_email === 'on');
 		user.theme = req.body.theme;
 
+		if (await res.locals.user.haveAccess('user_edit')) {
+			if (req.body.groups) {
+				if (!Array.isArray(req.body.groups)) req.body.groups = [req.body.groups];
+				let groups = await req.body.groups.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+				user.group_config = groups;
+			}
+		}
+
 		await user.save();
-
 		if (user.id === res.locals.user.id) res.locals.user = user;
-
-		res.locals.user.allowedManage = await res.locals.user.haveAccess('user_edit');
 
 		res.redirect('/user/' + id);
 	} catch (e) {
-		res.locals.user.allowedManage = await res.locals.user.haveAccess('user_edit');
-
+		await user.loadRelationships();
 		res.render('user_edit', {
 			edited_user: user,
 			error_info: e.message

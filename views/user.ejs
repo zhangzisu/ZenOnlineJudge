@@ -176,6 +176,19 @@ padding-top: 100%;
 </div>
 </div>
 </div>
+
+<div class="row">
+<div class="column">
+<h4 class="ui top attached block header">Groups</h4>
+<div class="ui bottom attached segment">
+<% for (let group of show_user.groups) { %>
+<a href="<%= zoj.utils.makeUrl(['admin', 'group', group.id]) %>" class="ui medium gray label">
+<%= group.name %>
+</a>
+<% } %>
+</div>
+</div>
+
 </div>
 </div>
 </div>

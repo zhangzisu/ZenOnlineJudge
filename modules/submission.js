@@ -41,10 +41,13 @@ app.get('/submissions', async (req, res) => {
 		await res.locals.user.loadRelationships();
 		await judge_state.forEachAsync(async obj => obj.allowedSeeCode = await obj.isAllowedSeeCodeBy(res.locals.user));
 		await judge_state.forEachAsync(async obj => obj.allowedSeeData = await obj.isAllowedSeeDataBy(res.locals.user));
-		for (var i = 0; i < judge_state.length; i++) {
-			await judge_state[i].problem.loadRelationships();
-			if (!await judge_state[i].problem.isAllowedUseBy(res.locals.user)) delete judge_state[i];
+		
+		let tmp = [];
+		for (var js of judge_state) {
+			await js.problem.loadRelationships();
+			if (await js.problem.isAllowedUseBy(res.locals.user)) tmp.push(js);
 		}
+		judge_state = tmp;
 
 		res.render('submissions', {
 			judge_state: judge_state,
@@ -128,7 +131,6 @@ app.get('/submission/:id', async (req, res) => {
 		judge.allowedSeeCase = await judge.isAllowedSeeCaseBy(res.locals.user);
 		judge.allowedSeeData = await judge.isAllowedSeeDataBy(res.locals.user);
 		judge.allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
-		judge.allowedManage = await judge.problem.isAllowedManageBy(res.locals.user);
 
 		judge.codeLength = judge.code.length;
 		judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
@@ -183,7 +185,6 @@ app.get('/submission/:id/ajax', async (req, res) => {
 		judge.allowedSeeCase = await judge.isAllowedSeeCaseBy(res.locals.user);
 		judge.allowedSeeData = await judge.isAllowedSeeDataBy(res.locals.user);
 		judge.allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
-		judge.allowedManage = await judge.problem.isAllowedManageBy(res.locals.user);
 
 		let hideScore = false;
 		if (contest) {

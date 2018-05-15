@@ -56,35 +56,34 @@
         <h1 class="ui header problem_header" id="pv-title"></h1>
         <div class="font-content" id="pv-content"></div>
       </div>
-          <label style="margin-top: 15px; ">Exluded groups</label>
-          <select class="ui fluid search dropdown" multiple="" id="groups_exlude" name="groups_exlude">
-            <% for (let group of problem.groups_exlude) { %>
-              <option value="<%= group.id %>" selected><%= group.name %></option>
-            <% } %>
-          </select>
-          <div class="ui segment" style="display: none">
-            <% for (let group of problem.groups_exlude) { %>
-             <a class="ui large label transition visible" data-value="<%= group.id %>"> 
-              <%= group.name %>
-             </a>
-           <% } %>
-          </div>
-          <label style="margin-top: 15px; ">Included groups</label>
-          <select class="ui fluid search dropdown" multiple="" id="groups_include" name="groups_include">
-            <% for (let group of problem.groups_include) { %>
-              <option value="<%= group.id %>" selected><%= group.name %></option>
-            <% } %>
-          </select>
-          <div class="ui segment" style="display: none">
-            <% for (let group of problem.groups_include) { %>
-             <a class="ui large label transition visible" data-value="<%= group.id %>"> 
-              <%= group.name %>
-             </a>
-           <% } %>
-          </div>
-      <% if (problem.allowedEdit) { %>
+
+      <label style="margin-top: 15px; ">Exluded groups</label>
+      <select class="ui fluid search dropdown" multiple="" id="groups_exlude" name="groups_exlude">
+        <% for (let group of problem.groups_exlude) { %>
+          <option value="<%= group.id %>" selected><%= group.name %></option>
+        <% } %>
+      </select>
+      <div class="ui segment" style="display: none">
+        <% for (let group of problem.groups_exlude) { %>
+          <a class="ui large label transition visible" data-value="<%= group.id %>"> 
+          <%= group.name %>
+          </a>
+        <% } %>
+      </div>
+      <label style="margin-top: 15px; ">Included groups</label>
+      <select class="ui fluid search dropdown" multiple="" id="groups_include" name="groups_include">
+        <% for (let group of problem.groups_include) { %>
+          <option value="<%= group.id %>" selected><%= group.name %></option>
+        <% } %>
+      </select>
+      <div class="ui segment" style="display: none">
+        <% for (let group of problem.groups_include) { %>
+          <a class="ui large label transition visible" data-value="<%= group.id %>"> 
+          <%= group.name %>
+          </a>
+        <% } %>
+      </div>
       <button type="submit" class="ui button">Submit</button>
-      <% } %>
     </form>
 </div>
 <script src="/libs/ace/ace.js"></script>

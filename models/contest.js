@@ -56,7 +56,7 @@ class Contest extends Model {
 			subtitle: '',
 			problems: '[]',
 			information: '',
-			type: '',
+			type: 'noi',
 			start_time: 0,
 			end_time: 0,
 			holder_id: 0,
@@ -79,7 +79,7 @@ class Contest extends Model {
 		}
 	}
 
-	static async match(gA, gB) {
+	async match(gA, gB) {
 		gA.sort((a, b) => { a.id < b.id });
 		gB.sort((a, b) => { a.id < b.id });
 		let idA = 0, idB = 0;
@@ -100,9 +100,9 @@ class Contest extends Model {
 	async isAllowedUseBy(user){
 		if (!user) return false;
 		if (this.holder_id === user.id) return true;
-		if(user.haveAccess('contest_manage'))return true;
-		if(await match(user.groups, this.groups_exlude))return false;
-		if(await match(user.groups, this.groups_include))return true;
+		if(await user.haveAccess('contest_manage'))return true;
+		if(await this.match(user.groups, this.groups_exlude))return false;
+		if(await this.match(user.groups, this.groups_include))return true;
 		return false;
 	}
 
