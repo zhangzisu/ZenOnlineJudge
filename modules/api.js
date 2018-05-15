@@ -30,7 +30,7 @@ app.post('/api/login', async (req, res) => {
 			});
 		}
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send({
 			error_code: e
 		});
@@ -71,7 +71,7 @@ app.post('/api/forget', async (req, res) => {
 			error_code: 1
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send(JSON.stringify({
 			error_code: e
 		}));
@@ -139,7 +139,7 @@ app.post('/api/sign_up', async (req, res) => {
 			}));
 		}
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send(JSON.stringify({
 			error_code: e
 		}));
@@ -159,7 +159,7 @@ app.get('/api/forget_confirm', async (req, res) => {
 			token: req.query.token
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -186,7 +186,7 @@ app.post('/api/reset_password', async (req, res) => {
 			error_code: 1
 		}));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		if (typeof e === 'number') {
 			res.send(JSON.stringify({
 				error_code: e
@@ -232,7 +232,7 @@ app.get('/api/sign_up_confirm', async (req, res) => {
 
 		res.redirect(obj.prevUrl || '/');
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -245,7 +245,7 @@ app.post('/api/fastmarkdown', async (req, res) => {
 		let s = await zoj.utils.markdown(req.body.s.toString());
 		res.send(s);
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send(e);
 	}
 });
@@ -288,7 +288,7 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 			results: result
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send({
 			success: false
 		});
@@ -320,7 +320,7 @@ app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 			results: result
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send({
 			success: false
 		});
@@ -334,7 +334,7 @@ app.get('/api/outsidecontests', async (req, res) => {
 		let outsideContests = await Fetcher(10);
 		res.send(outsideContests);
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send(e);
 	}
 });
@@ -363,7 +363,7 @@ app.get('/api/search/group/:keyword*?', async (req, res) => {
 			results: result
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send({
 			success: false
 		});

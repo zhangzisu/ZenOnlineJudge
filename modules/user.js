@@ -28,7 +28,7 @@ app.get('/ranklist', async (req, res) => {
 			curOrder: order === 'asc'
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -41,7 +41,7 @@ app.get('/find_user', async (req, res) => {
 		if (!user) throw new ErrorMessage('No such user.');
 		res.redirect(zoj.utils.makeUrl(['user', user.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -126,7 +126,7 @@ app.get('/user/:id', async (req, res) => {
 			ratingHistories: ratingHistories
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -154,7 +154,7 @@ app.get('/user/:id/edit', async (req, res) => {
 			error_info: null
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});

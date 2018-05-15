@@ -36,7 +36,7 @@ app.get('/problems', async (req, res) => {
 			paginate: paginate
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -81,7 +81,7 @@ app.get('/problems/search', async (req, res) => {
 			paginate: paginate
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -135,7 +135,7 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 			paginate: paginate
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -172,7 +172,7 @@ app.get('/problem/:id', async (req, res) => {
 			discussionCount: discussionCount
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -200,7 +200,7 @@ app.get('/problem/:id/export/:token?', async (req, res) => {
 
 		res.send({ success: true, obj: obj });
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.send({ success: false, error: e });
 	}
 });
@@ -233,7 +233,7 @@ app.get('/problem/:id/edit', async (req, res) => {
 			problem: problem
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -306,7 +306,7 @@ app.post('/problem/:id/edit', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['problem', problem.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -337,7 +337,7 @@ app.get('/problem/:id/import', async (req, res) => {
 			problem: problem
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -400,7 +400,7 @@ app.post('/problem/:id/import', async (req, res) => {
 				await fs.writeFileAsync(tmpFile.path, data);
 				await problem.updateTestdata(tmpFile.path);
 			} catch (e) {
-				zoj.log(e);
+				zoj.error(e);
 			}
 		} else if (req.body.type === 'ZOJ') {
 			let json = await request({
@@ -433,7 +433,7 @@ app.post('/problem/:id/import', async (req, res) => {
 				await problem.updateTestdata(tmpFile.path);
 				await problem.updateTestdataConfigManually(json.obj.datainfo);
 			} catch (e) {
-				zoj.log(e);
+				zoj.error(e);
 			}
 		} else {
 			throw new ErrorMessage(`Do not support ${req.body.type}.`);
@@ -441,7 +441,7 @@ app.post('/problem/:id/import', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['problem', problem.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -463,7 +463,7 @@ app.get('/problem/:id/manage', async (req, res) => {
 			problem: problem
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -497,7 +497,7 @@ app.post('/problem/:id/manage', app.multer.fields([{ name: 'testdata', maxCount:
 
 		res.redirect(zoj.utils.makeUrl(['problem', id, 'manage']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -559,7 +559,7 @@ app.post('/problem/:id/submit', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['submission', judge_state.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -581,7 +581,7 @@ app.post('/problem/:id/delete', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['problem']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -609,7 +609,7 @@ app.get('/problem/:id/testdata', async (req, res) => {
 			testdata: testdata
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.status(404);
 		res.render('error', {
 			err: e
@@ -637,7 +637,7 @@ app.post('/problem/:id/testdata/upload', app.multer.array('file'), async (req, r
 
 		res.redirect(zoj.utils.makeUrl(['problem', id, 'testdata']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -660,7 +660,7 @@ app.post('/problem/:id/testdata/delete/:filename', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['problem', id, 'testdata']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -690,7 +690,7 @@ app.get('/problem/:id/testdata/download/:filename?', async (req, res) => {
 		if (!await zoj.utils.isFile(filename)) throw new ErrorMessage('No such file.');
 		res.download(filename, path.basename(filename));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.status(404);
 		res.render('error', {
 			err: e
@@ -716,7 +716,7 @@ app.get('/problem/:id/testdata/export/:token', async (req, res) => {
 		if (!await zoj.utils.isFile(filename)) throw new ErrorMessage('No such file.');
 		res.download(filename, path.basename(filename));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.status(404);
 		res.render('error', {
 			err: e
@@ -751,7 +751,7 @@ app.get('/problem/:id/download/additional_file', async (req, res) => {
 
 		res.download(problem.additional_file.getPath(), `additional_file_${id}.zip`);
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.status(404);
 		res.render('error', {
 			err: e
@@ -788,7 +788,7 @@ app.get('/problem/:id/statistics/:type', async (req, res) => {
 			problem: problem
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});

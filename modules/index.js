@@ -34,7 +34,7 @@ app.get('/', async (req, res) => {
 			links: zoj.config.links
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});

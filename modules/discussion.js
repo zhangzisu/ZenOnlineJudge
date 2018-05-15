@@ -20,7 +20,7 @@ app.get('/discussion', async (req, res) => {
 			problem: null
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -49,7 +49,7 @@ app.get('/problem/:pid/discussion', async (req, res) => {
 			problem: problem
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -96,7 +96,7 @@ app.get('/article/:id', async (req, res) => {
 			commentsCount: commentsCount
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -124,7 +124,7 @@ app.get('/article/:id/edit', async (req, res) => {
 			fucked: await res.locals.user.haveAccess('set_notice')
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -164,7 +164,7 @@ app.post('/article/:id/edit', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['article', article.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -188,7 +188,7 @@ app.post('/article/:id/delete', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['discussion']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -219,7 +219,7 @@ app.post('/article/:id/comment', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['article', article.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -243,7 +243,7 @@ app.post('/article/:article_id/comment/:id/delete', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['article', comment.article_id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});

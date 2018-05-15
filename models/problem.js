@@ -188,7 +188,7 @@ class Problem extends Model {
 					break;
 				}
 			} catch (e) {
-				console.log(e);
+				zoj.error(e);
 			}
 		}
 	}

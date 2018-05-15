@@ -25,7 +25,7 @@ app.get('/admin/group', async (req, res) => {
 			groups: groups
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -52,7 +52,7 @@ app.get('/admin/group/:id', async (req, res) => {
 			group: group
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -82,7 +82,7 @@ app.post('/admin/group/:id', async (req, res) => {
 
 		res.redirect(`/admin/group/${group.id}`);
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -99,7 +99,7 @@ app.get('/admin/message', async (req, res) => {
 			privilege: await res.locals.user.haveAccess('admin')
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -118,7 +118,7 @@ app.post('/admin/message', async (req, res) => {
 		});
 		res.redirect(zoj.utils.makeUrl(['admin', 'message']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -142,7 +142,7 @@ app.get('/admin/rating', async (req, res) => {
 			calcs: calcs
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -186,7 +186,7 @@ app.post('/admin/rating/add', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['admin', 'rating']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -208,7 +208,7 @@ app.post('/admin/rating/delete', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['admin', 'rating']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -239,7 +239,7 @@ app.get('/admin/info', async (req, res) => {
 			uptime: Math.round(os.uptime() / 60 / 60)
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -258,7 +258,7 @@ app.get('/admin/rejudge', async (req, res) => {
 			count: null
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -331,7 +331,7 @@ app.post('/admin/rejudge', async (req, res) => {
 			count: count
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -348,7 +348,7 @@ app.get('/admin/links', async (req, res) => {
 			links: zoj.config.links || []
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -366,7 +366,7 @@ app.post('/admin/links', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['admin', 'links']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -383,7 +383,7 @@ app.get('/admin/raw', async (req, res) => {
 			data: JSON.stringify(zoj.config, null, 2)
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -401,7 +401,7 @@ app.post('/admin/raw', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['admin', 'raw']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -416,7 +416,7 @@ app.get('/admin/upgrade', async (req, res) => {
 
 		res.render('admin_upgrade', {});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})
@@ -432,13 +432,13 @@ app.post('/admin/upgrade', async (req, res) => {
 		var exec = require('child_process').exec;
 		exec('sh upgrade.sh', function (error, stdout, stderr) {
 			if (error !== null) {
-				console.log('exec error: ' + error);
+				zoj.log('exec error: ' + error);
 			}
 		});
 
 		res.redirect('/');
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		})

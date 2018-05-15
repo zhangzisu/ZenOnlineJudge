@@ -23,6 +23,9 @@ global.zoj = {
 	log(obj) {
 		console.log(obj);
 	},
+	error(obj) {
+		console.log(obj);
+	},
 	debug(obj) {
 		console.log(obj);
 	},
@@ -173,7 +176,7 @@ global.zoj = {
 							req.session.user_id = user.id;
 							next();
 						}).catch(err => {
-							console.log(err);
+							zoj.log(err);
 							res.locals.user = null;
 							req.session.user_id = null;
 							next();

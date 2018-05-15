@@ -55,7 +55,7 @@ app.get('/submissions', async (req, res) => {
 			form: req.query
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -104,7 +104,7 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 
 		res.send(rendered);
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -157,7 +157,7 @@ app.get('/submission/:id', async (req, res) => {
 			judge: judge
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -208,7 +208,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 			judge: judge
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -234,7 +234,7 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['submission', id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});

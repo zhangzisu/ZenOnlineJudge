@@ -40,7 +40,7 @@ app.get('/contests', async (req, res) => {
 			paginate: paginate
 		})
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -68,7 +68,7 @@ app.get('/contest/:id/edit', async (req, res) => {
 			problems: problems
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -133,7 +133,7 @@ app.post('/contest/:id/edit', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['contest', contest.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -246,7 +246,7 @@ app.get('/contest/:id', async (req, res) => {
 			hasStatistics: hasStatistics
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -291,7 +291,7 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 			hasRecord: hasRecord
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -365,7 +365,7 @@ app.get('/contest/:id/submissions', async (req, res) => {
 			form: req.query
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -413,7 +413,7 @@ app.get('/contest/:id/estimate', async (req, res) => {
 			contest: contest
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -457,7 +457,7 @@ app.post('/contest/:id/estimate', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['contest', contest_id, 'estimate']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -506,7 +506,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 			lastLanguage: res.locals.user ? await res.locals.user.getLastSubmitLanguage() : null
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -544,10 +544,10 @@ app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 
 		if (!problem.additional_file) throw new ErrorMessage('No such file.');
 
-		console.log(`additional_file_${id}_${pid}.zip`);
+		zoj.log(`additional_file_${id}_${pid}.zip`);
 		res.download(problem.additional_file.getPath(), `additional_file_${id}_${pid}.zip`);
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.status(404);
 		res.render('error', {
 			err: e

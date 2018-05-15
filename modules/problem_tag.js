@@ -19,7 +19,7 @@ app.get('/problems/tag/:id/edit', async (req, res) => {
 			tag: tag
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -53,7 +53,7 @@ app.post('/problems/tag/:id/edit', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['problems', 'tag', tag.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
