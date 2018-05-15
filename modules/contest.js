@@ -17,7 +17,8 @@ function hasRecord(player, id) {
 
 app.get('/contests', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
+		await res.locals.user.loadRelationships();
 
 		let paginate = zoj.utils.paginate(await Contest.count({}), req.query.page, zoj.config.page.contest);
 		let contests = await Contest.query(paginate, {}, [
@@ -26,9 +27,9 @@ app.get('/contests', async (req, res) => {
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
 
-		for (var i in contests) {
+		for (var i = 0; i < contests.length; i++) {
 			await contests[i].loadRelationships();
-			if (! await contests[i].isAllowedUseBy(user)) delete contests[i];
+			if (!await contests[i].isAllowedUseBy(res.locals.user)) delete contests[i];
 		}
 
 		res.render('contests', {
@@ -45,7 +46,8 @@ app.get('/contests', async (req, res) => {
 
 app.get('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
+		await res.locals.user.loadRelationships();
 		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
@@ -56,6 +58,7 @@ app.get('/contest/:id/edit', async (req, res) => {
 		}
 
 		let problems = JSON.stringify(contest.problems, null, '\t');
+		await contest.loadRelationships();
 
 		res.render('contest_edit', {
 			contest: contest,
@@ -71,7 +74,8 @@ app.get('/contest/:id/edit', async (req, res) => {
 
 app.post('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
+		await res.locals.user.loadRelationships();
 		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
@@ -127,7 +131,7 @@ app.post('/contest/:id/edit', async (req, res) => {
 
 app.get('/contest/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 
 		let contest_id = parseInt(req.params.id);
 
@@ -239,7 +243,7 @@ app.get('/contest/:id', async (req, res) => {
 
 app.get('/contest/:id/ranklist', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
@@ -284,7 +288,7 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 
 app.get('/contest/:id/submissions', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
@@ -358,7 +362,7 @@ app.get('/contest/:id/submissions', async (req, res) => {
 
 app.get('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
@@ -399,7 +403,7 @@ app.get('/contest/:id/estimate', async (req, res) => {
 
 app.post('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
@@ -436,7 +440,7 @@ app.post('/contest/:id/estimate', async (req, res) => {
 
 app.get('/contest/:id/:pid', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
@@ -485,7 +489,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 
 app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let id = parseInt(req.params.id);
 		let contest = await Contest.fromID(id);
 		if (!contest) throw new ErrorMessage('No such contest.');

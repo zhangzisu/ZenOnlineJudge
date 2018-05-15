@@ -6,20 +6,24 @@ let Contest = zoj.model('contest');
 
 app.get('/', async (req, res) => {
 	try {
-		let ranklist = await User.query([1, 10], { is_show: true }, [['rating', 'desc']]);
+		if (!res.locals.user) { res.redirect('/login'); return; }
 
-		let notices = (await Article.query(null, { is_notice: true }, [['public_time', 'desc']])).map(article => ({
+		let ranklist = await User.query([1, 10], null, [['rating', 'desc']]);
+
+		let notices = (await Article.query(null, null, [['public_time', 'desc']])).map(article => ({
 			title: article.title,
 			url: zoj.utils.makeUrl(['article', article.id]),
 			date: zoj.utils.formatDate(article.public_time, 'L')
 		}));
 
-		let where;
-		if (res.locals.user && res.locals.user.admin >= 3) where = {}
-		else if (res.locals.user && res.locals.user.admin >= 1) where = { is_public: true };
-		else where = { $and: { is_public: true, is_protected: false } };
+		let contests = await Contest.query([1, 5], null, [['start_time', 'desc']]);
 
-		let contests = await Contest.query([1, 5], where, [['start_time', 'desc']]);
+		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
+
+		for (var i = 0; i < contests.length; i++) {
+			await contests[i].loadRelationships();
+			if (! await contests[i].isAllowedUseBy(res.locals.user)) delete contests[i];
+		}
 
 		res.render('index', {
 			ranklist: ranklist,

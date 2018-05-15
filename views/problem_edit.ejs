@@ -56,6 +56,32 @@
         <h1 class="ui header problem_header" id="pv-title"></h1>
         <div class="font-content" id="pv-content"></div>
       </div>
+          <label style="margin-top: 15px; ">Exluded groups</label>
+          <select class="ui fluid search dropdown" multiple="" id="groups_exlude" name="groups_exlude">
+            <% for (let group of problem.groups_exlude) { %>
+              <option value="<%= group.id %>" selected><%= group.name %></option>
+            <% } %>
+          </select>
+          <div class="ui segment" style="display: none">
+            <% for (let group of problem.groups_exlude) { %>
+             <a class="ui large label transition visible" data-value="<%= group.id %>"> 
+              <%= group.name %>
+             </a>
+           <% } %>
+          </div>
+          <label style="margin-top: 15px; ">Included groups</label>
+          <select class="ui fluid search dropdown" multiple="" id="groups_include" name="groups_include">
+            <% for (let group of problem.groups_include) { %>
+              <option value="<%= group.id %>" selected><%= group.name %></option>
+            <% } %>
+          </select>
+          <div class="ui segment" style="display: none">
+            <% for (let group of problem.groups_include) { %>
+             <a class="ui large label transition visible" data-value="<%= group.id %>"> 
+              <%= group.name %>
+             </a>
+           <% } %>
+          </div>
       <% if (problem.allowedEdit) { %>
       <button type="submit" class="ui button">Submit</button>
       <% } %>
@@ -102,14 +128,15 @@ $(function () {
 });
 </script>
 <script>
-$(function () {
-  $('#search_tags')
+function registerTagSelector(element, url){
+  $(function () {
+  $(element)
     .dropdown({
       debug: true,
       apiSettings: {
-        url: '/api/search/tags_problem/{query}',
+        url: url,
         onResponse: function (response) {
-          var a = $('#search_tags').val().map(function (x) { return parseInt(x) });
+          var a = $(element).val().map(function (x) { return parseInt(x) });
           if (response.results) {
             response.results = response.results.filter(x => !a.includes(parseInt(x.value)));
           }
@@ -119,5 +146,9 @@ $(function () {
       }
     });
 });
+}
+registerTagSelector('#search_tags', '/api/search/tags_problem/{query}');
+registerTagSelector('#groups_exlude', '/api/search/group/{query}');
+registerTagSelector('#groups_include', '/api/search/group/{query}');
 </script>
 <% include footer %>

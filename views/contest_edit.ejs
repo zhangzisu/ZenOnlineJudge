@@ -60,50 +60,85 @@
           <label>End</label>
           <input type="text" name="end_time" value="<%= zoj.utils.formatDate(contest.end_time || zoj.utils.getCurrentDate()) %>">
         </div>
-        <div class="inline field">
-          <label class="ui header">Public</label>
-          <div class="ui toggle checkbox">
-            <input type="checkbox" <% if (contest.is_public) { %> checked
-            <% } %> name="is_public">
-              <label>
-                <span style="visibility: hidden; ">　</span>
-              </label>
-          </div>
+
+        <label style="margin-top: 15px; ">Exluded groups</label>
+        <select class="ui fluid search dropdown" multiple="" id="groups_exlude" name="groups_exlude">
+          <% for (let group of contest.groups_exlude) { %>
+            <option value="<%= group.id %>" selected>
+              <%= group.name %>
+            </option>
+            <% } %>
+        </select>
+        <div class="ui segment" style="display: none">
+          <% for (let group of contest.groups_exlude) { %>
+            <a class="ui large label transition visible" data-value="<%= group.id %>">
+              <%= group.name %>
+            </a>
+            <% } %>
         </div>
-        <div class="inline field">
-          <label class="ui header">Protect</label>
-          <div class="ui toggle checkbox">
-            <input type="checkbox" <% if (contest.is_protected) { %> checked
-            <% } %> name="is_protected">
-              <label>
-                <span style="visibility: hidden; ">　</span>
-              </label>
-          </div>
+        <label style="margin-top: 15px; ">Included groups</label>
+        <select class="ui fluid search dropdown" multiple="" id="groups_include" name="groups_include">
+          <% for (let group of contest.groups_include) { %>
+            <option value="<%= group.id %>" selected>
+              <%= group.name %>
+            </option>
+            <% } %>
+        </select>
+        <div class="ui segment" style="display: none">
+          <% for (let group of contest.groups_include) { %>
+            <a class="ui large label transition visible" data-value="<%= group.id %>">
+              <%= group.name %>
+            </a>
+            <% } %>
         </div>
         <button type="submit" class="ui button">Submit</button>
       </form>
       <script src="/libs/ace/ace.js"></script>
       <script type="text/javascript">
-      function registerACEditor(editorID, containerName, mode){
-        var editor = ace.edit(editorID);
 
-        editor.setTheme("ace/theme/tomorrow");
-        editor.getSession().setMode(mode);
-        editor.getSession().setUseSoftTabs(false);
+        function registerTagSelector(element, url) {
+          $(function () {
+            $(element)
+              .dropdown({
+                debug: true,
+                apiSettings: {
+                  url: url,
+                  onResponse: function (response) {
+                    var a = $(element).val().map(function (x) { return parseInt(x) });
+                    if (response.results) {
+                      response.results = response.results.filter(x => !a.includes(parseInt(x.value)));
+                    }
+                    return response;
+                  },
+                  cache: false
+                }
+              });
+          })
+        };
 
-        editor.container.name = containerName;
-        editor.container.style.lineHeight = 1.6;
-        editor.container.style.fontSize = '14px';
-        editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
-        editor.setShowPrintMargin(false);
-        editor.renderer.updateFontSize();
+        registerTagSelector('#groups_exlude', '/api/search/group/{query}');
+        registerTagSelector('#groups_include', '/api/search/group/{query}');
 
-        var input = $(`[name="${containerName}"]`);
-        editor.getSession().on("change", function () {
-          input.val(editor.getSession().getValue());
-        });
-      }
-      registerACEditor("editor", "problems", "ace/mode/json");
-      registerACEditor("information", "information", "ace/mode/markdown");
+        function registerACEditor(editorID, containerName, mode) {
+          var editor = ace.edit(editorID);
+
+          editor.setTheme("ace/theme/tomorrow");
+          editor.getSession().setMode(mode);
+          editor.getSession().setUseSoftTabs(false);
+
+          editor.container.name = containerName;
+          editor.container.style.lineHeight = 1.6;
+          editor.container.style.fontSize = '14px';
+          editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+          editor.setShowPrintMargin(false);
+          editor.renderer.updateFontSize();
+
+          var input = $(`[name="${containerName}"]`);
+          editor.getSession().on("change", function () {
+            input.val(editor.getSession().getValue());
+          });
+        }
+        registerACEditor("editor", "problems", "ace/mode/json");
+        registerACEditor("information", "information", "ace/mode/markdown");
       </script>
       <% include footer %>

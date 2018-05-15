@@ -2,7 +2,7 @@
     "title": "ZOJ",
     "listen": "localhost",
     "port": "1926",
-    "https": true,
+    "https": false,
     "https_config": {
         "key": "",
         "cert": ""
@@ -10,11 +10,11 @@
     "hostname": "http://localhost",
     "db": {
         "database": "zoj",
-        "username": "username",
-        "password": "password",
+        "username": "root",
+        "password": "1415926535897932",
         "host": null,
         "dialect": "mysql",
-        "storage": null
+        "storage": ""
     },
     "register_mail": {
         "enabled": false,

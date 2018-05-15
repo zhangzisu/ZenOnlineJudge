@@ -30,7 +30,7 @@ div[class*=ace_br] {
         <% if (contest) { %>
           <%= this.alpha(pid) %>. <%= zoj.utils.removeTitleTag(problem.title) %>
         <% } else { %>
-          #<%= problem.id %>. <%= problem.title %><% if (problem.allowedEdit) { if (!problem.is_public) {%><span class="ui tiny red label">U</span><% } if(problem.is_protected) { %> <span class="ui tiny green label">P</span> <% } } %>
+          #<%= problem.id %>. <%= problem.title %>
         <% } %>
       </h1>
     </div>
@@ -100,16 +100,6 @@ div[class*=ace_br] {
             <a class="small ui button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'manage']) %>">Manage</a>
           <% } %>
           <% if (problem.allowedManage) { %>
-            <% if (problem.is_public) {  %>
-              <a class="small ui button" id="dis_public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'dis_public']) %>">Unpublish</a>
-            <% } else { %>
-              <a class="small ui button" id="public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'public']) %>">Publish</a>
-            <% } %>
-            <% if (problem.is_protected) {  %>
-              <a class="small ui button" id="dis_public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'dis_protect']) %>">Unprotect</a>
-            <% } else { %>
-              <a class="small ui button" id="public" href-post="<%= zoj.utils.makeUrl(['problem', problem.id, 'protect']) %>">Protect</a>
-            <% } %>
             <div class="ui basic modal" id="modal-delete">
               <div class="ui icon header">
                 <i class="trash icon"></i>

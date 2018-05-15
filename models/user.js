@@ -43,7 +43,8 @@ class User extends Model {
 			submit_num: 0,
 			sex: 0,
 			rating: zoj.config.default.user.rating,
-			theme: "light"
+			theme: 'light',
+			group_config:'[1]'
 		}, val)));
 	}
 
@@ -71,9 +72,8 @@ class User extends Model {
 	}
 
 	async haveAccess(name){
-		this.loadRelationships();
-		for(var group of this.group_config){
-			if(group.getAccess(name))return true;
+		for(var group of this.groups){
+			if(await group.getAccess(name))return true;
 		}
 		return false;
 	}
@@ -153,12 +153,12 @@ class User extends Model {
 		let JudgeState = zoj.model('judge_state');
 
 		let statuses = {
-			"Accepted": ["Accepted"],
-			"Wrong Answer": ["Wrong Answer", "File Error", "Output Limit Exceeded"],
-			"Runtime Error": ["Runtime Error"],
-			"Time Limit Exceeded": ["Time Limit Exceeded"],
-			"Memory Limit Exceeded": ["Memory Limit Exceeded"],
-			"Compile Error": ["Compile Error"]
+			'Accepted': ['Accepted'],
+			'Wrong Answer': ['Wrong Answer', 'File Error', 'Output Limit Exceeded'],
+			'Runtime Error': ['Runtime Error'],
+			'Time Limit Exceeded': ['Time Limit Exceeded'],
+			'Memory Limit Exceeded': ['Memory Limit Exceeded'],
+			'Compile Error': ['Compile Error']
 		};
 
 		let res = {};

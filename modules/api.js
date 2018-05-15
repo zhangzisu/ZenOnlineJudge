@@ -19,9 +19,6 @@ app.post('/api/login', async (req, res) => {
 		if (!user) res.send({
 			error_code: 1001
 		});
-		else if (!await user.is_show) res.send({
-			error_code: 1003
-		});
 		else if (user.password !== req.body.password) res.send({
 			error_code: 1002
 		});
@@ -342,11 +339,42 @@ app.get('/api/outsidecontests', async (req, res) => {
 	}
 });
 
+app.get('/api/search/group/:keyword*?', async (req, res) => {
+	try {
+		let Group = zoj.model('group');
+
+		let keyword = req.params.keyword || '';
+		let groups = await Group.query(null, {
+			name: {
+				like: `%${req.params.keyword}%`
+			}
+		}, [
+			['name', 'asc']
+		]);
+
+		let result = groups.slice(0, zoj.config.page.edit_problem_tag_list);
+
+		result = result.map(x => ({
+			name: x.name,
+			value: x.id
+		}));
+		res.send({
+			success: true,
+			results: result
+		});
+	} catch (e) {
+		zoj.log(e);
+		res.send({
+			success: false
+		});
+	}
+});
+
 app.get('/api/userrating/:id', async (req, res) => {
 	try {
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
-		if (!user || !user.is_show) res.send({
+		if (!user) res.send({
 			id: id,
 			rating: 0
 		});

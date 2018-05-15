@@ -1,9 +1,5 @@
 <% this.adminPage = 'message'; %>
-<% if(privilege){ %>
-	<% include admin_header %>
-<% }else{ %>
-	<% include header %>
-<% } %>
+<% include admin_header %>
 <form action="<%= zoj.utils.makeUrl(['admin', 'message']) %>" method="post" class="ui form">
 		<h2>Messaging</h2>
 	<div class="field">

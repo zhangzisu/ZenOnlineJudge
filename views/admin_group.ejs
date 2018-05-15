@@ -1,0 +1,26 @@
+<% this.adminPage = 'group'; %>
+<% include admin_header %>
+    <table class="ui center aligned celled table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for (let group of groups) { %>
+                <tr>
+                    <td>
+                        <%= group.id %>
+                    </td>
+                    <td>
+                        <a style="margin-top:15px; " href="<%= zoj.utils.makeUrl(['admin', 'group', group.id]) %>">
+                            <%= group.name %>
+                        </a>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+<% include admin_footer %>

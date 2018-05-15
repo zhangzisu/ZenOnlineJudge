@@ -9,13 +9,10 @@
       <input type="hidden" name="problem_id" id="problem_id_hidden">
       <label style="font-size: 1.2em; margin-right: 1px; ">Submitter</label>
       <div class="field"><input name="submitter" style="width: 100px; " type="text" value="<%= form.submitter %>"></div>
-      <% if ((typeof contest === 'undefined' || !contest) || contest.ended || contest.type !== 'noi' || (user && user.admin >= 3)) { %>
-        <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && (contest.type === 'acm' || contest.type === 'noi'))) { %>
           <label style="font-size: 1.2em; margin-right: 1px; ">Score</label>
           <div class="field" style="padding-right: 6px; "><input name="min_score" style="width: 45px; " type="text" value="<%= form.min_score || 0 %>"></div>
           <label style="font-size: 1.2em; margin-right: 7px; ">～</label>
           <div class="field"><input name="max_score" style="width: 45px; " type="text" value="<%= form.max_score || 100 %>"></div>
-        <% } %>
         <label style="font-size: 1.2em; margin-right: 1px; ">Language</label>
         <div class="field">
           <div class="ui fluid selection dropdown" id="select_language" style="width: 110px; ">
@@ -70,9 +67,7 @@
         <th>ID</th>
         <th>Problem</th>
         <th>Status</th>
-        <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && (contest.type === 'acm' || contest.type === 'noi'))) { %>
-          <th>Score</th>
-        <% } %>
+        <th>Score</th>
         <th>Time</th>
         <th>Memory</th>
         <th>Code</th>

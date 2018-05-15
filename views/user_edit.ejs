@@ -56,23 +56,6 @@
           <input type="password" placeholder="Repeat the Password" id="password2">
         </div>
       </div>
-      <%
-      let allowedManagePrivilege = user && user.admin >= 3;
-      %>
-      <% if(allowedManagePrivilege && edited_user.id !== user.id){ %>
-      <div class="inline field">
-        <label class="ui header">Permissions</label>
-        <input type="range" id="admin" name="admin" min="0" max="<%= user.admin - 1 %>" value="<%= edited_user.admin %>">
-        <label class="ui header" id="admintip"></label>
-      </div>
-      <div class="inline field">
-        <label class="ui header">Ban</label>
-        <div class="ui toggle checkbox">
-          <input id="is_show" name="is_show" type="checkbox" <% if (!edited_user.is_show) { %> checked<% } %>>
-          <label></label>
-        </div>
-      </div>
-      <% } %>
       <div style="text-align: center; ">
         <button type="submit" class="ui button">Modify</button>
         <a href="<%= zoj.utils.makeUrl(['user', edited_user.id]) %>" class="ui blue button">Return to Personal Information</a>
@@ -110,22 +93,4 @@ $(function () {
 	$('.ui.dropdown').dropdown();
 });
 </script>
-<% if(allowedManagePrivilege && edited_user.id !== user.id){ %>
-<script>
-function updateInfo(){
-  var value = $('#admin').val();
-  var tip = "What the fuck is???";
-  switch(value){
-    case "0":tip = "Common user, no any privileges.";break;
-    case "1":tip = "Privileged user, can access privileged problems.";break;
-    case "2":tip = "Student administrator, can manage tags.";break;
-    case "3":tip = "Teacher administrator, can manage problems, contests and users.";break;
-    case "4":tip = "Super administrator.";break;
-  }
-  $('#admintip').text(tip);
-}
-updateInfo();
-$('#admin').bind('input propertychange', function() {updateInfo();});
-</script>
-<% } %>
 <% include footer %>

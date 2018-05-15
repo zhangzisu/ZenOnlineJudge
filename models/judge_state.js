@@ -33,11 +33,7 @@ let model = db.define('judge_state',
 		 * "type" indicate it's contest's submission(type = 1) or normal submission(type = 0)
 		 * "type_info" will be the contest id if it's a contest's submission
 		 */
-		type_info: { type: Sequelize.INTEGER },
-
-		groups_exlude_config: { type: Sequelize.TEXT, json: true },
-		groups_include_config: { type: Sequelize.TEXT, json: true }
-
+		type_info: { type: Sequelize.INTEGER }
 	}, {
 		timestamps: false,
 		tableName: 'judge_state',
@@ -69,8 +65,7 @@ class JudgeState extends Model {
 			total_time: 0,
 			max_memory: 0,
 			status: 'Waiting',
-			result: '{ "status": "Waiting", "total_time": 0, "max_memory": 0, "score": 0, "case_num": 0, "compiler_output": "", "pending": true, "judger": "" }',
-			groups_exlude_config: ''
+			result: '{ "status": "Waiting", "total_time": 0, "max_memory": 0, "score": 0, "case_num": 0, "compiler_output": "", "pending": true, "judger": "" }'
 
 		}, val)));
 	}
@@ -78,130 +73,81 @@ class JudgeState extends Model {
 	async loadRelationships() {
 		this.user = await User.fromID(this.user_id);
 		if (this.problem_id) this.problem = await Problem.fromID(this.problem_id);
-		groups_exlude = [];
-		for (var group of groups_exlude_config) {
-			groups_exlude.push(await Group.fromID(group));
-		}
-		groups_include = [];
-		for (var group of groups_include_config) {
-			groups_include.push(await Group.fromID(group));
-		}
-	}
-
-	static async match(gA, gB) {
-		gA.sort((a, b) => { a.id < b.id });
-		gB.sort((a, b) => { a.id < b.id });
-		let idA = 0, idB = 0;
-		while (idA < gA.length && idB < gB.length) {
-			if (gA[idA].id === gB[idB].id) return true;
-			if (gA[idA].id < gB[idB].id) idA++;
-			else idB++;
-		}
-		return false;
 	}
 
 	async isAllowedVisitBy(user) {
-		await this.loadRelationships();
-
-		if (!user || user.admin < 1) return this.problem.is_public && !this.problem.is_protected;
-
-		if (user.id === this.problem.user_id) return true;
-		// The user is the creator of the problem.
 		if (user.id === this.user_id) return true;
-		// The user is the submitter.
+		await this.loadRelationships();
+		if (user.id === this.problem.user_id) return true;
+		await this.problem.loadRelationships();
 		if (this.type === 0) {
-			// TODO
-			if (user.admin < 1) return this.problem.is_public && !this.problem.is_protected;
-			if (user.admin < 3) return this.problem.is_public;
-			return true;
+			return await user.haveAccess('others_submission');
 		}
-		// Normal submission
-		// 1. The problem is public and not protected
-		// 2. The problem is public and the user is indoor student/student admin
-		// 3. The the user is teacher/system admin
 		if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
-				return ((user.admin >= 3) || (user.id === contest.holder_id));
+				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
 			} else {
 				return true;
 			}
 		}
-		// Contest's submissions
-		// 1. The user is teacher/system admin
-		// 2. The user is the holder of the contest
-		// 3. The contest is not running
 	}
 
 	async isAllowedSeeCodeBy(user) {
+		if (user.id === this.user_id) return true;
 		await this.loadRelationships();
-
-		if (user && user.id === this.problem.user_id) return true;
-		// The user is the creator of the problem
-		else if (user && user.id === this.user_id) return true;
-		// The user is the submitter
-		else if (this.type === 0) return this.problem.is_public || (user && (await user.admin >= 3));
-		// Normal submission
-		// 1. The problem is public
-		// 2. The user is teacher/system admin
-		else if (this.type === 1) {
+		if (user.id === this.problem.user_id) return true;
+		await this.problem.loadRelationships();
+		if (this.type === 0) {
+			if (problem.isAllowedVisitBy(user)) return true;
+			return await user.haveAccess('others_submission');
+		}
+		if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
-				return (user && user.admin >= 3) || (user && user.id === contest.holder_id);
+				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
 			} else {
 				return true;
 			}
 		}
-		// Contest's submission
-		// 1. The user is the teacher/system admin
-		// 2. The user is the holder of the contest
-		// 3. The contest is not running
 	}
 
 	async isAllowedSeeCaseBy(user) {
+		if (user.id === this.user_id) return true;
 		await this.loadRelationships();
-
-		if (user && user.id === this.problem.user_id) return true;
-		// The user is the creator of the problem
-		else if (this.type === 0) return this.problem.is_public || (user && (await user.admin >= 3));
-		// Normal Submission
-		// 1. The problem is public
-		// 2. The user is teacher/system admin
-		else if (this.type === 1) {
+		if (user.id === this.problem.user_id) return true;
+		await this.problem.loadRelationships();
+		if (this.type === 0) {
+			if (problem.isAllowedVisitBy(user)) return true;
+			return await user.haveAccess('others_submission');
+		}
+		if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
-				return user && (contest.type === 'ioi' && user.id === this.user_id) || user.admin >= 3 || user.id === contest.holder_id;
+				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
 			} else {
 				return true;
 			}
 		}
-		// Contest's submission
-		// 1.The user is teacher/system admin
-		// 2.The contest's type is "ioi" and the user is the submitter
-		// 3.The user is the holder of the contest
-		// 4.The contest is not running
 	}
 
 	async isAllowedSeeDataBy(user) {
+		if (user.id === this.user_id) return true;
 		await this.loadRelationships();
-
-		if (user && user.id === this.problem.user_id) return true;
-		// The user is the creator of the problem
-		else if (this.type === 0) return this.problem.is_public || (user && (await user.admin >= 3));
-		// Normal submission
-		// 1. The problem is public
-		// 2. The user is teacher/system admin
-		else if (this.type === 1) {
+		if (user.id === this.problem.user_id) return true;
+		await this.problem.loadRelationships();
+		if (this.type === 0) {
+			if (problem.isAllowedVisitBy(user)) return true;
+			return await user.haveAccess('others_submission');
+		}
+		if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
-				return (user && user.admin >= 3) || (user && user.id === contest.holder_id);
+				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
 			} else {
 				return true;
 			}
 		}
-		// Contest's submission
-		// 1. The user is teacher/system admin
-		// 2. The user is the holder of the contest
 	}
 
 	async updateResult(result) {

@@ -61,8 +61,8 @@ class Contest extends Model {
 			end_time: 0,
 			holder_id: 0,
 			ranklist_id: 0,
-			groups_exlude_config: '',
-			groups_include_config: ''
+			groups_exlude_config: '[]',
+			groups_include_config: '[]'
 		}, val)));
 	}
 

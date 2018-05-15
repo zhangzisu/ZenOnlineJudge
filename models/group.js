@@ -26,13 +26,19 @@ class UserGroup extends Model {
 		}, val)));
 	}
 
-    async getAccess(name){
-        if(this.config[name]){
-            return this.config[name];
-        }else{
-            return this.config[name] = zoj.config.group[name] ? zoj.config.group[name] : false;
-        }
-    }
+	async getAccess(name) {
+		if (this.config.hasOwnProperty(name)) {
+			return this.config[name];
+		} else {
+			if (zoj.config.default.group[name]) {
+				this.config[name] = zoj.config.default.group[name];
+			} else {
+				this.config[name] = false;
+			}
+			await this.save();
+			return this.config[name];
+		}
+	}
 
 	getModel() { return model; }
 }

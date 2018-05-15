@@ -18,7 +18,6 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
   textFit(p, { maxFontSize: 14 });
   textFit(s, { maxFontSize: 14 });
 </script>
-<% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && (contest.type === 'acm' || contest.type === 'noi'))) { %>
   <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><span class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></span></a></td>
   <td><%= judge.result.total_time %> ms</td>
   <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
@@ -27,7 +26,6 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
   <% } else { %>
     <td><a href="<%= zoj.utils.makeUrl(['submission', judge.id]) %>"><%= zoj.config.languages[judge.language].show %></a> / Hide</td>
   <% } %>
-<% } %>
 <td><a user href="<%= zoj.utils.makeUrl(['user', judge.user_id]) %>"><%= judge.user.username %></a></td>
 <td><%= zoj.utils.formatDate(judge.submit_time) %>
 </td>
