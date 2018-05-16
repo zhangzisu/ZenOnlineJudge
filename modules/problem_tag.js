@@ -4,7 +4,7 @@ let ProblemTag = zoj.model('problem_tag');
 
 app.get('/problems/tag/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { 			res.redirect('/login'); 			return; 		}
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		if (!await res.locals.user.haveAccess('manage_tag')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let id = parseInt(req.params.id) || 0;
@@ -28,7 +28,7 @@ app.get('/problems/tag/:id/edit', async (req, res) => {
 
 app.post('/problems/tag/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { 			res.redirect('/login'); 			return; 		}
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		if (!await res.locals.user.haveAccess('manage_tag')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let id = parseInt(req.params.id) || 0;

@@ -22,7 +22,6 @@
     <div class="bar" style="width: <%= timePercentage %>%;"></div>
   </div>
   <div class="ui grid">
-  <% if (contest.allowedEdit || (unveiled && (!contest.running || contest.type === 'acm'))) { %>
     <div class="row">
       <div class="column">
         <div class="ui buttons">
@@ -31,11 +30,11 @@
           <a class="ui small negative button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'estimate']) %>">Estimate Config</a>
           <% if (contest.allowedEdit) { %>
             <a class="ui small button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'edit']) %>">Edit This Contest</a>
+            <a class="ui small button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'export']) %>">Export Result</a>
           <% } %>
         </div>
       </div>
     </div>
-  <% } %>
   <% if (contest.information) { %>
     <div class="row">
       <div class="column">

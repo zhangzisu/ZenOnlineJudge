@@ -38,10 +38,10 @@ app.get('/submissions', async (req, res) => {
 		let judge_state = await JudgeState.query(paginate, where, [['submit_time', 'desc']]);
 
 		await judge_state.forEachAsync(async obj => obj.loadRelationships());
-		
+
 		await judge_state.forEachAsync(async obj => obj.allowedSeeCode = await obj.isAllowedSeeCodeBy(res.locals.user));
 		await judge_state.forEachAsync(async obj => obj.allowedSeeData = await obj.isAllowedSeeDataBy(res.locals.user));
-		
+
 		let tmp = [];
 		for (var js of judge_state) {
 			await js.problem.loadRelationships();
@@ -134,11 +134,11 @@ app.get('/submission/:id', async (req, res) => {
 
 		judge.codeLength = judge.code.length;
 		judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
-		// judge.allowedSeeCode |= judge.problem.judge_state.result.status == 'Accepted';
 
 		let hideScore = false;
 		if (contest) {
 			let problems_id = await contest.getProblems();
+
 			problems_id = await problems_id.mapAsync(x => (x.id));
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
 			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
@@ -222,7 +222,7 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
 
-		
+
 		if (judge.pending && !await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('The submittion is judging.');
 
 		await judge.loadRelationships();

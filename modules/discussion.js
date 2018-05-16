@@ -3,7 +3,6 @@
 let Problem = zoj.model('problem');
 let Article = zoj.model('article');
 let ArticleComment = zoj.model('article-comment');
-let User = zoj.model('user');
 
 app.get('/discussion', async (req, res) => {
 	try {
@@ -106,7 +105,7 @@ app.get('/article/:id', async (req, res) => {
 app.get('/article/:id/edit', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		
+
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);

@@ -5,7 +5,6 @@ let db = zoj.db;
 
 let User = zoj.model('user');
 let Group = zoj.model('group');
-let Problem = zoj.model('problem');
 let ContestRanklist = zoj.model('contest_ranklist');
 let ContestPlayer = zoj.model('contest_player');
 

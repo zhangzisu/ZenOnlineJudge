@@ -43,6 +43,7 @@
             <a title="Submissions" class="item<% if (active.startsWith('submission')) { %> active<% } %>" href="/submissions"><i class="tasks icon"></i></a>
             <a title="Ranklist" class="item<% if (active.startsWith('ranklist')) { %> active<% } %>" href="/ranklist"><i class="signal icon"></i></a>
             <a title="Discussion" class="item<% if (active.startsWith('discussion') || active.startsWith('article')) { %> active<% } %>" href="/discussion"><i class="comments icon"></i></a>
+            <a title="Blog" class="item<% if (active.startsWith('blog')) { %> active<% } %>" href="/blogs"><i class="coffee icon"></i></a>
             <a title="Help" class="item" href="https://github.com/ZhangZisu/ZenOnlineJudge/wiki"><i class="help circle icon"></i></a>
             <% if (typeof contest !== 'undefined' && contest && contest.id) { %>
               <a id="back_to_contest" class="item" href="<%= zoj.utils.makeUrl(['contest', contest.id]) %>"><i class="arrow left icon"></i></a>
@@ -54,6 +55,7 @@
                 <div class="menu">
                   <span class="item"><i class="user circle outline icon"></i><a user href="<%= zoj.utils.makeUrl(['user', user.id]) %>"><%= user.username %></a></span>
                   <a class="item" href="<%= zoj.utils.makeUrl(['user', user.id, 'edit']) %>"><i class="edit icon"></i>Edit profile</a>
+                  <a class="item" href="<%= zoj.utils.makeUrl(['blogs', 'user', user.id]) %>"><i class="coffee icon"></i>Blog</a>
                   <a class="item" href="<%= zoj.utils.makeUrl(['admin', 'info']) %>"><i class="settings icon"></i>Console</a>
                   <a class="item" href="<%= zoj.utils.makeUrl(['logout']) %>"><i class="sign out alternate icon"></i>Logout</a>
                 </div>

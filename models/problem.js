@@ -103,8 +103,8 @@ class Problem extends Model {
 	}
 
 	async match(gA, gB) {
-		gA.sort((a, b) => { a.id < b.id });
-		gB.sort((a, b) => { a.id < b.id });
+		gA.sort((a, b) => { a.id < b.id; });
+		gB.sort((a, b) => { a.id < b.id; });
 		let idA = 0, idB = 0;
 		while (idA < gA.length && idB < gB.length) {
 			if (gA[idA].id === gB[idB].id) return true;
@@ -147,7 +147,7 @@ class Problem extends Model {
 		if (!this.datainfo.time_limit) this.datainfo.time_limit = zoj.config.default.problem.time_limit;
 		if (!this.datainfo.memory_limit) this.datainfo.memory_limit = zoj.config.default.problem.memory_limit;
 		if (!this.datainfo.output_limit) this.datainfo.output_limit = zoj.config.default.problem.output_limit;
-		if (!this.datainfo.judge_method) this.datainfo.judge_method = "compare_text";
+		if (!this.datainfo.judge_method) this.datainfo.judge_method = 'compare_text';
 		if (!this.datainfo || !this.datainfo.testcases || !this.datainfo.testcases.length) {
 			try {
 				let dir = this.getTestdataPath();
@@ -209,39 +209,21 @@ class Problem extends Model {
 	async updateTestdata(path) {
 		await zoj.utils.lock(['Problem::Testdata', this.id], async () => {
 			let p7zip = new (require('node-7z'));
-
-			let unzipSize = 0, unzipCount;
-			await p7zip.list(path).progress(files => {
-				unzipCount = files.length;
-				for (let file of files) unzipSize += file.size;
-			});
-
 			let dir = this.getTestdataPath();
 			let fs = Promise.promisifyAll(require('fs-extra'));
 			await fs.removeAsync(dir);
 			await fs.ensureDirAsync(dir);
-
 			await p7zip.extract(path, dir);
 			await fs.moveAsync(path, dir + '.zip', { overwrite: true });
 		});
 		await this.updateTestdataConfig();
 	}
 
-	async uploadTestdataSingleFile(filename, filepath, size) {
+	async uploadTestdataSingleFile(filename, filepath) {
 		await zoj.utils.lock(['Promise::Testdata', this.id], async () => {
 			let dir = this.getTestdataPath();
 			let fs = Promise.promisifyAll(require('fs-extra')), path = require('path');
 			await fs.ensureDirAsync(dir);
-
-			let oldSize = 0, list = await this.listTestdata(), replace = false, oldCount = 0;
-			if (list) {
-				oldCount = list.files.length;
-				for (let file of list.files) {
-					if (file.filename !== filename) oldSize += file.size;
-					else replace = true;
-				}
-			}
-
 			await fs.moveAsync(filepath, path.join(dir, filename), { overwrite: true });
 			await fs.removeAsync(dir + '.zip');
 		});
@@ -320,7 +302,7 @@ class Problem extends Model {
 		if (type === 'additional_file') {
 			this.additional_file_id = file.id;
 		} else {
-			throw new ErrorMessage("File update error");
+			throw new ErrorMessage('File update error');
 		}
 
 		await this.save();

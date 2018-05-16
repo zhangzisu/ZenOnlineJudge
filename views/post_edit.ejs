@@ -1,0 +1,101 @@
+<% this.title = 'Edit Article'; %>
+<% include header %>
+<div class="padding">
+    <form class="ui form" method="post" action="<%= zoj.utils.makeUrl(['blog', req.params.id, 'edit']) %>">
+      <div class="ui top attached tabular menu">
+        <a class="item active" data-tab="edit">Edit<i class="mega-octicon octicon-markdown"></i></a>
+        <a class="item" data-tab="preview" id="preview_tab">Preview</a>
+      </div>
+      <div class="ui bottom attached tab segment active" data-tab="edit">
+        <div class="field">
+          <label for="title">Title</label>
+          <input class="font-content" type="text" id="title" name="title" value="<%= post.title %>">
+          <label for="title">From</label>
+          <input class="font-content" type="text" id="from" name="from" value="<%= post.from %>">
+          <label for="title">Problem ID</label>
+          <input class="font-content" type="text" id="problem_id" name="problem_id" value="<%= post.problem_id %>">
+          <label style="margin-top: 15px; " for="content">Content<i class="mega-octicon octicon-markdown"></i></label>
+          <div id="content" style="height: 1000px;"><%= post.content %></div>
+          <input type="hidden" name="content" value="<%= post.content %>">
+          <label style="margin-top: 15px; ">Add Tags</label>
+          <select class="ui fluid search dropdown" multiple="" id="search_tags" name="tags">
+            <% for (let tag of post.tags) { %>
+              <option value="<%= tag.id %>" selected><%= tag.name %></option>
+            <% } %>
+          </select>
+          <div class="ui segment" style="display: none">
+          <% for (let tag of post.tags) { %>
+             <a class="ui large label transition visible" data-value="<%= tag.id %>"> 
+              <%= tag.name %>
+             </a>
+          <% } %>
+          </div>
+        </div>
+      </div>
+      <div class="ui bottom attached tab segment" data-tab="preview" id="preview">
+        <h1 class="ui header post" id="pv-title"></h1>
+        <div class="font-content" id="pv-content"></div>
+      </div>
+      <% if (post.allowedEdit) { %>
+      <button type="submit" class="ui button">Submit</button>
+      <% } %>
+    </form>
+</div>
+<script src="/libs/ace/ace.js"></script>
+<script type="text/javascript">
+function registerACEditor(editorID, containerName, mode){
+  var editor = ace.edit(editorID);
+
+  editor.setTheme("ace/theme/tomorrow");
+  editor.getSession().setMode(mode);
+  editor.getSession().setUseSoftTabs(false);
+
+  editor.container.name = containerName;
+  editor.container.style.lineHeight = 1.6;
+  editor.container.style.fontSize = '14px';
+  editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+  editor.setShowPrintMargin(false);
+  editor.renderer.updateFontSize();
+
+  var input = $(`[name="${containerName}"]`);
+  editor.getSession().on("change", function () {
+    input.val(editor.getSession().getValue());
+  });
+}
+
+registerACEditor("content", "content", "ace/mode/markdown");
+$(function () {
+    function render(output, input) {
+      $.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
+        // console.log(s);
+        output.html(s);
+      });
+    }
+    $("#preview_tab").click(function () {
+      $("#pv-title").text($("#title").val());
+      $("#pv-content").text('Loading...');
+      render($("#pv-content"), $("[name=content]"));
+    });
+    $('.tabular.menu .item').tab();
+});
+</script>
+<script>
+$(function () {
+  $('#search_tags')
+    .dropdown({
+      debug: true,
+      apiSettings: {
+        url: '/api/search/tags_blog_post/{query}',
+        onResponse: function (response) {
+          var a = $('#search_tags').val().map(function (x) { return parseInt(x) });
+          if (response.results) {
+            response.results = response.results.filter(x => !a.includes(parseInt(x.value)));
+          }
+          return response;
+        },
+        cache: false
+      }
+    });
+});
+</script>
+<% include footer %>
