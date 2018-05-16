@@ -35,7 +35,29 @@
             "show": true,
             "rating": 1500
         },
-        "group": {}
+        "group": {
+            "admin": false,
+            "admin_group": false,
+            "admin_info": false,
+            "admin_link": false,
+            "admin_message": false,
+            "admin_rating": false,
+            "admin_raw": false,
+            "admin_rejudge": false,
+            "admin_upgrade": false,
+            "article_comment": false,
+            "article_edit": false,
+            "change_password": false,
+            "comment-edit": false,
+            "contest_manage": false,
+            "contest_result": false,
+            "manage_tag": false,
+            "others_submission": false,
+            "problem_id": false,
+            "problem_manage": false,
+            "set_notice": false,
+            "user_edit": false
+        }
     },
     "sorting": {
         "ranklist": {

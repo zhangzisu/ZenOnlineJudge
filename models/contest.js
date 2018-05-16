@@ -98,12 +98,12 @@ class Contest extends Model {
 		return user.haveAccess('contest_manage');
 	}
 
-	async isAllowedUseBy(user){
+	async isAllowedUseBy(user) {
 		if (!user) return false;
 		if (this.holder_id === user.id) return true;
-		if(await user.haveAccess('contest_manage'))return true;
-		if(await this.match(user.groups, this.groups_exlude))return false;
-		if(await this.match(user.groups, this.groups_include))return true;
+		if (await user.haveAccess('contest_manage')) return true;
+		if (await this.match(user.groups, this.groups_exlude)) return false;
+		if (await this.match(user.groups, this.groups_include)) return true;
 		return false;
 	}
 

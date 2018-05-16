@@ -117,7 +117,7 @@ class Problem extends Model {
 	async isAllowedEditBy(user) {
 		if (!user) return false;
 		if (this.user_id === user.id) return true;
-		return user.haveAccess('problem_edit');
+		return user.haveAccess('problem_manage');
 	}
 
 	async isAllowedUseBy(user) {
