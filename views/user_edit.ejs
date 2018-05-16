@@ -15,7 +15,7 @@
 	    </div>
       <div class="field">
 	    	<label for="sex">Sex</label>
-	    	<select class="ui dropdown" name="sex">
+	    	<select class="ui dropdown" name="sex" normal>
           <option value="0" <%= edited_user.sex == 0 ? 'selected': '' %>>Other</option>
           <option value="1" <%= edited_user.sex == 1 ? 'selected': '' %>>Male</option>
           <option value="-1" <%= edited_user.sex == -1 ? 'selected': '' %>>Female</option>
@@ -38,7 +38,7 @@
       </div>
       <div class="field">
 	    	<label for="theme">Theme</label>
-        <select class="ui dropdown" id="theme" name="theme">
+        <select class="ui dropdown" id="theme" name="theme" normal>
           <option value="">Theme</option>
           <option value="light" <% if(edited_user.theme === 'light'){ %> selected <% } %> >Light</option>
           <option value="dark" <% if(edited_user.theme === 'dark'){ %> selected <% } %> >Dark</option>
@@ -56,23 +56,19 @@
           <input type="password" placeholder="Repeat the Password" id="password2">
         </div>
       </div>
-      <%
-      let allowedManagePrivilege = user && user.admin >= 3;
-      %>
-      <% if(allowedManagePrivilege && edited_user.id !== user.id){ %>
-      <div class="inline field">
-        <label class="ui header">Permissions</label>
-        <input type="range" id="admin" name="admin" min="0" max="<%= user.admin - 1 %>" value="<%= edited_user.admin %>">
-        <label class="ui header" id="admintip"></label>
+      <label style="margin-top: 15px; ">Groups</label>
+      <select class="ui fluid search dropdown" multiple="" id="groups" name="groups">
+        <% for (let group of edited_user.groups) { %>
+          <option value="<%= group.id %>" selected><%= group.name %></option>
+        <% } %>
+      </select>
+      <div class="ui segment" style="display: none">
+        <% for (let group of edited_user.groups) { %>
+          <a class="ui large label transition visible" data-value="<%= group.id %>"> 
+          <%= group.name %>
+          </a>
+        <% } %>
       </div>
-      <div class="inline field">
-        <label class="ui header">Ban</label>
-        <div class="ui toggle checkbox">
-          <input id="is_show" name="is_show" type="checkbox" <% if (!edited_user.is_show) { %> checked<% } %>>
-          <label></label>
-        </div>
-      </div>
-      <% } %>
       <div style="text-align: center; ">
         <button type="submit" class="ui button">Modify</button>
         <a href="<%= zoj.utils.makeUrl(['user', edited_user.id]) %>" class="ui blue button">Return to Personal Information</a>
@@ -107,25 +103,29 @@ function check() {
 </script>
 <script>
 $(function () {
-	$('.ui.dropdown').dropdown();
+	$('[normal]').dropdown();
 });
 </script>
-<% if(allowedManagePrivilege && edited_user.id !== user.id){ %>
 <script>
-function updateInfo(){
-  var value = $('#admin').val();
-  var tip = "What the fuck is???";
-  switch(value){
-    case "0":tip = "Common user, no any privileges.";break;
-    case "1":tip = "Privileged user, can access privileged problems.";break;
-    case "2":tip = "Student administrator, can manage tags.";break;
-    case "3":tip = "Teacher administrator, can manage problems, contests and users.";break;
-    case "4":tip = "Super administrator.";break;
-  }
-  $('#admintip').text(tip);
+function registerTagSelector(element, url){
+  $(function () {
+  $(element)
+    .dropdown({
+      debug: true,
+      apiSettings: {
+        url: url,
+        onResponse: function (response) {
+          var a = $(element).val().map(function (x) { return parseInt(x) });
+          if (response.results) {
+            response.results = response.results.filter(x => !a.includes(parseInt(x.value)));
+          }
+          return response;
+        },
+        cache: false
+      }
+    });
+});
 }
-updateInfo();
-$('#admin').bind('input propertychange', function() {updateInfo();});
+registerTagSelector('#groups', '/api/search/group/{query}');
 </script>
-<% } %>
 <% include footer %>

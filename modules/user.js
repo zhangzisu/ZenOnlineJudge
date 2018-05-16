@@ -1,6 +1,7 @@
 'use strict';
 
 let User = zoj.model('user');
+let Group = zoj.model('group');
 const RatingCalculation = zoj.model('rating_calculation');
 const RatingHistory = zoj.model('rating_history');
 const Contest = zoj.model('contest');
@@ -9,27 +10,25 @@ const ContestPlayer = zoj.model('contest_player');
 // Ranklist
 app.get('/ranklist', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
 		const sort = req.query.sort || zoj.config.sorting.ranklist.field;
 		const order = req.query.order || zoj.config.sorting.ranklist.order;
-		if (!['ac_num', 'rating', 'id', 'username', 'admin', 'is_show'].includes(sort) || !['asc', 'desc'].includes(order)) {
+		if (!['ac_num', 'rating', 'id', 'username'].includes(sort) || !['asc', 'desc'].includes(order)) {
 			throw new ErrorMessage('Illegal sorting parameters.');
 		}
-		let paginate = zoj.utils.paginate(await User.count({ is_show: true }), req.query.page, zoj.config.page.ranklist);
+		let paginate = zoj.utils.paginate(await User.count({}), req.query.page, zoj.config.page.ranklist);
 		let ranklist;
-		if (res.locals.user && res.locals.user.admin >= 4)
-			ranklist = await User.query(paginate, {}, [[sort, order]]);
-		else
-			ranklist = await User.query(paginate, { is_show: true }, [[sort, order]]);
+		ranklist = await User.query(paginate, {}, [[sort, order]]);
 
 		res.render('ranklist', {
-			privilege: res.locals.user && res.locals.user.admin >= 4,
 			ranklist: ranklist,
 			paginate: paginate,
 			curSort: sort,
 			curOrder: order === 'asc'
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -42,7 +41,7 @@ app.get('/find_user', async (req, res) => {
 		if (!user) throw new ErrorMessage('No such user.');
 		res.redirect(zoj.utils.makeUrl(['user', user.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -87,9 +86,13 @@ app.get('/forget', async (req, res) => {
 // User page
 app.get('/user/:id', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
 		if (!user) throw new ErrorMessage('No such user.');
+		await user.loadRelationships();
+
 		user.ac_problems = await user.getACProblems();
 		user.articles = await user.getArticles();
 		user.allowedEdit = await user.isAllowedEditBy(res.locals.user);
@@ -123,7 +126,7 @@ app.get('/user/:id', async (req, res) => {
 			ratingHistories: ratingHistories
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -132,23 +135,26 @@ app.get('/user/:id', async (req, res) => {
 
 app.get('/user/:id/edit', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
 		if (!user) throw new ErrorMessage('No such user.');
+		await user.loadRelationships();
 
 		let allowedEdit = await user.isAllowedEditBy(res.locals.user);
 		if (!allowedEdit) {
 			throw new ErrorMessage('You do not have permission to do this.');
 		}
 
-		res.locals.user.allowedManage = await res.locals.user.admin >= 3;
+		res.locals.user.allowedManage = await res.locals.user.haveAccess('user_edit');
 
 		res.render('user_edit', {
 			edited_user: user,
 			error_info: null
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -158,6 +164,9 @@ app.get('/user/:id/edit', async (req, res) => {
 app.post('/user/:id/edit', async (req, res) => {
 	let user;
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
+
 		let id = parseInt(req.params.id);
 		user = await User.fromID(id);
 		if (!user) throw new ErrorMessage('No such user.');
@@ -165,30 +174,14 @@ app.post('/user/:id/edit', async (req, res) => {
 		let allowedEdit = await user.isAllowedEditBy(res.locals.user);
 		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this.');
 
-		if (req.body.admin && res.locals.user.id == user.id)
-			throw new ErrorMessage('You cannot change your privilege.');
-
-		let is_show = req.body.is_show ? 0 : 1;
-
-		if (is_show != user.is_show && res.locals.user.id == user.id)
-			throw new ErrorMessage('You cannot ban yourself.');
-
-		if (req.body.admin && (await res.locals.user.admin < 3 || res.locals.user.admin <= user.admin))
-			throw new ErrorMessage('You do not have permission to do this.');
-
 		if (req.body.old_password && req.body.new_password) {
-			if (user.password !== req.body.old_password && !await res.locals.user.admin >= 3) throw new ErrorMessage('Password error.');
+			if (user.password !== req.body.old_password && !(await res.locals.user.haveAccess('change_password') >= 3)) throw new ErrorMessage('Password error.');
 			user.password = req.body.new_password;
 		}
 
-		if (res.locals.user && await res.locals.user.admin >= 3) {
+		if (await res.locals.user.haveAccess('change_password')) {
 			if (!zoj.utils.isValidUsername(req.body.username)) throw new ErrorMessage('Invalid user name.');
 			user.username = req.body.username;
-		}
-
-		if (await res.locals.user.admin >= 3 && res.locals.user.admin > user.admin) {
-			if (req.body.admin) user.admin = req.body.admin;
-			user.is_show = is_show;
 		}
 
 		user.information = req.body.information;
@@ -197,16 +190,20 @@ app.post('/user/:id/edit', async (req, res) => {
 		user.public_email = (req.body.public_email === 'on');
 		user.theme = req.body.theme;
 
+		if (await res.locals.user.haveAccess('user_edit')) {
+			if (!req.body.groups) req.body.groups = [];
+			if (!Array.isArray(req.body.groups)) req.body.groups = [req.body.groups];
+			let groups = await req.body.groups.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+			user.group_config = groups;
+		}
+
 		await user.save();
-
+		await user.loadRelationships();
 		if (user.id === res.locals.user.id) res.locals.user = user;
-
-		res.locals.user.allowedManage = await res.locals.user.admin >= 3;
 
 		res.redirect('/user/' + id);
 	} catch (e) {
-		res.locals.user.allowedManage = await res.locals.user.admin >= 3;
-
+		await user.loadRelationships();
 		res.render('user_edit', {
 			edited_user: user,
 			error_info: e.message

@@ -22,6 +22,7 @@ let db = zoj.db;
 
 let User = zoj.model('user');
 let File = zoj.model('file');
+let Group = zoj.model('group');
 
 let model = db.define('problem',
 	{
@@ -51,8 +52,9 @@ let model = db.define('problem',
 
 		ac_num: { type: Sequelize.INTEGER },
 		submit_num: { type: Sequelize.INTEGER },
-		is_public: { type: Sequelize.BOOLEAN },
-		is_protected: { type: Sequelize.BOOLEAN },
+
+		groups_exlude_config: { type: Sequelize.TEXT, json: true },
+		groups_include_config: { type: Sequelize.TEXT, json: true },
 
 		datainfo: { type: Sequelize.TEXT, json: true }
 	}, {
@@ -77,11 +79,12 @@ class Problem extends Model {
 
 			ac_num: 0,
 			submit_num: 0,
-			is_public: false,
-			is_protected: true,
 
 			datainfo: '',
-			testdata_hash: ''
+			testdata_hash: '',
+
+			groups_exlude_config: '[]',
+			groups_include_config: '[]'
 		}, val)));
 	}
 
@@ -89,33 +92,41 @@ class Problem extends Model {
 		this.user = await User.fromID(this.user_id);
 		this.publicizer = await User.fromID(this.publicizer_id);
 		this.additional_file = await File.fromID(this.additional_file_id);
+		this.groups_exlude = [];
+		for (var group of this.groups_exlude_config) {
+			this.groups_exlude.push(await Group.fromID(group));
+		}
+		this.groups_include = [];
+		for (var group of this.groups_include_config) {
+			this.groups_include.push(await Group.fromID(group));
+		}
+	}
+
+	async match(gA, gB) {
+		gA.sort((a, b) => { a.id < b.id });
+		gB.sort((a, b) => { a.id < b.id });
+		let idA = 0, idB = 0;
+		while (idA < gA.length && idB < gB.length) {
+			if (gA[idA].id === gB[idB].id) return true;
+			if (gA[idA].id < gB[idB].id) idA++;
+			else idB++;
+		}
+		return false;
 	}
 
 	async isAllowedEditBy(user) {
 		if (!user) return false;
-		if (await user.admin >= 3) return true;
-		return this.user_id === user.id;
-		// 1. The user is teacher/system admin
-		// 2. The user is the creator of this problem
+		if (this.user_id === user.id) return true;
+		return user.haveAccess('problem_edit');
 	}
 
 	async isAllowedUseBy(user) {
-		if (this.is_public && !this.is_protected) return true;
 		if (!user) return false;
 		if (this.user_id === user.id) return true;
-		if (this.is_public && this.is_protected) return user.admin >= 1;
-		if (user.admin >= 3) return true;
+		if (await user.haveAccess('problem_manage')) return true;
+		if (await this.match(user.groups, this.groups_exlude)) return false;
+		if (await this.match(user.groups, this.groups_include)) return true;
 		return false;
-		// 1. The problem is publid and not protected
-		// 2. The user is the creator of the problem
-		// 3. The problem is public and the user the indoor student/student admin
-		// 4. The user is teacher/system admin
-	}
-
-	async isAllowedManageBy(user) {
-		if (!user) return false;
-		return (this.user_id === user.id || user.admin >= 3);
-		// The user is teacher/system admin
 	}
 
 	getTestdataPath() {
@@ -177,7 +188,7 @@ class Problem extends Model {
 					break;
 				}
 			} catch (e) {
-				console.log(e);
+				zoj.error(e);
 			}
 		}
 	}
@@ -195,7 +206,7 @@ class Problem extends Model {
 		await this.save();
 	}
 
-	async updateTestdata(path, noLimit) {
+	async updateTestdata(path) {
 		await zoj.utils.lock(['Problem::Testdata', this.id], async () => {
 			let p7zip = new (require('node-7z'));
 
@@ -204,8 +215,6 @@ class Problem extends Model {
 				unzipCount = files.length;
 				for (let file of files) unzipSize += file.size;
 			});
-			if (!noLimit && unzipCount > zoj.config.limit.testdata_filecount) throw new ErrorMessage('Too many files in the data package.');
-			if (!noLimit && unzipSize > zoj.config.limit.testdata) throw new ErrorMessage('The data package is too large.');
 
 			let dir = this.getTestdataPath();
 			let fs = Promise.promisifyAll(require('fs-extra'));
@@ -218,7 +227,7 @@ class Problem extends Model {
 		await this.updateTestdataConfig();
 	}
 
-	async uploadTestdataSingleFile(filename, filepath, size, noLimit) {
+	async uploadTestdataSingleFile(filename, filepath, size) {
 		await zoj.utils.lock(['Promise::Testdata', this.id], async () => {
 			let dir = this.getTestdataPath();
 			let fs = Promise.promisifyAll(require('fs-extra')), path = require('path');
@@ -232,9 +241,6 @@ class Problem extends Model {
 					else replace = true;
 				}
 			}
-
-			if (!noLimit && oldSize + size > zoj.config.limit.testdata) throw new ErrorMessage('The data package is too large.');
-			if (!noLimit && oldCount + !replace > zoj.config.limit.testdata_filecount) throw new ErrorMessage('Too many files in the data package.');
 
 			await fs.moveAsync(filepath, path.join(dir, filename), { overwrite: true });
 			await fs.removeAsync(dir + '.zip');
@@ -308,8 +314,8 @@ class Problem extends Model {
 		}
 	}
 
-	async updateFile(path, type, noLimit) {
-		let file = await File.upload(path, type, noLimit);
+	async updateFile(path, type) {
+		let file = await File.upload(path, type);
 
 		if (type === 'additional_file') {
 			this.additional_file_id = file.id;

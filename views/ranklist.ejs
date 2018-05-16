@@ -15,10 +15,6 @@
 	            <th>Motto</th>
               <th style="width: 100px; "><%- createSortableTitle('ac_num', 'AC Count', false) %></th>
               <th style="width: 100px; "><%- createSortableTitle('rating', 'Rating', false) %></th>
-              <% if(privilege) {%>
-                <th style="width: 80px; "><%- createSortableTitle('admin', 'Privilege', false) %></th>
-                <th style="width: 80px; "><%- createSortableTitle('is_show', 'Allow', false) %></th>
-              <% } %>
 	        </tr>
 	        </thead>
 	        <tbody>
@@ -33,10 +29,6 @@
               <td><%= user.information %></td>
               <td><%= user.ac_num %></td>
               <td><%= user.rating %></td>
-              <% if(privilege) {%>
-                <td><%= user.admin %></td>
-                <td><%= user.is_show %></td>
-              <% } %>
 		        </tr>
 		    <% } %>
 	        </tbody>

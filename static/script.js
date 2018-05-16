@@ -1,4 +1,4 @@
-const version = '10.3.0';
+const version = '11.0.0';
 
 var addUrlParam = function (url, key, val) {
 	var newParam = encodeURIComponent(key) + '=' + encodeURIComponent(val);
@@ -104,7 +104,7 @@ function initWebSocket(id) {
 
 function colorByRating(rating, element) {
 	rating = parseInt(rating) || 0;
-	console.log(rating);
+
 	let jQ = $(element);
 	if (rating <= 1500) {
 		//Newbie

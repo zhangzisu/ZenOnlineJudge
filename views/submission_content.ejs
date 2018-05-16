@@ -36,9 +36,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
         <th>ID</th>
         <th>Problem</th>
         <th>Status</th>
-        <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && contest.type === 'acm') && !hideScore) { %>
-          <th>*</th>
-        <% } %>
+        <th>*</th>
           <% if (!hideScore) { %>
             <th>Time</th>
             <th>Memory</th>
@@ -62,9 +60,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
           <%= judge.status %>
           </span>
       </a></td>
-        <% if ((typeof contest === 'undefined' || !contest) || !((!user || !user.admin >= 3) && !contest.ended && contest.type === 'acm') && !hideScore) { %>
-          <td class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></td>
-        <% } %>
+        <td class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></td>
         <% if (!hideScore) { %>
           <td><%= judge.result.total_time %> ms</td>
           <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
@@ -206,7 +202,7 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
                 <strong>Standard Error</strong>
                 <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.user_err %></code></pre></div>
               <% } %>
-              <% if (testcase.runner_message && judge.allowedManage) { %>
+              <% if (testcase.runner_message && judge.allowedRejudge) { %>
                 <strong>Debugging Information</strong>
                 <div class="ui existing segment"><pre style="margin-top: 0; margin-bottom: 0; "><code><%= testcase.runner_message %></code></pre></div>
               <% } %>

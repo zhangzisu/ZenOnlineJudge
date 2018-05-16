@@ -6,7 +6,8 @@ let items = {
   rating: 'Rating',
   raw: 'Raw config',
   message: 'Client messaging',
-  upgrade: 'System upgrade'
+  upgrade: 'System upgrade',
+  group: 'Group control'
 };
 %>
 	<% this.title = 'Console - ' + items[this.adminPage]; %>
@@ -15,10 +16,8 @@ let items = {
 				<div class="three wide column">
 					<div class="ui vertical fluid tabular menu" style="height: 100%; ">
 						<% for (let x in items) { %>
-							<a class="item<% if (this.adminPage === x) { %> active<% } %>" <% if (this.adminPage !==x ) { %> href="
-								<%= zoj.utils.makeUrl(['admin', x]) %>"
-									<% } %>>
-										<%= items[x] %>
+							<a class="item<% if (this.adminPage === x) { %> active<% } %>" href="<%= zoj.utils.makeUrl(['admin', x]) %>">
+								<%= items[x] %>
 							</a>
 							<% } %>
 					</div>

@@ -1,6 +1,7 @@
 'use strict';
 
 let Contest = zoj.model('contest');
+let Group = zoj.model('group');
 let ContestRanklist = zoj.model('contest_ranklist');
 let ContestPlayer = zoj.model('contest_player');
 let Problem = zoj.model('problem');
@@ -17,31 +18,29 @@ function hasRecord(player, id) {
 
 app.get('/contests', async (req, res) => {
 	try {
-		let where;
-		if (res.locals.user && await res.locals.user.admin >= 3) where = {}
-		else if (res.locals.user && await res.locals.user.admin >= 1) where = {
-			is_public: true
-		};
-		else where = {
-			$and: {
-				is_public: true,
-				is_protected: false
-			}
-		};
+		if (!res.locals.user) { res.redirect('/login'); return; }
 
-		let paginate = zoj.utils.paginate(await Contest.count(where), req.query.page, zoj.config.page.contest);
-		let contests = await Contest.query(paginate, where, [
+
+		let paginate = zoj.utils.paginate(await Contest.count({}), req.query.page, zoj.config.page.contest);
+		let contests = await Contest.query(paginate, {}, [
 			['start_time', 'desc']
 		]);
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
+
+		let tmp = [];
+		for (var c of contests) {
+			await c.loadRelationships();
+			if (await c.isAllowedUseBy(res.locals.user)) tmp.push(c);
+		}
+		contests = tmp;
 
 		res.render('contests', {
 			contests: contests,
 			paginate: paginate
 		})
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -50,7 +49,9 @@ app.get('/contests', async (req, res) => {
 
 app.get('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
+		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
@@ -60,13 +61,14 @@ app.get('/contest/:id/edit', async (req, res) => {
 		}
 
 		let problems = JSON.stringify(contest.problems, null, '\t');
+		await contest.loadRelationships();
 
 		res.render('contest_edit', {
 			contest: contest,
 			problems: problems
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -75,7 +77,9 @@ app.get('/contest/:id/edit', async (req, res) => {
 
 app.post('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user || !res.locals.user.admin >= 3) throw new ErrorMessage('You do not have permission to do this.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
+		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
 
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
@@ -106,9 +110,17 @@ app.post('/contest/:id/edit', async (req, res) => {
 		contest.information = req.body.information;
 		contest.start_time = zoj.utils.parseDate(req.body.start_time);
 		contest.end_time = zoj.utils.parseDate(req.body.end_time);
-		contest.is_public = req.body.is_public === 'on';
-		contest.is_protected = req.body.is_protected == 'on';
 		contest.type = req.body.type;
+
+		if (!req.body.groups_exlude) req.body.groups_exlude = [];
+		if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
+		let new_groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+		contest.groups_exlude_config = new_groups;
+
+		if (!req.body.groups_include) req.body.groups_include = [];
+		if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
+		new_groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+		contest.groups_include_config = new_groups;
 
 		await contest.save();
 
@@ -121,7 +133,7 @@ app.post('/contest/:id/edit', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['contest', contest.id]));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -130,11 +142,16 @@ app.post('/contest/:id/edit', async (req, res) => {
 
 app.get('/contest/:id', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
+
 		let contest_id = parseInt(req.params.id);
 
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+		await contest.loadRelationships();
+
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		contest.allowedEdit = await contest.isAllowedEditBy(res.locals.user);
 		contest.running = await contest.isRunning();
@@ -192,7 +209,7 @@ app.get('/contest/:id', async (req, res) => {
 		}
 
 		let hasStatistics = false;
-		if (contest.ended || (res.locals.user && res.locals.user.admin >= 3)) {
+		if (await contest.isAllowedSeeResultBy(res.locals.user)) {
 			hasStatistics = true;
 
 			await contest.loadRelationships();
@@ -229,7 +246,7 @@ app.get('/contest/:id', async (req, res) => {
 			hasStatistics: hasStatistics
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -238,6 +255,7 @@ app.get('/contest/:id', async (req, res) => {
 
 app.get('/contest/:id/ranklist', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
@@ -273,7 +291,7 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 			hasRecord: hasRecord
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -282,10 +300,13 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 
 app.get('/contest/:id/submissions', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
 		if (!contest) throw new ErrorMessage('No such contest.');
+		await contest.loadRelationships();
+
 		if (!await contest.isAllowedSeeResultBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
 
 		contest.ended = await contest.isEnded();
@@ -300,20 +321,18 @@ app.get('/contest/:id/submissions', async (req, res) => {
 		where.type = 1;
 		where.type_info = contest_id;
 
-		if (contest.ended || (res.locals.user && res.locals.user.admin >= 3)) {
-			if (!((!res.locals.user || !res.locals.user.admin >= 3) && !contest.ended && contest.type === 'acm')) {
-				let minScore = parseInt(req.query.min_score);
-				if (isNaN(minScore)) minScore = 0;
-				let maxScore = parseInt(req.query.max_score);
-				if (isNaN(maxScore)) maxScore = 100;
+		if (await contest.isAllowedSeeResultBy(res.locals.user)) {
+			let minScore = parseInt(req.query.min_score);
+			if (isNaN(minScore)) minScore = 0;
+			let maxScore = parseInt(req.query.max_score);
+			if (isNaN(maxScore)) maxScore = 100;
 
-				where.score = {
-					$and: {
-						$gte: parseInt(minScore),
-						$lte: parseInt(maxScore)
-					}
-				};
-			}
+			where.score = {
+				$and: {
+					$gte: parseInt(minScore),
+					$lte: parseInt(maxScore)
+				}
+			};
 
 			if (req.query.language) where.language = req.query.language;
 			if (req.query.status) where.status = {
@@ -346,7 +365,7 @@ app.get('/contest/:id/submissions', async (req, res) => {
 			form: req.query
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -355,11 +374,13 @@ app.get('/contest/:id/submissions', async (req, res) => {
 
 app.get('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+
+		await contest.loadRelationships();
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problemset = await contest.getProblems();
 		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
@@ -368,6 +389,13 @@ app.get('/contest/:id/estimate', async (req, res) => {
 			contest_id: contest.id,
 			user_id: res.locals.user.id
 		});
+
+		if (!player) {
+			player = await ContestPlayer.create({
+				contest_id: this.id,
+				user_id: res.locals.user.id
+			});
+		}
 
 		for (var p of problems) {
 			if (!player.score_details[p.id]) player.score_details[p.id] = new Object();
@@ -385,7 +413,7 @@ app.get('/contest/:id/estimate', async (req, res) => {
 			contest: contest
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -394,11 +422,13 @@ app.get('/contest/:id/estimate', async (req, res) => {
 
 app.post('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) throw new ErrorMessage('Please login.');
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+
+		await contest.loadRelationships();
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problemset = await contest.getProblems();
 		let problems = await problemset.mapAsync(async obj => await Problem.fromID(obj.id));
@@ -407,6 +437,13 @@ app.post('/contest/:id/estimate', async (req, res) => {
 			contest_id: contest.id,
 			user_id: res.locals.user.id
 		});
+
+		if (!player) {
+			player = await ContestPlayer.create({
+				contest_id: this.id,
+				user_id: judge_state.user_id
+			});
+		}
 
 		for (var p of problems) {
 			let scoreName = `s_${p.id}`;
@@ -420,7 +457,7 @@ app.post('/contest/:id/estimate', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['contest', contest_id, 'estimate']));
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -429,11 +466,13 @@ app.post('/contest/:id/estimate', async (req, res) => {
 
 app.get('/contest/:id/:pid', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
 
-		if (!contest.is_public && (!res.locals.user || !res.locals.user.admin >= 3)) throw new ErrorMessage('No such contest.');
+		await contest.loadRelationships();
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
 		problems_id = await problems_id.mapAsync(x => (x.id));
@@ -467,7 +506,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 			lastLanguage: res.locals.user ? await res.locals.user.getLastSubmitLanguage() : null
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -476,9 +515,13 @@ app.get('/contest/:id/:pid', async (req, res) => {
 
 app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
 		let id = parseInt(req.params.id);
 		let contest = await Contest.fromID(id);
 		if (!contest) throw new ErrorMessage('No such contest.');
+
+		await contest.loadRelationships();
+		if (!await contest.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('No such contest.');
 
 		let problems_id = await contest.getProblems();
 		problems_id = await problems_id.mapAsync(x => (x.id));
@@ -501,10 +544,10 @@ app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 
 		if (!problem.additional_file) throw new ErrorMessage('No such file.');
 
-		console.log(`additional_file_${id}_${pid}.zip`);
+		zoj.log(`additional_file_${id}_${pid}.zip`);
 		res.download(problem.additional_file.getPath(), `additional_file_${id}_${pid}.zip`);
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
 		res.status(404);
 		res.render('error', {
 			err: e

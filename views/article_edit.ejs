@@ -20,7 +20,7 @@
 				</label>
 				<div id="content" style="height: 500px;"><%= article.content %></div>
 				<input type="hidden" name="content" value="<%= article.content %>">
-				<% if (user && user.admin >= 2) { %>
+				<% if (fucked) { %>
 				<div class="ui <% if (article.is_notice) { %>checked <% } %>checkbox" style="margin-top: 15px; ">
 					<input <% if (article.is_notice) { %> checked <% } %> name="is_notice" type="checkbox">
 					<label>
@@ -71,7 +71,7 @@ registerACEditor("content", "content", "ace/mode/markdown");
 	$(function () {
 		function render(output, input) {
 			$.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
-				// console.log(s);
+				// zoj.log(s);
 				output.html(s);
 			});
 		}

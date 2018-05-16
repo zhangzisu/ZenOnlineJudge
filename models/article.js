@@ -58,15 +58,18 @@ class Article extends Model {
 	}
 
 	async isAllowedEditBy(user) {
-		return user && (user.admin >= 2 || this.user_id === user.id);
-		// The user is student/teacher/system admin or he is the owner of this article
+		if (!user) return false;
+		if (this.user_id === user.id) return true;
+		
+		return await user.haveAccess('article_edit');
 	}
 
 	async isAllowedCommentBy(user) {
-		return user && (this.allow_comment || user.admin >= 2 || this.user_id === user.id);
-		// 1.This article is allowed to comment
-		// 2.The user is student/teacher/system admin
-		// 3.The user is the owner of this article
+		if (!user) return false;
+		if (this.allow_comment) return true;
+		if (this.user_id === user.id) return true;
+		
+		return await user.haveAccess('article_comment');
 	}
 
 	getModel() { return model; }

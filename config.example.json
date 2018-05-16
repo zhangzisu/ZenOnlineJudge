@@ -2,23 +2,23 @@
     "title": "ZOJ",
     "listen": "localhost",
     "port": "1926",
-    "https": true,
+    "https": false,
     "https_config": {
         "key": "",
         "cert": ""
     },
     "hostname": "http://localhost",
     "db": {
-        "database": "zoj",
-        "username": "username",
-        "password": "password",
+        "database": "",
+        "username": "",
+        "password": "",
         "host": null,
-        "dialect": "mysql",
-        "storage": null
+        "dialect": "",
+        "storage": ""
     },
     "register_mail": {
         "enabled": false,
-        "host": "smtp-mail.outlook.com",
+        "host": "",
         "port": 587,
         "username": "",
         "password": "",
@@ -34,7 +34,8 @@
         "user": {
             "show": true,
             "rating": 1500
-        }
+        },
+        "group": {}
     },
     "sorting": {
         "ranklist": {
@@ -105,5 +106,7 @@
     "callback_port": 5001,
     "enable_google_analytics": false,
     "google_publisher_id": "UA-",
-    "miner": true
+    "miner": true,
+    "enable_log": true,
+    "enable_error": true
 }

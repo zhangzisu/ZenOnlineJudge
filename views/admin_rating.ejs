@@ -1,9 +1,5 @@
 <% this.adminPage = 'rating'; %>
-  <% if(privilege){ %>
     <% include admin_header %>
-  <% }else{ %>
-    <% include header %>
-  <% } %>
     <form action="<%= zoj.utils.makeUrl(['admin', 'rating', 'add']) %>" method="post" class="ui form">
       <div class="field">
         <label>Contest</label>

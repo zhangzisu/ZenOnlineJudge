@@ -1,0 +1,35 @@
+<% this.adminPage = 'group'; %>
+<% include admin_header %>
+<form class="ui form" method="post" action="<%= zoj.utils.makeUrl(['admin', 'group', req.params.id]) %>">
+    <label for="name">Group Name</label>
+    <input class="font-content" type="text" id="name" name="name" value="<%= group.name %>">
+    <label style="margin-top: 15px; " for="config">Access Config</label>
+    <div id="config" style="height: 1000px;"><%= JSON.stringify(group.config, null, '\t') %></div>
+    <input type="hidden" name="config" value="<%= JSON.stringify(group.config, null, '\t') %>">
+    <button type="submit" class="ui button">Submit</button>
+</form>
+<script src="/libs/ace/ace.js"></script>
+<script type="text/javascript">
+function registerACEditor(editorID, containerName, mode){
+  var editor = ace.edit(editorID);
+
+  editor.setTheme("ace/theme/tomorrow");
+  editor.getSession().setMode(mode);
+  editor.getSession().setUseSoftTabs(false);
+
+  editor.container.name = containerName;
+  editor.container.style.lineHeight = 1.6;
+  editor.container.style.fontSize = '14px';
+  editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+  editor.setShowPrintMargin(false);
+  editor.renderer.updateFontSize();
+
+  var input = $(`[name="${containerName}"]`);
+  editor.getSession().on("change", function () {
+    input.val(editor.getSession().getValue());
+  });
+}
+
+registerACEditor("config", "config", "ace/mode/json");
+</script>
+<% include admin_footer %>

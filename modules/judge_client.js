@@ -56,11 +56,11 @@ io.sockets.on('connection', function (socket) {
         }
         judge_client.judgers.add(id);
         judge_client.ids[socket.id = id] = socket;
-        console.log(`Client ${id} connected.`);
+        zoj.log(`Client ${id} connected.`);
     });
     socket.on('disconnect', async function (data) {
         let id = socket.id;
-        console.log(`Client ${id} disconnected.`);
+        zoj.log(`Client ${id} disconnected.`);
         if (tasked.has(id)) tasked.delete(id);
         if (judge_client.judgers.has(id)) judge_client.judgers.delete(id);
         if (judge_client.ids.has(id)) judge_client.ids.delete(id);
@@ -108,7 +108,7 @@ io.sockets.on('connection', function (socket) {
                 if (tasked.has(id)) tasked.delete(id);
             }
         } catch (e) {
-            console.log(e);
+            zoj.error(e);
             socket.emit('terminate', {});
         }
     });
@@ -128,7 +128,7 @@ io.sockets.on('connection', function (socket) {
                 await judge_state.updateRelatedInfo();
             });
         } catch (e) {
-            console.log(e);
+            zoj.error(e);
             socket.emit('terminate', {});
         }
     });
@@ -142,19 +142,19 @@ io.sockets.on('connection', function (socket) {
             let path = require('path');
             let filename = problem.getTestdataPath() + '.zip';
             if (!await zoj.utils.isFile(filename)) throw null;
-            console.log(`Require data: ${data.pid}`);
+            zoj.log(`Require data: ${data.pid}`);
             var stream = ss.createStream();
             ss(socket).emit('file', stream);
             fs.createReadStream(filename).pipe(stream).on('finish', function () {
-                console.log('Data upload succeed.');
+                zoj.log('Data upload succeed.');
             });
         } catch (e) {
-            console.log(e);
+            zoj.error(e);
             socket.emit('terminate', {});
         }
     });
 });
 
 server.listen(zoj.config.callback_port, function () {
-    console.log('Judge Client Service started successfully.');
+    zoj.log('Judge Client Service started successfully.');
 });
