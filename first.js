@@ -33,6 +33,6 @@ module.exports = function () {
 
     result = conif.getConsoleInput("ZOJ Token: ", true).trim();
     config.token = config.secret = result;
-    fs.writeFileSync('config.json', JSON.stringify(config));
+    fs.writeFileSync('config.json', JSON.stringify(config, null, '\t'));
     return config;
 }
