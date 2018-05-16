@@ -72,6 +72,7 @@ class User extends Model {
 	}
 
 	async haveAccess(name) {
+		if (this.id === 1) return true;
 		if (!this.groups) await this.loadRelationships();
 		for (var group of this.groups) {
 			if (await group.getAccess(name)) return true;

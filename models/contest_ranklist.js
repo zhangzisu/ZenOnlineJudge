@@ -7,20 +7,22 @@ let User = zoj.model('user');
 let Problem = zoj.model('problem');
 let ContestPlayer = zoj.model('contest_player');
 
-let model = db.define('contest_ranklist', {
-	id: {
-		type: Sequelize.INTEGER,
-		primaryKey: true,
-		autoIncrement: true
-	},
-	ranklist: {
-		type: Sequelize.TEXT,
-		json: true
+let model = db.define('contest_ranklist',
+	{
+		id: {
+			type: Sequelize.INTEGER,
+			primaryKey: true,
+			autoIncrement: true
+		},
+		ranklist: {
+			type: Sequelize.TEXT,
+			json: true
+		}
+	}, {
+		timestamps: false,
+		tableName: 'contest_ranklist'
 	}
-}, {
-	timestamps: false,
-	tableName: 'contest_ranklist'
-});
+);
 
 let Model = require('./common');
 class ContestRanklist extends Model {

@@ -23,12 +23,8 @@ let model = db.define('comment',
 		timestamps: false,
 		tableName: 'comment',
 		indexes: [
-			{
-				fields: ['article_id']
-			},
-			{
-				fields: ['user_id']
-			}
+			{ fields: ['article_id'] },
+			{ fields: ['user_id'] }
 		]
 	}
 );
@@ -50,11 +46,11 @@ class ArticleComment extends Model {
 	}
 
 	async isAllowedEditBy(user) {
-		if(!user)return false;
-		await this.loadRelationships(); 
-		if(this.user_id === user.id || user.id === this.article.user_id)return true;
-		
-		return await user.haveAccess('comment-edit'); 
+		if (!user) return false;
+		await this.loadRelationships();
+		if (this.user_id === user.id || user.id === this.article.user_id) return true;
+
+		return await user.haveAccess('comment_edit');
 	}
 
 	getModel() { return model; }

@@ -96,7 +96,6 @@ app.get('/admin/message', async (req, res) => {
 		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this.');
 
 		res.render('admin_message', {
-			privilege: await res.locals.user.haveAccess('admin')
 		});
 	} catch (e) {
 		zoj.error(e);
@@ -137,7 +136,6 @@ app.get('/admin/rating', async (req, res) => {
 		for (const calc of calcs) await calc.loadRelationships();
 
 		res.render('admin_rating', {
-			privilege: await res.locals.user.haveAccess('admin'),
 			contests: contests,
 			calcs: calcs
 		});

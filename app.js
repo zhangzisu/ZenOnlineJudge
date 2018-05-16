@@ -218,10 +218,18 @@ zoj.run();
 
 if (firstRun) {
 	zoj.info('Database is loading, please wait...');
-	setTimeout(async function () {
-		let Group = zoj.model('group');
-		let User = zoj.model('user');
-		let conif = require('node-console-input');
+	let Group = zoj.model('group');
+	let User = zoj.model('user');
+	let conif = require('node-console-input');
+
+	let init = async function () {
+		try {
+			await Group.count(null);
+			await User.count(null);
+		} catch (e) {
+			setTimeout(init, 1000);
+			return;
+		}
 
 		let admins = await Group.create();
 		admins.name = 'Administrators';
@@ -240,5 +248,7 @@ if (firstRun) {
 		});
 		await user.save();
 		zoj.info('Database loaded successfully');
-	}, 10000);
+	};
+
+	setTimeout(init, 1000);
 }
