@@ -10,9 +10,6 @@ const calcRating = require('../libs/rating');
 let ContestPlayer = zoj.model('contest_player');
 const os = require('os');
 
-
-let db = zoj.db;
-
 app.get('/admin/group', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
@@ -28,7 +25,7 @@ app.get('/admin/group', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -55,7 +52,7 @@ app.get('/admin/group/:id', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -85,7 +82,7 @@ app.post('/admin/group/:id', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -101,7 +98,7 @@ app.get('/admin/message', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -132,7 +129,7 @@ app.get('/admin/rating', async (req, res) => {
 
 		const contests = await Contest.query(null, {}, [['start_time', 'desc']]);
 		const calcs = await RatingCalculation.query(null, {}, [['id', 'desc']]);
-		const util = require('util');
+
 		for (const calc of calcs) await calc.loadRelationships();
 
 		res.render('admin_rating', {
@@ -143,7 +140,7 @@ app.get('/admin/rating', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -161,7 +158,7 @@ app.post('/admin/rating/add', async (req, res) => {
 		await newcalc.save();
 
 		if (!contest.ranklist || contest.ranklist.ranklist.player_num <= 1) {
-			throw new ErrorMessage("Too few players.");
+			throw new ErrorMessage('Too few players.');
 		}
 
 		const players = [];
@@ -240,7 +237,7 @@ app.get('/admin/info', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -259,7 +256,7 @@ app.get('/admin/rejudge', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -332,7 +329,7 @@ app.post('/admin/rejudge', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -349,7 +346,7 @@ app.get('/admin/links', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -367,7 +364,7 @@ app.post('/admin/links', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -384,7 +381,7 @@ app.get('/admin/raw', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -402,7 +399,7 @@ app.post('/admin/raw', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -417,7 +414,7 @@ app.get('/admin/upgrade', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });
 
@@ -428,7 +425,7 @@ app.post('/admin/upgrade', async (req, res) => {
 		if (!await res.locals.user.haveAccess('admin_upgrade')) throw new ErrorMessage('You do not have permission to do this.');
 
 		var exec = require('child_process').exec;
-		exec('sh upgrade.sh', function (error, stdout, stderr) {
+		exec('sh upgrade.sh', function (error) {
 			if (error !== null) {
 				zoj.log('exec error: ' + error);
 			}
@@ -439,6 +436,6 @@ app.post('/admin/upgrade', async (req, res) => {
 		zoj.error(e);
 		res.render('error', {
 			err: e
-		})
+		});
 	}
 });

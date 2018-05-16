@@ -31,6 +31,7 @@
           <a class="ui small negative button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'estimate']) %>">Estimate Config</a>
           <% if (contest.allowedEdit) { %>
             <a class="ui small button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'edit']) %>">Edit This Contest</a>
+            <a class="ui small button" href="<%= zoj.utils.makeUrl(['contest', contest.id, 'export']) %>">Export Result</a>
           <% } %>
         </div>
       </div>

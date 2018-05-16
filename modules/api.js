@@ -1,8 +1,6 @@
 'use strict';
 
 let User = zoj.model('user');
-let Problem = zoj.model('problem');
-let File = zoj.model('file');
 const Email = require('../libs/email');
 const WebToken = require('jsonwebtoken');
 
@@ -57,14 +55,13 @@ app.post('/api/forget', async (req, res) => {
 		try {
 			await Email.send(user.email,
 				`Reset password for ${user.username} in ${zoj.config.title}`,
-				`<p>Please click the link in 1h to reset your password:</p><p><a href="${vurl}">${vurl}</a></p><p>.If you are not ${user.username}, please ignore this email.</p>`
+				`<p>Please click the link in 1h to reset your password:</p><p><a href='${vurl}'>${vurl}</a></p><p>.If you are not ${user.username}, please ignore this email.</p>`
 			);
 		} catch (e) {
 			return res.send({
 				error_code: 2010,
 				message: require('util').inspect(e)
 			});
-			return null;
 		}
 
 		res.send({
@@ -113,7 +110,7 @@ app.post('/api/sign_up', async (req, res) => {
 			try {
 				await Email.send(req.body.email,
 					`Sign up for ${req.body.username} in ${zoj.config.title}`,
-					`<p>Please click the link in 1h to finish your registration in ${zoj.config.title}:</p><p><a href="${vurl}">${vurl}</a></p><p>If you are not ${req.body.username}, please ignore it.</p>`
+					`<p>Please click the link in 1h to finish your registration in ${zoj.config.title}:</p><p><a href='${vurl}'>${vurl}</a></p><p>If you are not ${req.body.username}, please ignore it.</p>`
 				);
 			} catch (e) {
 				return res.send({
@@ -153,7 +150,7 @@ app.get('/api/forget_confirm', async (req, res) => {
 				subject: 'forget'
 			});
 		} catch (e) {
-			throw new ErrorMessage("Token incorrect.");
+			throw new ErrorMessage('Token incorrect.');
 		}
 		res.render('forget_confirm', {
 			token: req.query.token
@@ -255,13 +252,15 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 		let Problem = zoj.model('problem');
 
 		let keyword = req.params.keyword || '';
-		let problems = await Problem.query(null, {
-			title: {
-				like: `%${req.params.keyword}%`
-			}
-		}, [
-			['id', 'asc']
-		]);
+		let problems = await Problem.query(null,
+			{
+				title: {
+					like: `%${req.params.keyword}%`
+				}
+			}, [
+				['id', 'asc']
+			]
+		);
 
 		let result = [];
 
@@ -295,19 +294,61 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 	}
 });
 
+app.get('/api/v2/search/blogs/:keyword*?', async (req, res) => {
+	try {
+		let BlogPost = zoj.model('blog_post');
+
+		let keyword = req.params.keyword || '';
+		let posts;
+
+		if (req.cookies['selfonly_mode'] == '1' && res.locals.user) {
+			posts = await BlogPost.query(null, {
+				title: { like: `%${req.params.keyword}%` },
+				user_id: res.locals.user.id
+			}, [['id', 'desc']]);
+		} else {
+			posts = await BlogPost.query(null, {
+				title: { like: `%${req.params.keyword}%` }
+			}, [['id', 'desc']]);
+		}
+
+		let result = [];
+
+		let id = parseInt(keyword);
+		if (id) {
+			let postByID = await BlogPost.fromID(parseInt(keyword));
+			if (postByID && await postByID.isAllowedSeeBy(res.locals.user)) {
+				result.push(postByID);
+			}
+		}
+		await posts.forEachAsync(async post => {
+			if (await post.isAllowedSeeBy(res.locals.user) && result.length < zoj.config.page.edit_contest_problem_list && post.id !== id) {
+				result.push(post);
+			}
+		});
+
+		result = result.map(x => ({ name: `#${x.id}. ${x.title}`, value: x.id, url: zoj.utils.makeUrl(['blog', x.id]) }));
+		res.send({ success: true, results: result });
+	} catch (e) {
+		zoj.log(e);
+		res.send({ success: false });
+	}
+});
+
 app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 	try {
-		let Problem = zoj.model('problem');
 		let ProblemTag = zoj.model('problem_tag');
 
 		let keyword = req.params.keyword || '';
-		let tags = await ProblemTag.query(null, {
-			name: {
-				like: `%${req.params.keyword}%`
-			}
-		}, [
-			['name', 'asc']
-		]);
+		let tags = await ProblemTag.query(null,
+			{
+				name: {
+					like: `%${keyword}%`
+				}
+			}, [
+				['name', 'asc']
+			]
+		);
 
 		let result = tags.slice(0, zoj.config.page.edit_problem_tag_list);
 
@@ -324,6 +365,25 @@ app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 		res.send({
 			success: false
 		});
+	}
+});
+
+app.get('/api/search/tags_blog_post/:keyword*?', async (req, res) => {
+	try {
+		let PostTag = zoj.model('blog_post_tag');
+
+		let keyword = req.params.keyword || '';
+		let tags = await PostTag.query(null, {
+			name: { like: `%${keyword}%` }
+		}, [['name', 'asc']]);
+
+		let result = tags.slice(0, zoj.config.page.edit_post_tag_list);
+
+		result = result.map(x => ({ name: x.name, value: x.id }));
+		res.send({ success: true, results: result });
+	} catch (e) {
+		zoj.log(e);
+		res.send({ success: false });
 	}
 });
 
@@ -344,13 +404,15 @@ app.get('/api/search/group/:keyword*?', async (req, res) => {
 		let Group = zoj.model('group');
 
 		let keyword = req.params.keyword || '';
-		let groups = await Group.query(null, {
-			name: {
-				like: `%${req.params.keyword}%`
-			}
-		}, [
-			['name', 'asc']
-		]);
+		let groups = await Group.query(null,
+			{
+				name: {
+					like: `%${keyword}%`
+				}
+			}, [
+				['name', 'asc']
+			]
+		);
 
 		let result = groups.slice(0, zoj.config.page.edit_problem_tag_list);
 

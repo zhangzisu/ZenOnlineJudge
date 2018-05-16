@@ -367,7 +367,6 @@ app.post('/problem/:id/import', async (req, res) => {
 		}
 
 		let request = require('request-promise');
-		let url = require('url');
 		let token = req.body.token || '';
 
 		if (req.body.type === 'SYZOJ') {
@@ -530,7 +529,7 @@ app.post('/problem/:id/submit', async (req, res) => {
 
 		await problem.loadRelationships();
 
-		let contest_id = parseInt(req.query.contest_id), redirectToContest = false;
+		let contest_id = parseInt(req.query.contest_id);
 		if (contest_id) {
 			let contest = await Contest.fromID(contest_id);
 			if (!contest) throw new ErrorMessage('No such contest.');
@@ -602,7 +601,7 @@ app.get('/problem/:id/testdata', async (req, res) => {
 
 		let testdata = await problem.listTestdata();
 
-		problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user)
+		problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
 
 		res.render('problem_data', {
 			problem: problem,

@@ -38,7 +38,7 @@ app.get('/contests', async (req, res) => {
 		res.render('contests', {
 			contests: contests,
 			paginate: paginate
-		})
+		});
 	} catch (e) {
 		zoj.error(e);
 		res.render('error', {
@@ -67,6 +67,66 @@ app.get('/contest/:id/edit', async (req, res) => {
 			contest: contest,
 			problems: problems
 		});
+	} catch (e) {
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
+app.get('/contest/:id/export', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
+		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this.');
+
+		let contest_id = parseInt(req.params.id);
+		let contest = await Contest.fromID(contest_id);
+		if (!contest) throw new ErrorMessage('No such a contest.');
+
+		await contest.loadRelationships();
+		let problems = await contest.problems.mapAsync(async x => await Problem.fromID(x.id));
+		if (problems.length < 1) throw new ErrorMessage('No problems in this contest.');
+
+		let csv = 'User,';
+		for (let p of problems) csv = csv + `${p.id}.${p.title},time estimated,`;
+		csv = csv + 'Total,\r\n';
+
+		let players_id = [];
+		for (let i = 1; i <= contest.ranklist.ranklist.player_num; i++) players_id.push(contest.ranklist.ranklist[i]);
+
+		let ranklist = await players_id.mapAsync(async player_id => {
+			let player = await ContestPlayer.fromID(player_id);
+			for (let i in player.score_details) {
+				player.score_details[i].judge_state = await JudgeState.fromID(player.score_details[i].judge_id);
+			}
+
+			let user = await User.fromID(player.user_id);
+
+			return {
+				user: user,
+				player: player
+			};
+		});
+
+		for (let obj of ranklist) {
+			csv = csv + `${obj.user.username},`;
+			for (let p of problems) {
+				let report =
+					`${obj.player.score_details[p.id].score}/${obj.player.score_details[p.id].self.score},` +
+					`${obj.player.score_details[p.id].self.time},`;
+				csv = csv + report;
+			}
+			csv = csv + `${obj.player.score},\r\n`;
+		}
+
+		let tmp = require('tmp-promise');
+		let tmpFile = await tmp.file();
+		let fs = require('bluebird').promisifyAll(require('fs'));
+		await fs.writeFileAsync(tmpFile.path, csv);
+
+		res.download(tmpFile.path, `contest_${contest_id}.csv`);
 	} catch (e) {
 		zoj.error(e);
 		res.render('error', {
