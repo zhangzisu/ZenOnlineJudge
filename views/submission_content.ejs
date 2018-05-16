@@ -21,6 +21,7 @@ for (let s of judge.result.subtasks) {
     runningFound = true;
   }
 }
+hideScore = !judge.allowedSeeCase;
 %>
 
 <%
@@ -36,10 +37,10 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
         <th>ID</th>
         <th>Problem</th>
         <th>Status</th>
-        <th>*</th>
           <% if (!hideScore) { %>
-            <th>Time</th>
-            <th>Memory</th>
+          <th>*</th>
+          <th>Time</th>
+          <th>Memory</th>
           <% } %>
           <th>Code</th>
         <th>Submitter</th>
@@ -54,14 +55,23 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
        <tr>
         <td>#<%= judge.id %></td>
         <td><a style="width: 230px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-p" href="<%= problemUrl %>"><%= (typeof contest !== 'undefined' && contest) ? this.alpha(judge.problem_id) : ('#' + judge.problem_id) %>. <%= judge.problem.title %></a></td>
-        <td><a style="width: 150px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-s" href="#">
-          <span class="status <%= getStatusMeta(judge.status).toLowerCase().split(' ').join('_') %>">
-          <i class="<%= icon[getStatusMeta(judge.status)] || 'remove' %> icon"></i>
-          <%= judge.status %>
-          </span>
-      </a></td>
-        <td class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></td>
+        <% if (hideScore){ %>
+          <td><a style="width: 150px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-s" href="#">
+            <span class="status <%= getStatusMeta('Submitted').toLowerCase().split(' ').join('_') %>">
+            <i class="<%= icon[getStatusMeta('Submitted')] || 'remove' %> icon"></i>
+            Submitted
+            </span>
+        </a></td>
+        <% } else { %>
+          <td><a style="width: 150px; height: 22px; display: block; margin: 0 auto; line-height: 22px; " id="text-fit-s" href="#">
+            <span class="status <%= getStatusMeta(judge.status).toLowerCase().split(' ').join('_') %>">
+            <i class="<%= icon[getStatusMeta(judge.status)] || 'remove' %> icon"></i>
+            <%= judge.status %>
+            </span>
+        </a></td>
+        <% } %>
         <% if (!hideScore) { %>
+          <td class="score score_<%= parseInt(judge.result.score / 10) || 0 %>"><%= judge.result.score %></td>
           <td><%= judge.result.total_time %> ms</td>
           <td><%= parseInt(judge.result.max_memory) || 0 %> K</td>
         <% } %>

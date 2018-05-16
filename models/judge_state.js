@@ -6,7 +6,6 @@ let db = zoj.db;
 let User = zoj.model('user');
 let Problem = zoj.model('problem');
 let Contest = zoj.model('contest');
-let Group = zoj.model('group');
 
 let model = db.define('judge_state',
 	{
@@ -77,77 +76,65 @@ class JudgeState extends Model {
 
 	async isAllowedVisitBy(user) {
 		if (user.id === this.user_id) return true;
+		if (this.type === 1) {
+			let contest = await Contest.fromID(this.type_info);
+			if (await contest.isRunning()) {
+				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
+			}
+		}
 		await this.loadRelationships();
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
 		if (this.type === 0) {
 			return await user.haveAccess('others_submission');
-		}
-		if (this.type === 1) {
-			let contest = await Contest.fromID(this.type_info);
-			if (await contest.isRunning()) {
-				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
-			} else {
-				return true;
-			}
 		}
 	}
 
 	async isAllowedSeeCodeBy(user) {
 		if (user.id === this.user_id) return true;
+		if (this.type === 1) {
+			let contest = await Contest.fromID(this.type_info);
+			if (await contest.isRunning()) {
+				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
+			}
+		}
 		await this.loadRelationships();
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
 		if (this.type === 0) {
 			if (await this.problem.isAllowedUseBy(user)) return true;
 			return await user.haveAccess('others_submission');
-		}
-		if (this.type === 1) {
-			let contest = await Contest.fromID(this.type_info);
-			if (await contest.isRunning()) {
-				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
-			} else {
-				return true;
-			}
 		}
 	}
 
 	async isAllowedSeeCaseBy(user) {
+		if (this.type === 1) {
+			let contest = await Contest.fromID(this.type_info);
+			if (await contest.isRunning() && !(contest.type === 'ioi')) {
+				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
+			}
+		}
 		if (user.id === this.user_id) return true;
 		await this.loadRelationships();
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
-		if (this.type === 0) {
-			if (await this.problem.isAllowedVisitBy(user)) return true;
-			return await user.haveAccess('others_submission');
-		}
-		if (this.type === 1) {
-			let contest = await Contest.fromID(this.type_info);
-			if (await contest.isRunning()) {
-				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
-			} else {
-				return true;
-			}
-		}
+		if (await this.problem.isAllowedUseBy(user)) return true;
+		return await user.haveAccess('others_submission');
 	}
 
 	async isAllowedSeeDataBy(user) {
-		if (user.id === this.user_id) return true;
-		await this.loadRelationships();
-		if (user.id === this.problem.user_id) return true;
-		await this.problem.loadRelationships();
-		if (this.type === 0) {
-			if (await this.problem.isAllowedUseBy(user)) return true;
-			return await user.haveAccess('others_submission');
-		}
 		if (this.type === 1) {
 			let contest = await Contest.fromID(this.type_info);
 			if (await contest.isRunning()) {
 				return (await user.haveAccess('admin') || (user.id === contest.holder_id));
-			} else {
-				return true;
 			}
 		}
+		if (user.id === this.user_id) return true;
+		await this.loadRelationships();
+		if (user.id === this.problem.user_id) return true;
+		await this.problem.loadRelationships();
+		if (await this.problem.isAllowedUseBy(user)) return true;
+		return await user.haveAccess('others_submission');
 	}
 
 	async updateResult(result) {
@@ -201,7 +188,7 @@ class JudgeState extends Model {
 				this.max_memory = 0;
 			}
 			this.pending = true;
-			this.result = { status: "Waiting", total_time: 0, max_memory: 0, score: 0, case_num: 0, compiler_output: "", pending: true, judger: "" };
+			this.result = { status: 'Waiting', total_time: 0, max_memory: 0, score: 0, case_num: 0, compiler_output: '', pending: true, judger: '' };
 			await this.save();
 
 			let WaitingJudge = zoj.model('waiting_judge');

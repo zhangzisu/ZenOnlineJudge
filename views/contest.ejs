@@ -22,7 +22,6 @@
     <div class="bar" style="width: <%= timePercentage %>%;"></div>
   </div>
   <div class="ui grid">
-  <% if (contest.allowedEdit || (unveiled && (!contest.running || contest.type === 'acm'))) { %>
     <div class="row">
       <div class="column">
         <div class="ui buttons">
@@ -36,7 +35,6 @@
         </div>
       </div>
     </div>
-  <% } %>
   <% if (contest.information) { %>
     <div class="row">
       <div class="column">
