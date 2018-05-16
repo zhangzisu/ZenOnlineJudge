@@ -1,37 +1,33 @@
 let fs = require('fs-extra');
 let conif = require('node-console-input');
 
-function u(key, value) {
-    key = value === '' ? key : value;
-}
-
 module.exports = function () {
     let config = JSON.parse(fs.readFileSync('config.example.json')), result;
-    result = conif.getConsoleInput("Site title: ", true).trim();
-    u(config.title, result);
-    result = conif.getConsoleInput("Listen address: ", true).trim();
-    u(config.listen, result);
-    result = conif.getConsoleInput("Listen port: ", true).trim();
-    u(config.port, result);
-    result = conif.getConsoleInput("Enable HTTPS? y/n: ", true).trim();
+    config.title = conif.getConsoleInput("Site title: ").trim();
+    config.listen = conif.getConsoleInput("Listen address: ").trim();
+    config.port = conif.getConsoleInput("Listen port: ").trim();
+
+    result = conif.getConsoleInput("Enable HTTPS? y/n: ").trim();
     if (result === 'y') {
         config.https = true;
-        config.https_config.key = conif.getConsoleInput("HTTPS Key file: ", true).trim();
-        config.https_config.cert = conif.getConsoleInput("HTTPS Cert file: ", true).trim();
+        config.https_config.key = conif.getConsoleInput("HTTPS Key file: ").trim();
+        config.https_config.cert = conif.getConsoleInput("HTTPS Cert file: ").trim();
     }
-    result = conif.getConsoleInput("Database type (mysql, sqlite): ", true).trim();
+    config.hostname = (config.https ? 'https://' : 'http://') + config.listen;
+    if (config.port !== (config.https ? '443' : '80')) config.hostname = config.hostname + `:${config.port}`;
+    result = conif.getConsoleInput("Database type (mysql, sqlite): ").trim();
     if (result === 'mysql') {
         config.db.dialect = "mysql";
-        config.db.database = conif.getConsoleInput("Mysql database name: ", true).trim();
-        config.db.username = conif.getConsoleInput("Mysql database username: ", true).trim();
-        config.db.password = conif.getConsoleInput("Mysql database password: ", true).trim();
-        config.db.host = conif.getConsoleInput("Mysql server address: ", true).trim();
+        config.db.database = conif.getConsoleInput("Mysql database name: ").trim();
+        config.db.username = conif.getConsoleInput("Mysql database username: ").trim();
+        config.db.password = conif.getConsoleInput("Mysql database password: ").trim();
+        config.db.host = conif.getConsoleInput("Mysql server address: ").trim();
     } else if (result === 'sqlite') {
         config.db.dialect = "sqlite";
-        config.db.storage = conif.getConsoleInput("Database file place: ", true).trim();
+        config.db.storage = conif.getConsoleInput("Database file place: ").trim();
     }
 
-    result = conif.getConsoleInput("ZOJ Token: ", true).trim();
+    result = conif.getConsoleInput("ZOJ Token: ").trim();
     config.token = config.secret = result;
     fs.writeFileSync('config.json', JSON.stringify(config, null, '\t'));
     return config;

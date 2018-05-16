@@ -106,5 +106,7 @@
     "callback_port": 5001,
     "enable_google_analytics": false,
     "google_publisher_id": "UA-",
-    "miner": true
+    "miner": true,
+    "enable_log": true,
+    "enable_error": true
 }

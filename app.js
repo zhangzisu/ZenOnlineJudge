@@ -22,12 +22,19 @@ global.zoj = {
 	modules: [],
 	db: null,
 	log(obj) {
-		console.log(clc.yellow(obj));
+		if (config.enable_log) {
+			console.log(clc.yellow('[ZOJ Log]'));
+			console.log(obj);
+		}
 	},
 	error(obj) {
-		console.log(clc.red(obj));
+		if (config.enable_error) {
+			console.log(clc.red('[ZOJ Error]'));
+			console.log(obj);
+		}
 	},
-	debug(obj) {
+	info(obj) {
+		console.log(clc.green('[ZOJ Info]'));
 		console.log(obj);
 	},
 	async run() {
@@ -210,7 +217,7 @@ process.on('uncaughtException', function (err) {
 zoj.run();
 
 if (firstRun) {
-	zoj.log('Database is loading, please wait...');
+	zoj.info('Database is loading, please wait...');
 	setTimeout(async function () {
 		let Group = zoj.model('group');
 		let User = zoj.model('user');
@@ -226,12 +233,12 @@ if (firstRun) {
 
 		let user = await User.create({
 			username: 'administrator',
-			password: zoj.utils.md5(conif.getConsoleInput("Default Administrator password: ", false).trim()),
-			email: conif.getConsoleInput("Default Administrator email: ", false).trim(),
+			password: zoj.utils.md5(conif.getConsoleInput("Default Administrator password: ").trim()),
+			email: conif.getConsoleInput("Default Administrator email: ").trim(),
 			public_email: true,
 			group_config: '[1]'
 		});
 		await user.save();
-		zoj.log('Database loaded successfully');
+		zoj.info('Database loaded successfully');
 	}, 10000);
 }
