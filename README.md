@@ -1,6 +1,9 @@
 # Zen Online Judge
 
 [![GitHub release](https://img.shields.io/github/release/ZhangZisu/ZenOnlineJudge.svg)](https://github.com/ZhangZisu/ZenOnlineJudge)
+[![GitHub stars](https://img.shields.io/github/stars/ZhangZisu/ZenOnlineJudge.svg?style=social&label=Stars)](https://github.com/ZhangZisu/ZenOnlineJudge)
+[![GitHub forks](https://img.shields.io/github/forks/ZhangZisu/ZenOnlineJudge.svg?style=social&label=Fork)](https://github.com/ZhangZisu/ZenOnlineJudge)
+[![license](https://img.shields.io/github/license/ZhangZisu/ZenOnlineJudge.svg)](https://github.com/ZhangZisu/ZenOnlineJudge)
 
 A powerful, scalable, intelligent online judge system for Olympics in Informaics
 
