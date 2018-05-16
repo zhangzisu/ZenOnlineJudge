@@ -22,13 +22,13 @@ global.zoj = {
 	modules: [],
 	db: null,
 	log(obj) {
-		if (config.enable_log) {
+		if (zoj.config.enable_log) {
 			console.log(clc.yellow('[ZOJ Log]'));
 			console.log(obj);
 		}
 	},
 	error(obj) {
-		if (config.enable_error) {
+		if (zoj.config.enable_error) {
 			console.log(clc.red('[ZOJ Error]'));
 			console.log(obj);
 		}
