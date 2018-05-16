@@ -2,17 +2,23 @@
 
 A powerful, scalable, intelligent online judge system for Olympics in Informaics
 
-Licence:Apache2
+> Licence: Apache2
 
-## Introduction
-[Introduction](https://git.zhangzisu.cn/zhangzisu/ZenOnlineJudge/wiki/Introduction)
-
-## Adventages
-  - Easy to install
-  - Easy to use
-  - Easy to maintain
-  - Easy to code
-  - Fast, beautiful and powerful
+## Features
+  - HTML5+CSS3 Frontend
+  - User group control
+  - High performance mutil-judger support
+  - Problem import/export
 
 ## Setup
-Please read the [guide](https://git.zhangzisu.cn/zhangzisu/ZenOnlineJudge/wiki/Installation).
+  - Clone the repository
+  - Execute `npm install`
+  - If you use `sqlite` , please execute `npm i sqlite3`
+  - Execute `npm start`
+  - Follow the first-run interface
+
+## Special thanks
+  - Contributors
+    - [wengweijie](https://github.com/wengweijie)
+    - [daklqw](https://github.com/daklqw)
+  - UI inspired by [SYZOJ](https://github.com/syzoj/syzoj)
