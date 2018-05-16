@@ -1,5 +1,7 @@
 # Zen Online Judge
 
+[![GitHub release](https://img.shields.io/github/release/ZhangZisu/ZenOnlineJudge.svg)](https://github.com/ZhangZisu/ZenOnlineJudge)
+
 A powerful, scalable, intelligent online judge system for Olympics in Informaics
 
 > Licence: Apache2
