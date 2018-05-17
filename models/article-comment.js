@@ -54,7 +54,7 @@ class ArticleComment extends Model {
 	}
 
 	getModel() { return model; }
-};
+}
 
 ArticleComment.model = model;
 
