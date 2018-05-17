@@ -7,7 +7,7 @@ let User = zoj.model('user');
 app.get('/blogs', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
-		if(req.cookies['selfonly_mode'] === '1') { res.redirect(`/blogs/user/${res.locals.user.id}`); return; }
+		if (req.cookies['selfonly_mode'] === '1') { res.redirect(`/blogs/user/${res.locals.user.id}`); return; }
 
 		req.cookies['selfonly_mode'] = '0';
 		let where = {};
@@ -15,8 +15,7 @@ app.get('/blogs', async (req, res) => {
 		if (!await res.locals.user.haveAccess('others_blogs')) {
 			where = {
 				$or: {
-					is_public: 1,
-					user_id: res.locals.user.id
+					is_public: 1
 				}
 			};
 		}
@@ -53,14 +52,16 @@ app.get('/blogs/user/:id', async (req, res) => {
 		if (!user) throw new ErrorMessage('No such user.');
 		let where = { user_id: user.id };
 
-		if (!await res.locals.user.haveAccess('others_blogs')) {
+		if (user.id !== res.locals.user.id && (!await res.locals.user.haveAccess('others_blogs'))) {
 			where = {
-				$and: {
-					is_public: 1,
+				$and: [
+					{ is_public: 1 },
 					where
-				}
+				]
 			};
 		}
+
+		console.log(where);
 
 		let paginate = zoj.utils.paginate(await BlogPost.count(where), req.query.page, zoj.config.page.post);
 		let posts = await BlogPost.query(paginate, where, [['id', 'desc']]);
@@ -100,9 +101,7 @@ app.get('/blogs/search', async (req, res) => {
 			where = {
 				$and: [
 					where,
-					{
-						user_id: res.locals.user.id,
-					}
+					{ user_id: res.locals.user.id, }
 				]
 			};
 		}
