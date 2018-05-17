@@ -110,12 +110,22 @@ app.get('/contest/:id/export', async (req, res) => {
 			};
 		});
 
+
+		let safeRead = (some) => {
+			return some ? some : 'unset';
+		};
+
 		for (let obj of ranklist) {
 			csv = csv + `${obj.user.username},`;
 			for (let p of problems) {
-				let report =
-					`${obj.player.score_details[p.id].score}/${obj.player.score_details[p.id].self.score},` +
-					`${obj.player.score_details[p.id].self.time},`;
+				let report;
+				if (obj.player.score_details[p.id]) {
+					report =
+						`${safeRead(obj.player.score_details[p.id].score)}/${safeRead(obj.player.score_details[p.id].self.score)},` +
+						`${safeRead(obj.player.score_details[p.id].self.time)},`;
+				} else {
+					report = 'unset,unset,';
+				}
 				csv = csv + report;
 			}
 			csv = csv + `${obj.player.score},\r\n`;
