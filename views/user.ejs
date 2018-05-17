@@ -22,7 +22,7 @@ padding-top: 100%;
 <br>
 <% } %>
 
-<a class="ui inverted button" href="<%= zoj.utils.makeUrl(['blog', 'user', show_user.id]) %>"><i class="coffee icon"></i>Visit Blog</a>
+<a class="ui inverted button" href="<%= zoj.utils.makeUrl(['blogs', 'user', show_user.id]) %>"><i class="coffee icon"></i>Visit Blog</a>
 </div>
 </div>
 </div>
@@ -73,7 +73,7 @@ padding-top: 100%;
 <div class="column">
 <h4 class="ui top attached block header">Motto</h4>
 <div class="ui bottom attached segment" class="font-content">
-<%- show_user.information %>
+<%= show_user.information %>
 </div>
 </div>
 </div>

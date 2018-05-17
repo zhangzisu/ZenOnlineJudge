@@ -59,7 +59,8 @@
             "user_edit": false,
             "blog_edit": false,
             "others_blogs": false,
-            "manage_blog_tag": false
+            "manage_blog_tag": false,
+            "change_username": false
         }
     },
     "sorting": {
