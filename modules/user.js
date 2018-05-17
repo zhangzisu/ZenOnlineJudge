@@ -175,11 +175,11 @@ app.post('/user/:id/edit', async (req, res) => {
 		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this.');
 
 		if (req.body.old_password && req.body.new_password) {
-			if (user.password !== req.body.old_password && !(await res.locals.user.haveAccess('change_password') >= 3)) throw new ErrorMessage('Password error.');
+			if (user.password !== req.body.old_password && !(await res.locals.user.haveAccess('change_password'))) throw new ErrorMessage('Password error.');
 			user.password = req.body.new_password;
 		}
 
-		if (await res.locals.user.haveAccess('change_password')) {
+		if (await res.locals.user.haveAccess('change_username')) {
 			if (!zoj.utils.isValidUsername(req.body.username)) throw new ErrorMessage('Invalid user name.');
 			user.username = req.body.username;
 		}

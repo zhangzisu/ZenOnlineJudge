@@ -10,7 +10,7 @@ app.get('/', async (req, res) => {
 
 		let ranklist = await User.query([1, 10], null, [['rating', 'desc']]);
 
-		let notices = (await Article.query(null, null, [['public_time', 'desc']])).map(article => ({
+		let notices = (await Article.query([1, 10], { is_notice: true }, [['public_time', 'desc']])).map(article => ({
 			title: article.title,
 			url: zoj.utils.makeUrl(['article', article.id]),
 			date: zoj.utils.formatDate(article.public_time, 'L')
