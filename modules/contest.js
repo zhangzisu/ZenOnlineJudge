@@ -112,7 +112,7 @@ app.get('/contest/:id/export', async (req, res) => {
 
 
 		let safeRead = (some) => {
-			return some ? some : 'unset';
+			return (some && (`${some}`.trim() !== '')) ? some : 'unset';
 		};
 
 		for (let obj of ranklist) {
@@ -122,7 +122,7 @@ app.get('/contest/:id/export', async (req, res) => {
 				if (obj.player.score_details[p.id]) {
 					report =
 						`${safeRead(obj.player.score_details[p.id].score)}/${safeRead(obj.player.score_details[p.id].self.score)},` +
-						`${safeRead(obj.player.score_details[p.id].self.time)},`;
+						`${safeRead(obj.player.score_details[p.id].self.time)} min,`;
 				} else {
 					report = 'unset,unset,';
 				}
