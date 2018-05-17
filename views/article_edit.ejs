@@ -73,6 +73,7 @@ registerACEditor("content", "content", "ace/mode/markdown");
 			$.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
 				// zoj.log(s);
 				output.html(s);
+				Prism.highlightAll();
 			});
 		}
 		$("#preview_tab").click(function () {

@@ -69,6 +69,7 @@ $(function () {
       $.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
         // console.log(s);
         output.html(s);
+        Prism.highlightAll();
       });
     }
     $("#preview_tab").click(function () {

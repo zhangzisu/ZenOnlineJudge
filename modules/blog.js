@@ -61,8 +61,6 @@ app.get('/blogs/user/:id', async (req, res) => {
 			};
 		}
 
-		console.log(where);
-
 		let paginate = zoj.utils.paginate(await BlogPost.count(where), req.query.page, zoj.config.page.post);
 		let posts = await BlogPost.query(paginate, where, [['id', 'desc']]);
 
@@ -163,9 +161,9 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 
 		if (!await res.locals.user.haveAccess('others_blogs')) {
 			if (res.locals.user) {
-				sql += 'AND (`post`.`is_public` = 1 OR `post`.`user_id` = ' + res.locals.user.id + ')';
+				sql += 'AND (`blog_post`.`is_public` = 1 OR `blog_post`.`user_id` = ' + res.locals.user.id + ')';
 			} else {
-				sql += 'AND (`post`.`is_public` = 1)';
+				sql += 'AND (`blog_post`.`is_public` = 1)';
 			}
 		}
 
