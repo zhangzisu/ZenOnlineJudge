@@ -73,7 +73,7 @@ class Article extends Model {
 	}
 
 	getModel() { return model; }
-};
+}
 
 Article.model = model;
 

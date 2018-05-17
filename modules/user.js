@@ -102,7 +102,7 @@ app.get('/user/:id', async (req, res) => {
 
 		const ratingHistoryValues = await RatingHistory.query(null, { user_id: user.id }, [['rating_calculation_id', 'asc']]);
 		const ratingHistories = [{
-			contestName: "Basic rating",
+			contestName: 'Basic rating',
 			value: zoj.config.default.user.rating,
 			delta: null,
 			rank: null

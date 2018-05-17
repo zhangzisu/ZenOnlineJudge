@@ -4,7 +4,6 @@ let Sequelize = require('sequelize');
 let db = zoj.db;
 
 let User = zoj.model('user');
-let Problem = zoj.model('problem');
 
 let model = db.define('contest_player',
 	{

@@ -26,6 +26,8 @@ module.exports = {
             "always"
         ],
         "no-console": "off",
-        "no-undef": "off"
+        "no-undef": "off",
+        "no-dupe-keys": "off",
+        "no-redeclare": "off"
     }
 };

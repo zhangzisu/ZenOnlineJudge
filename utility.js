@@ -29,7 +29,7 @@ let filesize = require('file-size');
 let AsyncLock = require('async-lock');
 let marked = require('marked-katex');
 let katex = require('katex');
-let xss = require("xss");
+let xss = require('xss');
 
 marked.setOptions({
 	kaTex: katex
@@ -38,24 +38,24 @@ marked.setOptions({
 async function escapeHTML(s) {
 	// Code from http://stackoverflow.com/questions/5251520/how-do-i-escape-some-html-in-javascript/5251551
 	return s.replace(/[^0-9A-Za-z ]/g, (c) => {
-		return "&#" + c.charCodeAt(0) + ";";
+		return '&#' + c.charCodeAt(0) + ';';
 	});
 }
 
 module.exports = {
-	resolvePath(s) {
+	resolvePath() {
 		let a = Array.from(arguments);
 		a.unshift(__dirname);
 		return path.resolve.apply(null, a);
 	},
 	async markdown(obj) {
-		if (!obj || !obj.trim()) return "";
+		if (!obj || !obj.trim()) return '';
 
 		obj = await xss(obj);
 
 		obj = await marked(obj);
 		let replaceUI = async s =>
-			new Promise(function (resolve, reject) {
+			new Promise(function (resolve) {
 				s = s.split('<table>').join('<table class="ui celled table">')
 					.split('<blockquote>').join('<div class="ui message">').split('</blockquote>').join('</div>');
 
@@ -140,7 +140,7 @@ module.exports = {
 			pageCnt: pageCnt,
 			toSQL: () => {
 				if (!pageCnt) return '';
-				else return ` LIMIT ${(currPage - 1) * perPage},${perPage}`
+				else return ` LIMIT ${(currPage - 1) * perPage},${perPage}`;
 			}
 		};
 	},
@@ -154,7 +154,7 @@ module.exports = {
 		return md5.digest('hex');
 	},
 	isValidUsername(s) {
-		return /^[a-zA-Z0-9\-\_]+$/.test(s);
+		return /^[a-zA-Z0-9]+$/.test(s);
 	},
 	locks: [],
 	lock(key, cb) {

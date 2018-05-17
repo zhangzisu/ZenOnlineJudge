@@ -6,7 +6,6 @@ let JudgeState = zoj.model('judge_state');
 let WaitingJudge = zoj.model('waiting_judge');
 let Contest = zoj.model('contest');
 let ProblemTag = zoj.model('problem_tag');
-let ProblemTagMap = zoj.model('problem_tag_map');
 let Article = zoj.model('article');
 
 app.get('/problems', async (req, res) => {
