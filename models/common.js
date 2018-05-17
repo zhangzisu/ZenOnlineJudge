@@ -57,7 +57,7 @@ class Model {
 	}
 
 	static async fromID(id) {
-		return this.fromRecord(this.model.findById(id))
+		return this.fromRecord(this.model.findById(id));
 	}
 
 	static async findOne(options) {
