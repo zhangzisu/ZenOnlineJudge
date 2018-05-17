@@ -42,8 +42,4 @@ function registerACEditor(editorID, containerName, mode){
 registerACEditor("message", "message", "ace/mode/javascript");
 
 </script>
-<% if(privilege){ %>
-	<% include admin_footer %>
-<% }else{ %>
-	<% include footer %>
-<% } %>
+<% include admin_footer %>
