@@ -3,8 +3,6 @@
 let Sequelize = require('sequelize');
 let db = zoj.db;
 
-let User = zoj.model('user');
-let Problem = zoj.model('problem');
 let ContestPlayer = zoj.model('contest_player');
 
 let model = db.define('contest_ranklist',
