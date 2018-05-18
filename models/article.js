@@ -35,7 +35,7 @@ let model = db.define('article',
 let Model = require('./common');
 class Article extends Model {
 	static async create(val) {
-		return Article.fromRecord(Article.model.build(Object.assign({
+		return await Article.fromRecord(Article.model.build(Object.assign({
 			title: '',
 			content: '',
 

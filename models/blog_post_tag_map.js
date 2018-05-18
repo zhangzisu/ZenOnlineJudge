@@ -20,7 +20,7 @@ let model = db.define('blog_post_tag_map',
 let Model = require('./common');
 class BlogTagMap extends Model {
 	static async create(val) {
-		return BlogTagMap.fromRecord(BlogTagMap.model.build(Object.assign({
+		return await BlogTagMap.fromRecord(BlogTagMap.model.build(Object.assign({
 			post_id: 0,
 			tag_id: 0
 		}, val)));

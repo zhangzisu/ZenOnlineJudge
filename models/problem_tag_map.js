@@ -23,7 +23,7 @@ let model = db.define('problem_tag_map',
 let Model = require('./common');
 class ProblemTagMap extends Model {
 	static async create(val) {
-		return ProblemTagMap.fromRecord(ProblemTagMap.model.build(Object.assign({
+		return await ProblemTagMap.fromRecord(ProblemTagMap.model.build(Object.assign({
 			problem_id: 0,
 			tag_id: 0
 		}, val)));

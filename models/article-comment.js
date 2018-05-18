@@ -32,7 +32,7 @@ let model = db.define('comment',
 let Model = require('./common');
 class ArticleComment extends Model {
 	static async create(val) {
-		return ArticleComment.fromRecord(ArticleComment.model.build(Object.assign({
+		return await ArticleComment.fromRecord(ArticleComment.model.build(Object.assign({
 			content: '',
 			article_id: 0,
 			user_id: 0,

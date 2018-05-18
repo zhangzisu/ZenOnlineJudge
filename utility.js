@@ -1,6 +1,6 @@
 'use strict';
 
-Array.prototype.forEachAsync = Array.prototype.mapAsync = async function (fn) {
+Array.prototype.forEachAsync = Array.prototype.mapAsync = function (fn) {
 	return Promise.all(this.map(fn));
 };
 
@@ -35,7 +35,7 @@ marked.setOptions({
 	kaTex: katex
 });
 
-async function escapeHTML(s) {
+function escapeHTML(s) {
 	// Code from http://stackoverflow.com/questions/5251520/how-do-i-escape-some-html-in-javascript/5251551
 	return s.replace(/[^0-9A-Za-z ]/g, (c) => {
 		return '&#' + c.charCodeAt(0) + ';';
@@ -62,7 +62,7 @@ module.exports = {
 		obj = obj.join('```');
 
 		obj = await marked(obj);
-		let replaceUI = async s =>
+		let replaceUI = s =>
 			new Promise(function (resolve) {
 				s = s.split('<table>').join('<table class="ui celled table">')
 					.split('<blockquote>').join('<div class="ui message">').split('</blockquote>').join('</div>');
@@ -197,6 +197,6 @@ module.exports = {
 	},
 	async saveConfig() {
 		let fs = require('fs-extra');
-		fs.writeFileAsync(zoj.rootDir + '/config.json', JSON.stringify(zoj.config, null, 2));
+		await fs.writeFileAsync(zoj.rootDir + '/config.json', JSON.stringify(zoj.config, null, 2));
 	}
 };

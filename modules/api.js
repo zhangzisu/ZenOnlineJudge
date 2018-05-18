@@ -146,7 +146,7 @@ app.post('/api/sign_up', async (req, res) => {
 app.get('/api/forget_confirm', async (req, res) => {
 	try {
 		try {
-			WebToken.verify(req.query.token, zoj.config.session_secret, {
+			await WebToken.verify(req.query.token, zoj.config.session_secret, {
 				subject: 'forget'
 			});
 		} catch (e) {

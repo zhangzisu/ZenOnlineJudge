@@ -6,9 +6,9 @@ let User = zoj.model('user');
 let Group = zoj.model('group');
 const RatingCalculation = zoj.model('rating_calculation');
 const RatingHistory = zoj.model('rating_history');
-const calcRating = require('../libs/rating');
 let ContestPlayer = zoj.model('contest_player');
 const os = require('os');
+const {getNewRatings} = require('codeforces-rating-system');
 
 app.get('/admin/group', async (req, res) => {
 	try {
@@ -165,17 +165,18 @@ app.post('/admin/rating/add', async (req, res) => {
 		for (let i = 1; i <= contest.ranklist.ranklist.player_num; i++) {
 			const user = await User.fromID((await ContestPlayer.fromID(contest.ranklist.ranklist[i])).user_id);
 			players.push({
-				user: user,
-				rank: i,
-				currentRating: user.rating
+				username: user,
+				position: i,
+				previousRating: user.rating
 			});
 		}
-		const newRating = calcRating(players);
+		const newRating = await getNewRatings(players);
+
 		for (let i = 0; i < newRating.length; i++) {
-			const user = newRating[i].user;
-			user.rating = newRating[i].currentRating;
+			const user = newRating[i].username;
+			user.rating = newRating[i].newRating;
 			await user.save();
-			const newHistory = await RatingHistory.create(newcalc.id, user.id, newRating[i].currentRating, newRating[i].rank);
+			const newHistory = await RatingHistory.create(newcalc.id, user.id, newRating[i].newRating, newRating[i].position);
 			await newHistory.save();
 		}
 

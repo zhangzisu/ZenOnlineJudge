@@ -70,7 +70,7 @@ let model = db.define('problem',
 let Model = require('./common');
 class Problem extends Model {
 	static async create(val) {
-		return Problem.fromRecord(Problem.model.build(Object.assign({
+		return await Problem.fromRecord(Problem.model.build(Object.assign({
 			title: '',
 			user_id: '',
 			publicizer_id: '',
@@ -102,7 +102,7 @@ class Problem extends Model {
 		}
 	}
 
-	async match(gA, gB) {
+	match(gA, gB) {
 		gA.sort((a, b) => { a.id < b.id; });
 		gB.sort((a, b) => { a.id < b.id; });
 		let idA = 0, idB = 0;
@@ -117,7 +117,7 @@ class Problem extends Model {
 	async isAllowedEditBy(user) {
 		if (!user) return false;
 		if (this.user_id === user.id) return true;
-		return user.haveAccess('problem_manage');
+		return await user.haveAccess('problem_manage');
 	}
 
 	async isAllowedUseBy(user) {
@@ -367,7 +367,7 @@ class Problem extends Model {
 		else a = (await db.query(statement + `LIMIT ${paginate.perPage} OFFSET ${(paginate.currPage - 1) * paginate.perPage}`))[0];
 
 		let JudgeState = zoj.model('judge_state');
-		statistics.judge_state = await a.mapAsync(async x => JudgeState.fromID(x.id));
+		statistics.judge_state = await a.mapAsync(async x => await JudgeState.fromID(x.id));
 
 		a = (await db.query('SELECT `score`, COUNT(*) AS `count` FROM `judge_state` WHERE `problem_id` = __PROBLEM_ID__ AND `type` = 0 AND `pending` = 0 GROUP BY `score`'.replace('__PROBLEM_ID__', this.id)))[0];
 
@@ -405,9 +405,7 @@ class Problem extends Model {
 		});
 
 		let ProblemTag = zoj.model('problem_tag');
-		let res = await maps.mapAsync(async map => {
-			return ProblemTag.fromID(map.tag_id);
-		});
+		let res = await maps.mapAsync(async map => await ProblemTag.fromID(map.tag_id));
 
 		res.sort((a, b) => {
 			return a.color > b.color ? 1 : -1;

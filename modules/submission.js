@@ -37,7 +37,7 @@ app.get('/submissions', async (req, res) => {
 		let paginate = zoj.utils.paginate(await JudgeState.count(where), req.query.page, zoj.config.page.judge_state);
 		let judge_state = await JudgeState.query(paginate, where, [['submit_time', 'desc']]);
 
-		await judge_state.forEachAsync(async obj => obj.loadRelationships());
+		await judge_state.forEachAsync(async obj => await obj.loadRelationships());
 
 		await judge_state.forEachAsync(async obj => obj.allowedSeeCode = await obj.isAllowedSeeCodeBy(res.locals.user));
 		await judge_state.forEachAsync(async obj => obj.allowedSeeData = await obj.isAllowedSeeDataBy(res.locals.user));

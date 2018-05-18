@@ -47,7 +47,7 @@ class Model {
 	}
 
 	async destroy() {
-		return this.record.destroy();
+		return await this.record.destroy();
 	}
 
 	static async fromRecord(record) {
@@ -57,11 +57,11 @@ class Model {
 	}
 
 	static async fromID(id) {
-		return this.fromRecord(this.model.findById(id));
+		return await this.fromRecord(this.model.findById(id));
 	}
 
 	static async findOne(options) {
-		return this.fromRecord(this.model.findOne(options));
+		return await this.fromRecord(this.model.findOne(options));
 	}
 
 	static async all() {
@@ -72,11 +72,11 @@ class Model {
 		// count(sql)
 		if (typeof where === 'string') {
 			let sql = where;
-			return zoj.db.countQuery(sql);
+			return await zoj.db.countQuery(sql);
 		}
 
 		// count(where)
-		return this.model.count({ where: where });
+		return await this.model.count({ where: where });
 	}
 
 	static async query(paginate, where, order) {

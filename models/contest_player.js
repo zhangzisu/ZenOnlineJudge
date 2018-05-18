@@ -45,7 +45,7 @@ let model = db.define('contest_player',
 let Model = require('./common');
 class ContestPlayer extends Model {
 	static async create(val) {
-		return ContestPlayer.fromRecord(ContestPlayer.model.build(Object.assign({
+		return await ContestPlayer.fromRecord(ContestPlayer.model.build(Object.assign({
 			contest_id: 0,
 			user_id: 0,
 			score: 0,
@@ -55,7 +55,7 @@ class ContestPlayer extends Model {
 	}
 
 	static async findInContest(where) {
-		return ContestPlayer.findOne({
+		return await ContestPlayer.findOne({
 			where: where
 		});
 	}
@@ -170,7 +170,7 @@ class ContestPlayer extends Model {
 		await this.save();
 	}
 
-	async updateSelfInfo(pid, selfscore, selftime) {
+	updateSelfInfo(pid, selfscore, selftime) {
 		if (!this.score_details[pid]) this.score_details[pid] = new Object();
 		this.score_details[pid].self = {
 			score: selfscore,

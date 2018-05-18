@@ -59,8 +59,6 @@ global.zoj = {
 			}
 		});
 
-		zoj.production = app.get('env') === 'production';
-
 		server.listen(parseInt(zoj.config.port), zoj.config.listen, () => {
 			this.log(`ZOJ is listening on ${zoj.config.listen}:${parseInt(zoj.config.port)}...`);
 		});
@@ -107,7 +105,7 @@ global.zoj = {
 		await this.loadModels();
 	},
 	async loadModules() {
-		fs.readdir('./modules/', (err, files) => {
+		await fs.readdir('./modules/', (err, files) => {
 			if (err) {
 				this.log(err);
 				return;
@@ -117,7 +115,7 @@ global.zoj = {
 		});
 	},
 	async loadModels() {
-		fs.readdir('./models/', (err, files) => {
+		await fs.readdir('./models/', (err, files) => {
 			if (err) {
 				this.log(err);
 				return;
@@ -142,10 +140,10 @@ global.zoj = {
 			resave: true,
 			store: new FileStore
 		};
-		if (zoj.production) {
-			app.set('trust proxy', 1);
-			sessionConfig.cookie.secure = true;
-		}
+
+		app.set('trust proxy', 1);
+		sessionConfig.cookie.secure = true;
+
 		app.use(Session(sessionConfig));
 
 		app.use((req, res, next) => {

@@ -25,7 +25,7 @@ let model = db.define('contest_ranklist',
 let Model = require('./common');
 class ContestRanklist extends Model {
 	static async create(val) {
-		return ContestRanklist.fromRecord(ContestRanklist.model.build(Object.assign({
+		return await ContestRanklist.fromRecord(ContestRanklist.model.build(Object.assign({
 			ranklist: '{}'
 		}, val)));
 	}

@@ -22,14 +22,14 @@ let model = db.define('waiting_judge',
 let Model = require('./common');
 class WaitingJudge extends Model {
 	static async create(val) {
-		return WaitingJudge.fromRecord(WaitingJudge.model.build(Object.assign({
+		return await WaitingJudge.fromRecord(WaitingJudge.model.build(Object.assign({
 			judge_id: 0,
 			priority: 0
 		}, val)));
 	}
 
 	async getJudgeState() {
-		return JudgeState.fromID(this.judge_id);
+		return await JudgeState.fromID(this.judge_id);
 	}
 
 	getModel() { return model; }

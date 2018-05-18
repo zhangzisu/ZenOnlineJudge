@@ -141,7 +141,7 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; }
 
 		let tagIDs = Array.from(new Set(req.params.tagIDs.split(',').map(x => parseInt(x))));
-		let tags = await tagIDs.mapAsync(async tagID => BlogPostTag.fromID(tagID));
+		let tags = await tagIDs.mapAsync(async tagID => await BlogPostTag.fromID(tagID));
 
 		// Validate the tagIDs
 		for (let tag of tags) {
@@ -289,7 +289,7 @@ app.post('/blog/:id/edit', async (req, res) => {
 			req.body.tags = [req.body.tags];
 		}
 
-		let newTagIDs = await req.body.tags.map(x => parseInt(x)).filterAsync(async x => BlogPostTag.fromID(x));
+		let newTagIDs = await req.body.tags.map(x => parseInt(x)).filterAsync(async x => await BlogPostTag.fromID(x));
 		await post.setTags(newTagIDs);
 
 		res.redirect(zoj.utils.makeUrl(['blog', post.id]));

@@ -26,7 +26,7 @@ let model = db.define('rating_calculation',
 let Model = require('./common');
 class RatingCalculation extends Model {
 	static async create(contest_id) {
-		return RatingCalculation.fromRecord(RatingCalculation.model.create({
+		return await RatingCalculation.fromRecord(RatingCalculation.model.create({
 			contest_id: contest_id
 		}));
 	}
