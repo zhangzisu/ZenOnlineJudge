@@ -51,9 +51,9 @@ module.exports = {
 	async markdown(obj) {
 		if (!obj || !obj.trim()) return '';
 
-		obj = obj.split('```');
+		obj = obj.split('`');
 		for (let i = 0; i < obj.length; i += 2)obj[i] = await xss(obj[i]);
-		obj = obj.join('```');
+		obj = obj.join('`');
 
 		obj = await marked(obj);
 		let replaceUI = async s =>
