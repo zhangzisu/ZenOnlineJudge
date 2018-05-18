@@ -52,7 +52,13 @@ module.exports = {
 		if (!obj || !obj.trim()) return '';
 
 		obj = obj.split('```');
-		for (let i = 0; i < obj.length; i += 2)obj[i] = await xss(obj[i]);
+		for (let i = 0; i < obj.length; i += 2) {
+			let pg = obj[i].split('`');
+			for (let j = 0; j < pg.length; j += 2) {
+				pg[j] = await xss(pg[j]);
+			}
+			obj[i] = pg.join('`');
+		}
 		obj = obj.join('```');
 
 		obj = await marked(obj);
