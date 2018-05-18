@@ -34,7 +34,7 @@ let Group = zoj.model('group');
 
 class User extends Model {
 	static async create(val) {
-		return User.fromRecord(User.model.build(Object.assign({
+		return await User.fromRecord(User.model.build(Object.assign({
 			username: '',
 			password: '',
 			email: '',
@@ -49,7 +49,7 @@ class User extends Model {
 	}
 
 	static async fromName(name) {
-		return User.fromRecord(User.model.findOne({
+		return await User.fromRecord(User.model.findOne({
 			where: {
 				username: name
 			}
@@ -57,7 +57,7 @@ class User extends Model {
 	}
 
 	static async fromEmail(email) {
-		return User.fromRecord(User.model.findOne({
+		return await User.fromRecord(User.model.findOne({
 			where: {
 				email: email
 			}

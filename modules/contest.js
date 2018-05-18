@@ -120,11 +120,16 @@ app.get('/contest/:id/export', async (req, res) => {
 			for (let p of problems) {
 				let report;
 				if (obj.player.score_details[p.id]) {
-					report =
-						`${safeRead(obj.player.score_details[p.id].score)}/${safeRead(obj.player.score_details[p.id].self.score)},` +
-						`${safeRead(obj.player.score_details[p.id].self.time)} min,`;
+					let detail = obj.player.score_details[p.id];
+					if(detail.self){
+						report =
+						`${safeRead(detail.score)}/${safeRead(detail.self.score)},` +
+						`${safeRead(detail.self.time)} min,`;
+					}else{
+						report = `${safeRead(detail.score)},unset,`;
+					}
 				} else {
-					report = 'unset,unset,';
+					report = 'unsubmitted,unsubmitted,';
 				}
 				csv = csv + report;
 			}
@@ -184,12 +189,12 @@ app.post('/contest/:id/edit', async (req, res) => {
 
 		if (!req.body.groups_exlude) req.body.groups_exlude = [];
 		if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
-		let new_groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+		let new_groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => await Group.fromID(x));
 		contest.groups_exlude_config = new_groups;
 
 		if (!req.body.groups_include) req.body.groups_include = [];
 		if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
-		new_groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+		new_groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => await Group.fromID(x));
 		contest.groups_include_config = new_groups;
 
 		await contest.save();

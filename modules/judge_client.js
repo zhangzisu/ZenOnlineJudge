@@ -41,7 +41,7 @@ io.sockets.on('connection', function (socket) {
 	socket.on('connection', function () {
 		//
 	});
-	socket.on('login', async function (data) {
+	socket.on('login', function (data) {
 		if (data.token !== zoj.config.token) {
 			// Token incorrect, force disconnect.
 			socket.emit('terminate', {});
@@ -58,7 +58,7 @@ io.sockets.on('connection', function (socket) {
 		judge_client.ids[socket.id = id] = socket;
 		zoj.log(`Client ${id} connected.`);
 	});
-	socket.on('disconnect', async function () {
+	socket.on('disconnect', function () {
 		let id = socket.id;
 		zoj.log(`Client ${id} disconnected.`);
 		if (tasked.has(id)) tasked.delete(id);
@@ -112,7 +112,7 @@ io.sockets.on('connection', function (socket) {
 			socket.emit('terminate', {});
 		}
 	});
-	socket.on('busy', async function () {
+	socket.on('busy', function () {
 		let id = socket.id;
 		if (judge_client.status.free.has(id)) judge_client.status.free.delete(id);
 		judge_client.status.busy.add(id);

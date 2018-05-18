@@ -48,7 +48,7 @@ let model = db.define('judge_state',
 let Model = require('./common');
 class JudgeState extends Model {
 	static async create(val) {
-		return JudgeState.fromRecord(JudgeState.model.build(Object.assign({
+		return await JudgeState.fromRecord(JudgeState.model.build(Object.assign({
 			code: '',
 			language: '',
 			user_id: 0,
@@ -137,7 +137,7 @@ class JudgeState extends Model {
 		return await user.haveAccess('others_submission');
 	}
 
-	async updateResult(result) {
+	updateResult(result) {
 		this.score = result.score;
 		this.pending = result.pending;
 		this.status = result.status;

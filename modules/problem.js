@@ -93,7 +93,7 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 
 
 		let tagIDs = Array.from(new Set(req.params.tagIDs.split(',').map(x => parseInt(x))));
-		let tags = await tagIDs.mapAsync(async tagID => ProblemTag.fromID(tagID));
+		let tags = await tagIDs.mapAsync(async tagID => await ProblemTag.fromID(tagID));
 
 		// Validate the tagIDs
 		for (let tag of tags) {
@@ -286,18 +286,18 @@ app.post('/problem/:id/edit', async (req, res) => {
 			req.body.tags = [req.body.tags];
 		}
 
-		let newTagIDs = await req.body.tags.map(x => parseInt(x)).filterAsync(async x => ProblemTag.fromID(x));
+		let newTagIDs = await req.body.tags.map(x => parseInt(x)).filterAsync(async x => await ProblemTag.fromID(x));
 		await problem.setTags(newTagIDs);
 
 		if (await res.locals.user.haveAccess('problem_manage')) {
 			if (!req.body.groups_exlude) req.body.groups_exlude = [];
 			if (!Array.isArray(req.body.groups_exlude)) req.body.groups_exlude = [req.body.groups_exlude];
-			let new_groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+			let new_groups = await req.body.groups_exlude.map(x => parseInt(x)).filterAsync(async x => await Group.fromID(x));
 			problem.groups_exlude_config = new_groups;
 
 			if (!req.body.groups_include) req.body.groups_include = [];
 			if (!Array.isArray(req.body.groups_include)) req.body.groups_include = [req.body.groups_include];
-			new_groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+			new_groups = await req.body.groups_include.map(x => parseInt(x)).filterAsync(async x => await Group.fromID(x));
 			problem.groups_include_config = new_groups;
 		}
 
@@ -778,7 +778,7 @@ app.get('/problem/:id/statistics/:type', async (req, res) => {
 			judge.allowedSeeCode = judge.isAllowedSeeCodeBy(res.locals.user);
 		}
 
-		await statistics.judge_state.forEachAsync(async x => x.loadRelationships());
+		await statistics.judge_state.forEachAsync(async x => await x.loadRelationships());
 
 		res.render('statistics', {
 			statistics: statistics,

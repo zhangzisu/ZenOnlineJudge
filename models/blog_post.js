@@ -43,7 +43,7 @@ let model = db.define('blog_post',
 let Model = require('./common');
 class BlogPost extends Model {
 	static async create(val) {
-		return BlogPost.fromRecord(BlogPost.model.build(Object.assign({
+		return await BlogPost.fromRecord(BlogPost.model.build(Object.assign({
 			user_id: '',
 			from: '',
 			problem_id: '',
@@ -62,7 +62,7 @@ class BlogPost extends Model {
 	async isAllowedEditBy(user) {
 		if (!user) return false;
 		if (this.user_id === user.id) return true;
-		return user.haveAccess('blog_edit');
+		return await user.haveAccess('blog_edit');
 		// 1.The user is teacher/system admin
 		// 2.The user is the owner of this post
 	}
@@ -84,9 +84,7 @@ class BlogPost extends Model {
 		});
 
 		let blogPostTag = zoj.model('blog_post_tag');
-		let res = await maps.mapAsync(async map => {
-			return blogPostTag.fromID(map.tag_id);
-		});
+		let res = await maps.mapAsync(async map => await blogPostTag.fromID(map.tag_id));
 
 		res.sort((a, b) => {
 			return a.color > b.color ? 1 : -1;

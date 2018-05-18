@@ -49,7 +49,7 @@ app.get('/find_user', async (req, res) => {
 });
 
 // Login
-app.get('/login', async (req, res) => {
+app.get('/login', (req, res) => {
 	if (res.locals.user) {
 		res.render('error', {
 			err: new ErrorMessage('Please logout first.', { 'Logout': zoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
@@ -60,7 +60,7 @@ app.get('/login', async (req, res) => {
 });
 
 // Sign up
-app.get('/sign_up', async (req, res) => {
+app.get('/sign_up', (req, res) => {
 	if (res.locals.user) {
 		res.render('error', {
 			err: new ErrorMessage('Please logout first.', { 'Logout': zoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
@@ -71,7 +71,7 @@ app.get('/sign_up', async (req, res) => {
 });
 
 // Logout
-app.get('/logout', async (req, res) => {
+app.get('/logout', (req, res) => {
 	req.session.user_id = null;
 	res.clearCookie('login');
 	res.redirect('/');
@@ -79,7 +79,7 @@ app.get('/logout', async (req, res) => {
 
 // Forget Password
 
-app.get('/forget', async (req, res) => {
+app.get('/forget', (req, res) => {
 	res.render('forget');
 });
 
@@ -193,7 +193,7 @@ app.post('/user/:id/edit', async (req, res) => {
 		if (await res.locals.user.haveAccess('user_edit')) {
 			if (!req.body.groups) req.body.groups = [];
 			if (!Array.isArray(req.body.groups)) req.body.groups = [req.body.groups];
-			let groups = await req.body.groups.map(x => parseInt(x)).filterAsync(async x => Group.fromID(x));
+			let groups = await req.body.groups.map(x => parseInt(x)).filterAsync(async x => await Group.fromID(x));
 			user.group_config = groups;
 		}
 

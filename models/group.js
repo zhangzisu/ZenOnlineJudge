@@ -20,7 +20,7 @@ let model = db.define('user_group',
 let Model = require('./common');
 class UserGroup extends Model {
 	static async create(val) {
-		return UserGroup.fromRecord(UserGroup.model.build(Object.assign({
+		return await UserGroup.fromRecord(UserGroup.model.build(Object.assign({
 			name: '',
 			config: ''
 		}, val)));

@@ -20,7 +20,7 @@ let model = db.define('problem_tag',
 let Model = require('./common');
 class ProblemTag extends Model {
 	static async create(val) {
-		return ProblemTag.fromRecord(ProblemTag.model.build(Object.assign({
+		return await ProblemTag.fromRecord(ProblemTag.model.build(Object.assign({
 			name: '',
 			color: ''
 		}, val)));

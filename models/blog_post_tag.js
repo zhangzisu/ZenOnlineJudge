@@ -23,7 +23,7 @@ let model = db.define('blog_post_tag',
 let Model = require('./common');
 class BlogTag extends Model {
 	static async create(val) {
-		return BlogTag.fromRecord(BlogTag.model.build(Object.assign({
+		return await BlogTag.fromRecord(BlogTag.model.build(Object.assign({
 			name: '',
 			color: ''
 		}, val)));

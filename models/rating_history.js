@@ -36,7 +36,7 @@ let model = db.define('rating_history',
 let Model = require('./common');
 class RatingHistory extends Model {
 	static async create(rating_calculation_id, user_id, rating, rank) {
-		return RatingHistory.fromRecord(RatingHistory.model.build({
+		return await RatingHistory.fromRecord(RatingHistory.model.build({
 			rating_calculation_id: rating_calculation_id,
 			user_id: user_id,
 			rating_after: rating,

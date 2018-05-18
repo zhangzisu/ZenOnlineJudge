@@ -51,7 +51,7 @@ let model = db.define('contest',
 let Model = require('./common');
 class Contest extends Model {
 	static async create(val) {
-		return Contest.fromRecord(Contest.model.build(Object.assign({
+		return await Contest.fromRecord(Contest.model.build(Object.assign({
 			title: '',
 			subtitle: '',
 			problems: '[]',
@@ -79,7 +79,7 @@ class Contest extends Model {
 		}
 	}
 
-	async match(gA, gB) {
+	match(gA, gB) {
 		gA.sort((a, b) => { a.id < b.id; });
 		gB.sort((a, b) => { a.id < b.id; });
 		let idA = 0, idB = 0;
@@ -94,7 +94,7 @@ class Contest extends Model {
 	async isAllowedEditBy(user) {
 		if (!user) return false;
 		if (this.holder_id === user.id) return true;
-		return user.haveAccess('contest_manage');
+		return await user.haveAccess('contest_manage');
 	}
 
 	async isAllowedUseBy(user) {
@@ -112,11 +112,11 @@ class Contest extends Model {
 		return await user.haveAccess('contest_result');
 	}
 
-	async getProblems() {
+	getProblems() {
 		return this.problems;
 	}
 
-	async setProblemsNoCheck(problems) {
+	setProblemsNoCheck(problems) {
 		this.problems = problems;
 	}
 
@@ -148,12 +148,12 @@ class Contest extends Model {
 	}
 
 	async isRunning(now) {
-		if (!now) now = zoj.utils.getCurrentDate();
+		if (!now) now = await zoj.utils.getCurrentDate();
 		return now >= this.start_time && now < this.end_time;
 	}
 
 	async isEnded(now) {
-		if (!now) now = zoj.utils.getCurrentDate();
+		if (!now) now = await zoj.utils.getCurrentDate();
 		return now >= this.end_time;
 	}
 

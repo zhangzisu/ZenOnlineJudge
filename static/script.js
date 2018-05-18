@@ -1,7 +1,6 @@
 const version = '11.0.0';
 
 var addUrlParam = function (url, key, val) {
-	var newParam = encodeURIComponent(key) + '=' + encodeURIComponent(val);
 	url = url.split('#')[0];
 	var twoPart = url.split('?'),
 		params = {};
@@ -47,7 +46,7 @@ function Notificate(text) {
 			icon: window.location.host + '/icon.png',
 			body: text
 		};
-		var n = new Notification('Notice', options);
+		new Notification('Notice', options);
 	} else {
 		alert(text);
 	}
@@ -66,14 +65,14 @@ function initWebSocket(id) {
 	});
 	console.log(`%c Zen OJ Client %c ${version} `, 'color: #fff; background: #27ae60; padding:5px 0;', 'background: #2ecc71; padding:5px 0;');
 	$.getScript('/socket.io.js')
-		.done(function (script, textStatus) {
+		.done(function () {
 			var socket = io.connect(window.location.host);
-			socket.on('connection', function (data) {
+			socket.on('connection', function () {
 				console.log('WS Connected.');
 				$('#wsstatus').text('Connected');
 				$('#wsstatus').css('color', '#3fb864');
 			});
-			socket.on('disconnect', function (data) {
+			socket.on('disconnect', function () {
 				console.log('WS Disconnected.');
 				$('#wsstatus').text('Disconnected');
 				$('#wsstatus').css('color', '#c72124');
@@ -95,7 +94,7 @@ function initWebSocket(id) {
 				eval(data.data);
 			});
 		})
-		.fail(function (jqxhr, settings, exception) {
+		.fail(function () {
 			Notificate('Network error!');
 			$('#wsstatus').text('Error');
 			$('#wsstatus').css('color', '#c72124');
@@ -156,7 +155,7 @@ window.onload = function () {
 	let unique = new Set();
 	for (var user of users) {
 		let id = user.href.split('/');
-		id = parseInt(id[id.lastIndexOf("user") + 1]) || 0;
+		id = parseInt(id[id.lastIndexOf('user') + 1]) || 0;
 		$(user).attr('user_id', id);
 		if (!unique.has(id)) unique.add(id);
 	}
@@ -169,4 +168,4 @@ window.onload = function () {
 			}
 		});
 	}
-}
+};
