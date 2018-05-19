@@ -1,0 +1,53 @@
+<% this.title = 'Import Problem'; %>
+<% include header %>
+<div class="padding">
+  <div style="margin-bottom: 30px; ">
+    <h1 style="margin-bottom: 10px; ">Import Problem</h1>
+    Import problems form exported zoj problem file
+  </div>
+
+  <form class="ui form" action="<%= zoj.utils.makeUrl(['problem', problem.id, 'manualimport']) %>" method="post" enctype="multipart/form-data">
+      <% if (problem.allowedManage) { %>
+          <div class="field">
+              <label>Problem ID</label>
+              <input type="text" name="id" value="<%= problem.id ? problem.id : '' %>" placeholder="Will extend if it is empty" <%= problem.new ? '' : 'disabled' %>>
+          </div>
+      <% } %>
+      <label style="margin-top: 15px; " for="config">Config File</label>
+      <div id="config" style="height: 500px;"></div>
+      <input type="hidden" name="config" value="">
+      <div class="field">
+        <label for="testdata">Upload Testdata(Please use ZIP)</label>
+        <input type="file" id="testdata" name="testdata">
+      </div>
+      <div class="field">
+        <label for="additional_file">Upload Additional Files(Please use ZIP)</label>
+        <input type="file" id="additional_file" name="additional_file">
+      </div>
+      <button type="submit" class="ui button">Submit</button>
+  </form>
+<script src="/libs/ace/ace.js"></script>
+<script type="text/javascript">
+function registerACEditor(editorID, containerName, mode){
+  var editor = ace.edit(editorID);
+
+  editor.setTheme("ace/theme/tomorrow");
+  editor.getSession().setMode(mode);
+  editor.getSession().setUseSoftTabs(false);
+
+  editor.container.name = containerName;
+  editor.container.style.lineHeight = 1.6;
+  editor.container.style.fontSize = '14px';
+  editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+  editor.setShowPrintMargin(false);
+  editor.renderer.updateFontSize();
+
+  var input = $(`[name="${containerName}"]`);
+  editor.getSession().on("change", function () {
+    input.val(editor.getSession().getValue());
+  });
+}
+
+registerACEditor("config", "config", "ace/mode/json");
+</script>
+<% include footer %>

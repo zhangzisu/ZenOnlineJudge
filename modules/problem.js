@@ -184,6 +184,8 @@ app.get('/problem/:id/export/:token?', async (req, res) => {
 		let problem = await Problem.fromID(id);
 		let token = req.params.token || '';
 		if (!problem) throw new ErrorMessage('No such problem.');
+		await problem.loadRelationships();
+		if (await problem.isAllowedEditBy(res.locals.user)) token = zoj.config.token;
 		if (token !== zoj.config.token) throw new ErrorMessage('You do not have permission to do this.');
 
 		let obj = {
@@ -446,6 +448,92 @@ app.post('/problem/:id/import', async (req, res) => {
 	}
 });
 
+app.get('/problem/:id/manualimport', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
+		let id = parseInt(req.params.id) || 0;
+		let problem = await Problem.fromID(id);
+
+		if (!problem) {
+			problem = await Problem.create();
+			problem.id = id;
+			problem.new = true;
+			problem.user_id = res.locals.user.id;
+			problem.publicizer_id = res.locals.user.id;
+		} else {
+			await problem.loadRelationships();
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		}
+
+		problem.allowedManage = await problem.isAllowedEditBy(res.locals.user);
+
+		res.render('problem_import_manually', {
+			problem: problem
+		});
+	} catch (e) {
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
+app.post('/problem/:id/manualimport', app.multer.fields([{ name: 'testdata', maxCount: 1 }, { name: 'additional_file', maxCount: 1 }]), async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+
+		let id = parseInt(req.params.id);
+		let problem = await Problem.fromID(id);
+		let obj = JSON.parse(req.body.config);
+
+		if (!obj.success) throw new ErrorMessage('Config file is invalid.');
+		obj = obj.obj;
+
+		if (!problem) {
+			problem = await Problem.create();
+
+			let customID = parseInt(req.body.id);
+			if (customID) {
+				if (await Problem.fromID(customID)) throw new ErrorMessage('ID is used.');
+				problem.id = customID;
+			} else if (id) problem.id = id;
+
+			problem.user_id = res.locals.user.id;
+			problem.publicizer_id = res.locals.user.id;
+		} else {
+			await problem.loadRelationships();
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		}
+
+		problem.title = obj.title;
+		problem.content = obj.content;
+		problem.datainfo = obj.datainfo;
+
+		await problem.save();
+
+		let tagIDs = (await obj.tags.mapAsync(name => ProblemTag.findOne({ where: { name: name } }))).filter(x => x).map(tag => tag.id);
+		await problem.setTags(tagIDs);
+
+		if (req.files['testdata']) {
+			await problem.updateTestdata(req.files['testdata'][0].path);
+		}
+
+		if (req.files['additional_file']) {
+			await problem.updateFile(req.files['additional_file'][0].path, 'additional_file');
+		}
+
+		await problem.save();
+
+		res.redirect(zoj.utils.makeUrl(['problem', problem.id, 'manage']));
+	} catch (e) {
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
 app.get('/problem/:id/manage', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
@@ -700,9 +788,10 @@ app.get('/problem/:id/testdata/export/:token', async (req, res) => {
 	try {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
-		let token = req.params.token || '';
-
 		if (!problem) throw new ErrorMessage('No such problem.');
+		let token = req.params.token || '';
+		await problem.loadRelationships();
+		if (await problem.isAllowedEditBy(res.locals.user)) token = zoj.config.token;
 		if (token !== zoj.config.token) throw new ErrorMessage('You do not have permission to do this.');
 
 		if (!await zoj.utils.isFile(problem.getTestdataPath() + '.zip')) {
