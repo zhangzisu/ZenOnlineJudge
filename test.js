@@ -88,5 +88,7 @@ testFile('.').then(async () => {
 			console.error(error.message);
 		}
 		process.exit(-1);
+	} else {
+		console.log('Test passed.');
 	}
 });
