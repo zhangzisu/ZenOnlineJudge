@@ -69,10 +69,11 @@ if (typeof tags !== 'undefined') tagIDs = tags.map(x => x.id);
             <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['problems', 'tag', 0, 'edit']) %>" class="ui labeled icon mini green button"><i class="plus icon"></i> Add Tag</a>
           <% } %>
           <div style="margin-left: 10px; " class="ui mini buttons">
-            <div class="ui labeled icon mini dropdown button" id="add_problem_dropdown"><i class="plus icon"></i> Add Problem
+            <div class="ui labeled icon mini dropdown button" id="add_problem_dropdown"><i class="plus icon"></i>Add Problem
             <div class="menu">
-              <a class="item" href="<%= zoj.utils.makeUrl(['problem', 0, 'edit']) %>"><i class="file icon"></i> New Problem</a>
-              <a class="item" href="<%= zoj.utils.makeUrl(['problem', 0, 'import']) %>"><i class="cloud download icon"></i> Import Problems</a>
+              <a class="item" href="<%= zoj.utils.makeUrl(['problem', 0, 'edit']) %>"><i class="file icon"></i>New Problem</a>
+              <a class="item" href="<%= zoj.utils.makeUrl(['problem', 0, 'import']) %>"><i class="cloud download icon"></i>Auto Import</a>
+              <a class="item" href="<%= zoj.utils.makeUrl(['problem', 0, 'manualimport']) %>"><i class="cloud download icon"></i>Manually Import</a>
             </div>
             </div>
           </div>

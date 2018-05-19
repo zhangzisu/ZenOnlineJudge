@@ -98,6 +98,7 @@ div[class*=ace_br] {
           <% if (problem.allowedEdit) { %>
             <a class="small ui button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'edit']) %>">Edit</a>
             <a class="small ui button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'manage']) %>">Manage</a>
+            <a class="small ui button" href="<%= zoj.utils.makeUrl(['problem', problem.id, 'export']) %>">Export</a>
           <% } %>
           <% if (problem.allowedManage) { %>
             <div class="ui basic modal" id="modal-delete">
