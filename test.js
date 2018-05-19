@@ -11,46 +11,82 @@ let ignore = [
 ];
 
 var exec = require('child_process').exec;
+let files = [];
 
-function testFile(filePath) {
-	fs.readdir(filePath, function (err, files) {
-		if (err) {
-			console.warn(err);
-		} else {
-			files.forEach(async function (filename) {
-				var filedir = path.join(filePath, filename);
-				for (let x of ignore) if (filename.indexOf(x) !== -1) return;
-				await fs.stat(filedir, async function (eror, stats) {
-					if (eror) {
-						console.warn(`Cannot access ${filedir}`);
-					} else {
-						var isFile = stats.isFile();
-						var isDir = stats.isDirectory();
-						if (isFile) {
-							if (filename.endsWith('.js')) {
-								console.log(filedir);
-								let lint = new Promise((resolve) => {
-									exec(`node ./node_modules/.bin/eslint ${filedir}`, function (error) {
-										resolve(error);
-									});
-								});
-								let result = await lint;
-								console.log(result);
-							} else if (filename.endsWith('.ejs')) {
-								console.log(filedir);
-								let text = fs.readFileSync(filedir);
-								let result = ejsLint(text.toString());
-								if (result) console.error(result);
+let check = (str) => {
+	for (let x of ignore) if (str.indexOf(x) !== -1) return 0;
+	return 1;
+};
+
+async function listDirAsync(dir) {
+	return await new Promise((resolve) => {
+		fs.readdir(dir, async function (err, fileList) {
+			if (err) {
+				console.warn(err);
+				resolve({ dirs: [], files: [] });
+			} else {
+				let dirs = [], files = [];
+				fileList = fileList.filter((x) => check(x));
+				for (let filename of fileList) {
+					var filedir = path.join(dir, filename);
+					let info = await new Promise((resolve) => fs.stat(filedir, function (eror, stats) {
+						if (eror) {
+							resolve(0);
+						} else {
+							var isFile = stats.isFile();
+							var isDir = stats.isDirectory();
+							if (isFile) {
+								resolve(1);
+							} else if (isDir) {
+								resolve(2);
 							}
 						}
-						if (isDir) {
-							testFile(filedir);
-						}
+					}));
+					if (info === 1) {
+						files.push(filedir);
+					} else if (info === 2) {
+						dirs.push(filedir);
 					}
-				});
-			});
-		}
+				}
+				resolve({ dirs: dirs, files: files });
+			}
+		});
 	});
 }
 
-testFile('.');
+async function testFile(filePath) {
+	let dirInfo = await listDirAsync(filePath);
+	for (let x of dirInfo.files) files.push(x);
+	for (let x of dirInfo.dirs) await testFile(x);
+}
+
+testFile('.').then(async () => {
+	console.log('Total files count: ' + files.length);
+	let result = await new Promise(async (resolve) => {
+		let errors = [];
+		for (let file of files) {
+			if (file.endsWith('.ejs')) {
+				let text = fs.readFileSync(file);
+				let result = ejsLint(text.toString());
+				if (result) errors.push({ file: file, message: result });
+			} else if (file.endsWith('js')) {
+				let lint = new Promise((resolve) => {
+					exec(`.\\node_modules\\.bin\\eslint ${file}`, function (error, stdout, stderr) {
+						resolve({ error: error, stdout: stdout, stderr: stderr });
+					});
+				});
+				let result = await lint;
+				if (result.stdout) errors.push({ file: file, message: result.stdout });
+			}
+		}
+		resolve(errors);
+	});
+	if (result.length) {
+		console.log(`Found ${result.length} error(s)`);
+		for (error of result) {
+			console.info(`File ${error.file}:`);
+			console.error(error.message);
+		}
+		process.exit(-1);
+	}
+});
