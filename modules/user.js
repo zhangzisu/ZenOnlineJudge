@@ -174,7 +174,7 @@ app.post('/user/:id/edit', async (req, res) => {
 		let allowedEdit = await user.isAllowedEditBy(res.locals.user);
 		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this.');
 
-		if (req.body.old_password && req.body.new_password) {
+		if (req.body.new_password) {
 			if (user.password !== req.body.old_password && !(await res.locals.user.haveAccess('change_password'))) throw new ErrorMessage('Password error.');
 			user.password = req.body.new_password;
 		}
