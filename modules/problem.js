@@ -665,7 +665,7 @@ app.post('/problem/:id/delete', async (req, res) => {
 
 		await problem.delete();
 
-		res.redirect(zoj.utils.makeUrl(['problem']));
+		res.redirect(zoj.utils.makeUrl(['problems']));
 	} catch (e) {
 		zoj.error(e);
 		res.render('error', {
