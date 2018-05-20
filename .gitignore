@@ -53,6 +53,7 @@ log.txt
 
 # sqlite3 files
 *.sql
+*.sql-journal
 
 # Autogen sh
 *.sh
