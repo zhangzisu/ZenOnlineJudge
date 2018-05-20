@@ -51,25 +51,29 @@ module.exports = {
 	async markdown(obj) {
 		if (!obj || !obj.trim()) return '';
 
-		obj = obj.split('```');
-		for (let i = 0; i < obj.length; i += 2) {
-			let pg = obj[i].split('`');
-			for (let j = 0; j < pg.length; j += 2) {
-				pg[j] = await xss(pg[j]);
+		try {
+			obj = obj.split('```');
+			for (let i = 0; i < obj.length; i += 2) {
+				let pg = obj[i].split('`');
+				for (let j = 0; j < pg.length; j += 2) {
+					pg[j] = await xss(pg[j]);
+				}
+				obj[i] = pg.join('`');
 			}
-			obj[i] = pg.join('`');
+			obj = obj.join('```');
+
+			obj = await marked(obj);
+			let replaceUI = s =>
+				new Promise(function (resolve) {
+					s = s.split('<table>').join('<table class="ui celled table">')
+						.split('<blockquote>').join('<div class="ui message">').split('</blockquote>').join('</div>');
+
+					resolve(s);
+				});
+			obj = await replaceUI(obj);
+		} catch (e) {
+			return 'Markdown parse error';
 		}
-		obj = obj.join('```');
-
-		obj = await marked(obj);
-		let replaceUI = s =>
-			new Promise(function (resolve) {
-				s = s.split('<table>').join('<table class="ui celled table">')
-					.split('<blockquote>').join('<div class="ui message">').split('</blockquote>').join('</div>');
-
-				resolve(s);
-			});
-		obj = await replaceUI(obj);
 
 		return obj;
 	},
