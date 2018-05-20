@@ -90,6 +90,7 @@ io.sockets.on('connection', function (socket) {
 				judge_state = await waiting_judge.getJudgeState();
 
 				if (!judge_state) {
+					zoj.error(`Judge state ${waiting_judge.judge_id} not found!`);
 					return;
 				}
 
@@ -159,6 +160,6 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
-server.listen(zoj.config.callback_port, function () {
+server.listen(zoj.config.callback_port, zoj.config.listen, function () {
 	zoj.log('Judge Client Service started successfully.');
 });
