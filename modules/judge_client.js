@@ -88,6 +88,11 @@ io.sockets.on('connection', function (socket) {
 				}
 
 				judge_state = await waiting_judge.getJudgeState();
+
+				if (!judge_state) {
+					return;
+				}
+
 				await judge_state.loadRelationships();
 				await waiting_judge.destroy();
 			});
