@@ -90,6 +90,7 @@ io.sockets.on('connection', function (socket) {
 				judge_state = await waiting_judge.getJudgeState();
 
 				if (!judge_state) {
+					zoj.error(`Judge state ${waiting_judge.judge_id} not found!`);
 					return;
 				}
 
