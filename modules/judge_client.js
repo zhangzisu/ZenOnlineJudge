@@ -160,6 +160,6 @@ io.sockets.on('connection', function (socket) {
 	});
 });
 
-server.listen(zoj.config.callback_port, function () {
+server.listen(zoj.config.callback_port, zoj.config.listen, function () {
 	zoj.log('Judge Client Service started successfully.');
 });
