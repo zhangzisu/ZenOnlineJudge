@@ -29,7 +29,6 @@ let filesize = require('file-size');
 let AsyncLock = require('async-lock');
 let marked = require('marked-katex');
 let katex = require('katex');
-let xss = require('xss');
 
 marked.setOptions({
 	kaTex: katex
@@ -42,6 +41,12 @@ function escapeHTML(s) {
 	});
 }
 
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+
+const window = (new JSDOM('')).window;
+const DOMPurify = createDOMPurify(window);
+
 module.exports = {
 	resolvePath() {
 		let a = Array.from(arguments);
@@ -52,16 +57,6 @@ module.exports = {
 		if (!obj || !obj.trim()) return '';
 
 		try {
-			obj = obj.split('```');
-			for (let i = 0; i < obj.length; i += 2) {
-				let pg = obj[i].split('`');
-				for (let j = 0; j < pg.length; j += 2) {
-					pg[j] = await xss(pg[j]);
-				}
-				obj[i] = pg.join('`');
-			}
-			obj = obj.join('```');
-
 			obj = await marked(obj);
 			let replaceUI = s =>
 				new Promise(function (resolve) {
@@ -70,6 +65,7 @@ module.exports = {
 
 					resolve(s);
 				});
+			obj = await DOMPurify.sanitize(obj);
 			obj = await replaceUI(obj);
 		} catch (e) {
 			return 'Markdown parse error';
