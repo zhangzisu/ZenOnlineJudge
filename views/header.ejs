@@ -20,6 +20,21 @@
 
     <script src="/libs/jquery/jquery.min.js"></script>
     <script src="/libs/prism/prism.js"></script>
+    <% if (active.startsWith('problem') + active.startsWith('discussion') + active.startsWith('article') + active.startsWith('blog') + active.startsWith('blogs')) { %>
+        <script type="text/x-mathjax-config">
+			MathJax.Hub.Config({
+				showProcessingMessages: false,
+				tex2jax: {
+					inlineMath: [["$", "$"], ["\\\\(", "\\\\)"]],
+					processEscapes:true
+				},
+				menuSettings: {
+					zoom: "Hover"
+    			}
+			});
+		</script>
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+    <% } %>
     <link rel="icon" sizes="512x512" href="/icon.png">
     <% if(zoj.config.enable_google_analytics) { %>
     <script async src="https://www.googletagmanager.com/gtag/js?id=<%= zoj.config.google_publisher_id %>"></script>
