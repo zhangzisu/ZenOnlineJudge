@@ -236,17 +236,6 @@ app.get('/api/sign_up_confirm', async (req, res) => {
 	}
 });
 
-// Markdown
-app.post('/api/fastmarkdown', async (req, res) => {
-	try {
-		let s = await zoj.utils.markdown(req.body.s.toString());
-		res.send(s);
-	} catch (e) {
-		zoj.error(e);
-		res.send(e);
-	}
-});
-
 app.get('/api/search/problems/:keyword*?', async (req, res) => {
 	try {
 		let Problem = zoj.model('problem');
