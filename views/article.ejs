@@ -1,4 +1,5 @@
 <% this.title = article.title + ' - Article'; %>
+<% let enableMath = 1; %>
 <% include header %>
 <style type="text/css" xmlns:style="http://www.w3.org/1999/xhtml">
 .small{
@@ -101,7 +102,7 @@
         <i class="icon edit"></i> Reply
       </button>
    </form>
-    <script src="/libs/ace/ace.js"></script>
+    <script src="/ace/ace.js"></script>
     <script type="text/javascript">
     function registerACEditor(editorID, containerName, mode){
       var editor = ace.edit(editorID);

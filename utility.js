@@ -27,12 +27,7 @@ let querystring = require('querystring');
 let gravatar = require('gravatar');
 let filesize = require('file-size');
 let AsyncLock = require('async-lock');
-let marked = require('marked-katex');
-let katex = require('katex');
-
-marked.setOptions({
-	kaTex: katex
-});
+let marked = require('marked');
 
 function escapeHTML(s) {
 	// Code from http://stackoverflow.com/questions/5251520/how-do-i-escape-some-html-in-javascript/5251551

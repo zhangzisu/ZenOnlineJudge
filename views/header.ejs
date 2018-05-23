@@ -10,16 +10,17 @@
             text-decoration:underline
         }
     </style>
-    <link rel="stylesheet" href="/semantic-ui/semantic.min.css">
+    <link rel="stylesheet" href="/semantic/dist/semantic.min.css">
     <link rel="stylesheet" href="/tomorrow.css">
-    <link rel="stylesheet" href="/libs/KaTeX/katex.min.css">
-    <link rel="stylesheet" href="/libs/morris.js/morris.css">
+    <link rel="stylesheet" href="/morris.js/morris.css">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="/octicons.css">
-    <link rel="stylesheet" href="/libs/prism/prism.css">
-
-    <script src="/libs/jquery/jquery.min.js"></script>
-    <script src="/libs/prism/prism.js"></script>
+    <link rel="stylesheet" href="/prism/prism.css">
+    <% if(typeof(enableMath) !== 'undefined'){ %>
+        <script src='/mathjax/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+    <% } %>
+    <script src="/jquery/jquery.min.js"></script>
+    <script src="/prism/prism.js"></script>
     <link rel="icon" sizes="512x512" href="/icon.png">
     <% if(zoj.config.enable_google_analytics) { %>
     <script async src="https://www.googletagmanager.com/gtag/js?id=<%= zoj.config.google_publisher_id %>"></script>
