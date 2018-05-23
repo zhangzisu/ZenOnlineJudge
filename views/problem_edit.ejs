@@ -7,11 +7,7 @@
 </style>
 <div class="padding">
     <form class="ui form" method="post" action="<%= zoj.utils.makeUrl(['problem', req.params.id, 'edit']) %>">
-      <div class="ui top attached tabular menu">
-        <a class="item active" data-tab="edit">Edit</a>
-        <a class="item" data-tab="preview" id="preview_tab">Preview</a>
-      </div>
-      <div class="ui bottom attached tab segment active" data-tab="edit">
+      <div class="ui attached segment" data-tab="edit">
         <div class="field">
           <% if (problem.allowedManage) { %>
             <label for="id">
@@ -52,11 +48,8 @@
           </div>
         </div>
       </div>
-      <div class="ui bottom attached tab segment" data-tab="preview" id="preview">
-        <h1 class="ui header problem_header" id="pv-title"></h1>
-        <div class="font-content" id="pv-content"></div>
-      </div>
-
+      <% if(groupAccess) { %>
+      <div class="ui bottom attached segment" data-tab="edit">
       <label style="margin-top: 15px; ">Exluded groups</label>
       <select class="ui fluid search dropdown" multiple="" id="groups_exlude" name="groups_exlude">
         <% for (let group of problem.groups_exlude) { %>
@@ -83,10 +76,12 @@
           </a>
         <% } %>
       </div>
+      </div>
+      <% } %>
       <button type="submit" class="ui button">Submit</button>
     </form>
 </div>
-<script src="/libs/ace/ace.js"></script>
+<script src="/ace/ace.js"></script>
 <script type="text/javascript">
 function registerACEditor(editorID, containerName, mode){
   var editor = ace.edit(editorID);
@@ -109,23 +104,6 @@ function registerACEditor(editorID, containerName, mode){
 }
 
 registerACEditor("content", "content", "ace/mode/markdown");
-</script>
-<script type="text/javascript">
-$(function () {
-    function render(output, input) {
-      $.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
-        // zoj.log(s);
-        output.html(s);
-        Prism.highlightAll();
-      });
-    }
-    $("#preview_tab").click(function () {
-      $("#pv-title").text($("#title").val());
-      $("#pv-content").text('Loading...');
-      render($("#pv-content"), $("[name=content]"));
-    });
-    $('.tabular.menu .item').tab();
-});
 </script>
 <script>
 function registerTagSelector(element, url){

@@ -6,6 +6,7 @@ if (contest) {
 } else {
   this.title = problem.title + ' - Problem';
 }
+let enableMath = 1;
 %>
 <% include header %>
 <style>
@@ -23,7 +24,7 @@ div[class*=ace_br] {
     border-radius: 0 !important;
 }
 </style>
-<script src="/libs/ace/ace.js"></script>
+<script src="/ace/ace.js"></script>
 <div class="ui center aligned grid">
     <div class="row">
       <h1 class="ui header">

@@ -7,10 +7,6 @@
 </style>
 <div class="padding">
 	<form class="ui form" method="post">
-		<div class="ui top attached tabular menu">
-			<a class="item active" data-tab="edit">Edit</a>
-			<a class="item" data-tab="preview" id="preview_tab">Preview</a>
-		</div>
 		<div class="ui bottom attached tab segment active" data-tab="edit">
 			<div class="field">
 				<label for="title">Title</label>
@@ -31,17 +27,13 @@
 				<% } %>
 			</div>
 		</div>
-		<div class="ui bottom attached tab segment" data-tab="preview">
-			<div class="ui header" id="pv-title"></div>
-			<div id="pv-content" class="font-content"></div>
-		</div>
 		<button type="submit" class="ui button">
-			Submit
+			Save
 		</button>
 	</form>
 </div>
 
-<script src="/libs/ace/ace.js"></script>
+<script src="/ace/ace.js"></script>
 <script type="text/javascript">
 function registerACEditor(editorID, containerName, mode){
 	var editor = ace.edit(editorID);
@@ -62,26 +54,6 @@ function registerACEditor(editorID, containerName, mode){
 		input.val(editor.getSession().getValue());
 	});
 }
-
 registerACEditor("content", "content", "ace/mode/markdown");
-
-</script>
-
-<script type="text/javascript">
-	$(function () {
-		function render(output, input) {
-			$.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
-				// zoj.log(s);
-				output.html(s);
-				Prism.highlightAll();
-			});
-		}
-		$("#preview_tab").click(function () {
-			$("#pv-title").text($("#title").val());
-			$("#pv-content").text('Loading...');
-			render($("#pv-content"), $("[name=\"content\"]"));
-		});
-		$('.tabular.menu .item').tab();
-	});
 </script>
 <% include footer %>

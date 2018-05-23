@@ -2,10 +2,6 @@
 <% include header %>
 <div class="padding">
     <form class="ui form" method="post" action="<%= zoj.utils.makeUrl(['blog', req.params.id, 'edit']) %>">
-      <div class="ui top attached tabular menu">
-        <a class="item active" data-tab="edit">Edit<i class="mega-octicon octicon-markdown"></i></a>
-        <a class="item" data-tab="preview" id="preview_tab">Preview</a>
-      </div>
       <div class="ui bottom attached tab segment active" data-tab="edit">
         <div class="field">
           <label for="title">Title</label>
@@ -32,16 +28,12 @@
           </div>
         </div>
       </div>
-      <div class="ui bottom attached tab segment" data-tab="preview" id="preview">
-        <h1 class="ui header post" id="pv-title"></h1>
-        <div class="font-content" id="pv-content"></div>
-      </div>
       <% if (post.allowedEdit) { %>
-      <button type="submit" class="ui button">Submit</button>
+      <button type="submit" class="ui button">Save</button>
       <% } %>
     </form>
 </div>
-<script src="/libs/ace/ace.js"></script>
+<script src="/ace/ace.js"></script>
 <script type="text/javascript">
 function registerACEditor(editorID, containerName, mode){
   var editor = ace.edit(editorID);
@@ -64,21 +56,6 @@ function registerACEditor(editorID, containerName, mode){
 }
 
 registerACEditor("content", "content", "ace/mode/markdown");
-$(function () {
-    function render(output, input) {
-      $.post('/api/fastmarkdown', { s: input.val(), _csrf: document.head.getAttribute('data-csrf-token') }, function (s) {
-        // console.log(s);
-        output.html(s);
-        Prism.highlightAll();
-      });
-    }
-    $("#preview_tab").click(function () {
-      $("#pv-title").text($("#title").val());
-      $("#pv-content").text('Loading...');
-      render($("#pv-content"), $("[name=content]"));
-    });
-    $('.tabular.menu .item').tab();
-});
 </script>
 <script>
 $(function () {

@@ -231,7 +231,8 @@ app.get('/problem/:id/edit', async (req, res) => {
 		problem.allowedManage = await problem.isAllowedEditBy(res.locals.user);
 
 		res.render('problem_edit', {
-			problem: problem
+			problem: problem,
+			groupAccess: await res.locals.user.haveAccess('problem_manage')
 		});
 	} catch (e) {
 		zoj.error(e);
