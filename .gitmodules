@@ -1,6 +1,6 @@
-[submodule ".\\static\\mathjax"]
-	path = .\\static\\mathjax
+[submodule "static/mathjax"]
+	path = static/mathjax
 	url = https://github.com/mathjax/MathJax.git
-[submodule ".\\static\\semantic"]
-	path = .\\static\\semantic
+[submodule "static/semantic"]
+	path = static/semantic
 	url = https://github.com/Semantic-Org/Semantic-UI.git
