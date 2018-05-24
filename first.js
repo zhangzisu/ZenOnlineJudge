@@ -35,7 +35,8 @@ module.exports = function () {
 	let upgrade = 'git fetch --all && git reset --hard origin/master\n';
 	if (enableOptional) upgrade += 'npm install --production\n';
 	else upgrade += 'npm install --production --no-optional\n';
-	upgrade += 'killall node\nnode app.js >log.txt';
+	upgrade += 'killall node\nnode app.js >log.txt\n';
+	upgrade += 'git submodule init\ngit submodule update';
 	fs.writeFileSync('upgrade.sh', upgrade);
 	return config;
 };
