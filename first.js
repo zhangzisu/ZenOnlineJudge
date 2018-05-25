@@ -15,7 +15,7 @@ module.exports = function () {
 	}
 	config.hostname = (config.https ? 'https://' : 'http://') + config.listen;
 	if (config.port !== (config.https ? '443' : '80')) config.hostname = config.hostname + `:${config.port}`;
-	result = conif.getConsoleInput('Database type (mysql, sqlite): ').trim();
+	result = conif.getConsoleInput('Database type (mysql, sqlite, mssql): ').trim();
 	if (result === 'mysql') {
 		config.db.dialect = 'mysql';
 		config.db.database = conif.getConsoleInput('Mysql database name: ').trim();
@@ -27,12 +27,21 @@ module.exports = function () {
 		config.db.dialect = 'sqlite';
 		config.db.storage = conif.getConsoleInput('Database file place: ').trim();
 		enableOptional = true;
+	} else if (result === 'mssql') {
+		config.db.dialect = 'mssql';
+		config.db.database = conif.getConsoleInput('MSSQL database name: ').trim();
+		config.db.username = conif.getConsoleInput('MSSQL database username: ').trim();
+		config.db.password = conif.getConsoleInput('MSSQL database password: ').trim();
+		config.db.host = conif.getConsoleInput('MSSQL server address: ').trim();
+		enableOptional = true;
 	}
 
 	result = conif.getConsoleInput('ZOJ Token: ').trim();
 	config.token = config.secret = result;
 	fs.writeFileSync('config.json', JSON.stringify(config, null, '\t'));
 	let upgrade = 'git fetch --all && git reset --hard origin/master\n';
+	upgrade += 'git submodule init\n';
+	upgrade += 'git submodule update\n';
 	if (enableOptional) upgrade += 'npm install --production\n';
 	else upgrade += 'npm install --production --no-optional\n';
 	upgrade += 'killall node\nnode app.js >log.txt';
