@@ -1,15 +1,7 @@
 <% include util %>
 <%
-// Sanitize judge results for backward compatibility and clarity
-if (!judge.result.subtasks) {
-  judge.result.subtasks = [
-    { case_num: judge.result.case_num, status: judge.status, score: judge.result.score }
-  ];
-  for (let i = 0; i < judge.result.case_num; ++i) {
-    judge.result.subtasks[0][i] = judge.result[i];
-  }
-}
 let runningFound = false;
+if (!Array.isArray(judge.result.subtasks)) judge.result.subtasks = [];
 for (let s of judge.result.subtasks) {
   s.pending = (s.status === 'Waiting' || s.status.startsWith('Running'));
   for (let i = 0; i < s.case_num; ++i) if (!s[i]) {

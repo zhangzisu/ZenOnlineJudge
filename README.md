@@ -18,10 +18,9 @@ A powerful, scalable, intelligent online judge system for Olympics in Informaics
 
 ## Setup
   - Clone the repository
-  - Execute `npm install`
-  - If you use `sqlite` , please execute `npm i sqlite3`
-  - Execute `npm start`
-  - Follow the first-run interface
+  - Execute `npm install`. You can add `--no-optional` if you do not wan't to install sqlite3 and tedious.
+  - Execute `npm start`.
+  - Follow the first-run interface.
 
 ## Special thanks
   - Contributors
