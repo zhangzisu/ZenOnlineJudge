@@ -2,11 +2,12 @@
 <% include admin_header %>
 <form method="post" class="ui form">
     <div style="text-align: center; ">
-        <h2>Notice: system will restart after upgrade.</h2>
-    </div>
-    <br/><br/>
-    <div style="text-align: center; ">
+        <h2>System Upgrade</h2>
+        <br/>
+        <h3>Local version <img src="https://img.shields.io/badge/current-<%= zoj.version %>-yellowgreen.svg"></img>
+        will be upgraded to <img src="https://img.shields.io/github/release/ZhangZisu/ZenOnlineJudge.svg"></img>.</h3>
         <button class="ui red button">Upgrade</button>
+        <br/>
     </div>
 </form>
 <% include admin_footer %>
