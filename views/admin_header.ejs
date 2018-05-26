@@ -10,7 +10,12 @@ let items = {
   group: 'Group control'
 };
 %>
-	<% this.title = 'Console - ' + items[this.adminPage]; %>
+	<% if(this.adminPage === 'error'){
+		this.title = 'Error';
+	}else{
+		this.title = 'Console - ' + items[this.adminPage];
+	}
+	%>
 		<% include header %>
 			<div class="ui grid">
 				<div class="three wide column">

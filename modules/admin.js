@@ -23,7 +23,7 @@ app.get('/admin/group', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -50,7 +50,7 @@ app.get('/admin/group/:id', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -80,7 +80,7 @@ app.post('/admin/group/:id', async (req, res) => {
 		res.redirect(`/admin/group/${group.id}`);
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -96,7 +96,7 @@ app.get('/admin/message', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -115,7 +115,7 @@ app.post('/admin/message', async (req, res) => {
 		res.redirect(zoj.utils.makeUrl(['admin', 'message']));
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -138,7 +138,7 @@ app.get('/admin/rating', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -183,7 +183,7 @@ app.post('/admin/rating/add', async (req, res) => {
 		res.redirect(zoj.utils.makeUrl(['admin', 'rating']));
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -205,7 +205,7 @@ app.post('/admin/rating/delete', async (req, res) => {
 		res.redirect(zoj.utils.makeUrl(['admin', 'rating']));
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -236,7 +236,7 @@ app.get('/admin/info', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -255,7 +255,7 @@ app.get('/admin/rejudge', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -328,7 +328,7 @@ app.post('/admin/rejudge', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -345,7 +345,7 @@ app.get('/admin/links', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -363,7 +363,7 @@ app.post('/admin/links', async (req, res) => {
 		res.redirect(zoj.utils.makeUrl(['admin', 'links']));
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -380,7 +380,7 @@ app.get('/admin/raw', async (req, res) => {
 		});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -398,7 +398,7 @@ app.post('/admin/raw', async (req, res) => {
 		res.redirect(zoj.utils.makeUrl(['admin', 'raw']));
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -413,7 +413,7 @@ app.get('/admin/upgrade', async (req, res) => {
 		res.render('admin_upgrade', {});
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
@@ -435,7 +435,7 @@ app.post('/admin/upgrade', async (req, res) => {
 		res.redirect('/');
 	} catch (e) {
 		zoj.error(e);
-		res.render('error', {
+		res.render('admin_error', {
 			err: e
 		});
 	}
