@@ -222,6 +222,7 @@ class Problem extends Model {
 			await p7zip.extract(path, dir);
 			await fs.moveAsync(path, dir + '.zip', { overwrite: true });
 		});
+		await this.updateTestdataHash();
 		await this.updateTestdataConfig();
 	}
 
@@ -233,6 +234,7 @@ class Problem extends Model {
 			await fs.moveAsync(filepath, path.join(dir, filename), { overwrite: true });
 			await fs.removeAsync(dir + '.zip');
 		});
+		await this.updateTestdataHash();
 		await this.updateTestdataConfig();
 	}
 
@@ -243,6 +245,7 @@ class Problem extends Model {
 			await fs.removeAsync(path.join(dir, filename));
 			await fs.removeAsync(dir + '.zip');
 		});
+		await this.updateTestdataHash();
 		await this.updateTestdataConfig();
 	}
 
@@ -311,6 +314,7 @@ class Problem extends Model {
 			throw new ErrorMessage('File update error');
 		}
 
+		await this.updateTestdataHash();
 		await this.save();
 		await this.updateTestdataConfig();
 	}
