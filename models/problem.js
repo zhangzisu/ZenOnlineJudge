@@ -174,7 +174,13 @@ class Problem extends Model {
 						}
 					}
 				}
-
+				cases.sort((a, b) => {
+					if (a.input.length < b.input.length) return -1;
+					if (a.input.length > b.input.length) return 1;
+					if (a.input < b.input) return -1;
+					if (a.input > b.input) return 1;
+					return 0;
+				});
 				let subtask = Object();
 				subtask.type = 'sum';
 				subtask.score = 100;
