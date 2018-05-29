@@ -1,4 +1,4 @@
-const version = '11.0.0';
+const version = '14.0.0';
 
 var addUrlParam = function (url, key, val) {
 	url = url.split('#')[0];
