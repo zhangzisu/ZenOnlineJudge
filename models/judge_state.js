@@ -85,9 +85,7 @@ class JudgeState extends Model {
 		await this.loadRelationships();
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
-		if (this.type === 0) {
-			return await user.haveAccess('others_submission');
-		}
+		return await user.haveAccess('others_submission');
 	}
 
 	async isAllowedSeeCodeBy(user) {
@@ -101,10 +99,8 @@ class JudgeState extends Model {
 		await this.loadRelationships();
 		if (user.id === this.problem.user_id) return true;
 		await this.problem.loadRelationships();
-		if (this.type === 0) {
-			if (await this.problem.isAllowedUseBy(user)) return true;
-			return await user.haveAccess('others_submission');
-		}
+		if (await this.problem.isAllowedUseBy(user)) return true;
+		return await user.haveAccess('others_submission');
 	}
 
 	async isAllowedSeeCaseBy(user) {
