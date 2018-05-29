@@ -95,8 +95,7 @@ function initWebSocket(id) {
 			});
 		})
 		.fail(function () {
-			Notificate('Network error!');
-			$('#wsstatus').text('Error');
+			$('#wsstatus').text('Network Error');
 			$('#wsstatus').css('color', '#c72124');
 		});
 }
