@@ -276,9 +276,8 @@ app.post('/blog/:id/edit', async (req, res) => {
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 		post.title = req.body.title;
 		post.content = req.body.content;
-		post.problem_id = parseInt(req.body.problem_id);
+		post.problem_id = req.body.problem_id;
 		post.from = req.body.from;
-		if (isNaN(post.problem_id)) post.problem_id = 0;
 
 		// Save the post first, to have the `id` allocated
 		await post.save();
