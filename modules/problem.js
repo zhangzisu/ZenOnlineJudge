@@ -390,7 +390,7 @@ app.post('/problem/:id/import', async (req, res) => {
 			let first = true;
 			for (let i = 1; i < str.length; i++) {
 				let x = str[i];
-				problem.content = problem.content + (first ? "\\\\(" : "\\\\)") + x;
+				problem.content = problem.content + (first ? '\\\\(' : '\\\\)') + x;
 				first = !first;
 			}
 			// No datainfo, let zoj automatic generate it.
