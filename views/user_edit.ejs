@@ -56,6 +56,7 @@
           <input type="password" placeholder="Repeat the Password" id="password2">
         </div>
       </div>
+      <% if(groupAccess) { %>
       <label style="margin-top: 15px; ">Groups</label>
       <select class="ui fluid search dropdown" multiple="" id="groups" name="groups">
         <% for (let group of edited_user.groups) { %>
@@ -69,6 +70,7 @@
           </a>
         <% } %>
       </div>
+      <% } %>
       <div style="text-align: center; ">
         <button type="submit" class="ui button">Modify</button>
         <a href="<%= zoj.utils.makeUrl(['user', edited_user.id]) %>" class="ui blue button">Return to Personal Information</a>

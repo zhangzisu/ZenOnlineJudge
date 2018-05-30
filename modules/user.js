@@ -151,7 +151,8 @@ app.get('/user/:id/edit', async (req, res) => {
 
 		res.render('user_edit', {
 			edited_user: user,
-			error_info: null
+			error_info: null,
+			groupAccess: await res.locals.user.haveAccess('user_edit')
 		});
 	} catch (e) {
 		zoj.error(e);
