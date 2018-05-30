@@ -384,7 +384,15 @@ app.post('/problem/:id/import', async (req, res) => {
 			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 			problem.title = json.obj.title;
 			// SYZOJ's problem format is toxic
-			problem.content = `# Description\n\n${json.obj.description}\n\n# Input Format\n\n${json.obj.input_format}\n\n# Output Format\n\n${json.obj.output_format}\n\n# Example\n\n${json.obj.example}\n\n# Limit and hint\n\n${json.obj.limit_and_hint}\n\n`;
+			let str = `# Description\n\n${json.obj.description}\n\n# Input Format\n\n${json.obj.input_format}\n\n# Output Format\n\n${json.obj.output_format}\n\n# Example\n\n${json.obj.example}\n\n# Limit and hint\n\n${json.obj.limit_and_hint}\n\n`;
+			str = str.split('$');
+			problem.content = str[0];
+			let first = true;
+			for (let i = 1; i < str.length; i++) {
+				let x = str[i];
+				problem.content = problem.content + (first ? "\\\\(" : "\\\\)") + x;
+				first = !first;
+			}
 			// No datainfo, let zoj automatic generate it.
 			await problem.save();
 
