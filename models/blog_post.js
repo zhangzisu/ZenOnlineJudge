@@ -19,7 +19,7 @@ let model = db.define('blog_post',
 		// The id of the user who whote this post
 		from: { type: Sequelize.STRING(50) },
 		// The source of the problem
-		problem_id: { type: Sequelize.INTEGER },
+		problem_id: { type: Sequelize.STRING(50) },
 		// The id of the problem
 
 		title: { type: Sequelize.STRING(80) },
@@ -30,12 +30,7 @@ let model = db.define('blog_post',
 		timestamps: false,
 		tableName: 'blog_post',
 		indexes: [
-			{
-				fields: ['problem_id'],
-			},
-			{
-				fields: ['user_id'],
-			}
+			{ fields: ['user_id'], }
 		]
 	}
 );
@@ -56,7 +51,6 @@ class BlogPost extends Model {
 
 	async loadRelationships() {
 		this.user = await User.fromID(this.user_id);
-		this.problem = await Problem.fromID(this.problem_id);
 	}
 
 	async isAllowedEditBy(user) {
