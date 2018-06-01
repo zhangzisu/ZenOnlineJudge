@@ -1,6 +1,6 @@
 <% include util %>
 <!DOCTYPE html>
-<html lang="zh-CN" <% if(user && user.theme == 'dark'){ %> style="filter: invert(1);background: black;" <% } %>>
+<html lang="en-US" <% if(user && user.theme == 'dark'){ %> style="filter: invert(1);background: black;" <% } %>>
 <head data-csrf-token="<%= req.csrfToken() %>">
     <meta charset="utf-8">
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
@@ -64,10 +64,10 @@
               </a>
                 <% } else { %>
                 <div class="item">
-                    <a class="ui button" style="margin-right: 0.5em; " href="<%= zoj.utils.makeUrl(['login'], { url: req.originalUrl }) %>">
+                    <a class="ui button" style="margin-right: 0.5em; " href="<%= zoj.utils.makeUrl(['login']) %>">
                         Login
                     </a>
-                    <a class="ui primary button" href="<%= zoj.utils.makeUrl(['sign_up'], { url: req.originalUrl }) %>">
+                    <a class="ui primary button" href="<%= zoj.utils.makeUrl(['sign_up']) %>">
                         Register
                     </a>
                 </div>

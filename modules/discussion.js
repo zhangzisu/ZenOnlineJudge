@@ -32,6 +32,7 @@ app.get('/problem/:pid/discussion', async (req, res) => {
 		let pid = parseInt(req.params.pid);
 		let problem = await Problem.fromID(pid);
 		if (!problem) throw new ErrorMessage('No such problem.');
+		await problem.loadRelationships();
 		if (!await problem.isAllowedUseBy(res.locals.user)) {
 			throw new ErrorMessage('You do not have permission to do this.');
 		}
