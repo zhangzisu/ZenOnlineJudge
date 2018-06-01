@@ -390,7 +390,7 @@ app.post('/problem/:id/import', async (req, res) => {
 			let first = true;
 			for (let i = 1; i < str.length; i++) {
 				let x = str[i];
-				problem.content = problem.content + (first ? "\\\\(" : "\\\\)") + x;
+				problem.content = problem.content + (first ? '\\\\(' : '\\\\)') + x;
 				first = !first;
 			}
 			// No datainfo, let zoj automatic generate it.
@@ -873,7 +873,7 @@ app.get('/problem/:id/statistics/:type', async (req, res) => {
 		let paginate = zoj.utils.paginate(count, req.query.page, zoj.config.page.problem_statistics);
 		let statistics = await problem.getStatistics(req.params.type, paginate);
 		for (let judge of statistics.judge_state) {
-			judge.allowedSeeCode = judge.isAllowedSeeCodeBy(res.locals.user);
+			judge.allowedSeeCode = await judge.isAllowedSeeCodeBy(res.locals.user);
 		}
 
 		await statistics.judge_state.forEachAsync(async x => await x.loadRelationships());
