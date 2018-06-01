@@ -386,7 +386,7 @@ app.get('/blogs/export/:id', async (req, res) => {
 					post.problem_id,
 					post.title,
 					zoj.utils.formatDate(post.time),
-					post.tags.join(','),
+					post.tags.map((x) => { x.name; }).join(','),
 					zoj.config.hostname + zoj.utils.makeUrl(['blog', post.id])
 				]
 			);
