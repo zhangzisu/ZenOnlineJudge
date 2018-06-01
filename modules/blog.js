@@ -376,8 +376,9 @@ app.get('/blogs/export/:id', async (req, res) => {
 			['Blog ID', 'User', 'From', 'Problem ID', 'Problem Title', 'Time', 'Tags', 'Link']
 		];
 		for (let post of posts) {
-			post.tags = await post.getTags();
 			await post.loadRelationships();
+			post.tags = await post.getTags();
+
 			table.push(
 				[
 					post.id,
@@ -386,7 +387,7 @@ app.get('/blogs/export/:id', async (req, res) => {
 					post.problem_id,
 					post.title,
 					zoj.utils.formatDate(post.time),
-					post.tags.map((x) => { x.name; }).join(','),
+					post.tags.map((x) => { return x.name; }).join(','),
 					zoj.config.hostname + zoj.utils.makeUrl(['blog', post.id])
 				]
 			);
