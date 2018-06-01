@@ -14,6 +14,9 @@
         <span class="ui label">Author:
             <a user href="<%= zoj.utils.makeUrl(['user', post.user_id]) %>"><%= post.user.username %></a>
         </span>
+        <span class="ui label">Time:
+            <a><%= zoj.utils.formatDate(post.time) %></a>
+        </span>
     </div>
 </div>
 <div class="ui grid">
