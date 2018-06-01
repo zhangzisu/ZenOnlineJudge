@@ -89,9 +89,14 @@ app.get('/contest/:id/export', async (req, res) => {
 		let problems = await contest.problems.mapAsync(async x => await Problem.fromID(x.id));
 		if (problems.length < 1) throw new ErrorMessage('No problems in this contest.');
 
-		let csv = 'User,';
-		for (let p of problems) csv = csv + `${p.id}.${p.title},time estimated,`;
-		csv = csv + 'Total,\r\n';
+		let table = [];
+		let title = ['User'];
+		for (let p of problems) {
+			title.push(`${p.id}.${p.title}`);
+			title.push('time estimated');
+		}
+		title.push('Total');
+		table.push(title);
 
 		let players_id = [];
 		for (let i = 1; i <= contest.ranklist.ranklist.player_num; i++) players_id.push(contest.ranklist.ranklist[i]);
@@ -116,32 +121,33 @@ app.get('/contest/:id/export', async (req, res) => {
 		};
 
 		for (let obj of ranklist) {
-			csv = csv + `${obj.user.username},`;
+			let row = [`${obj.user.username}`];
 			for (let p of problems) {
-				let report;
 				if (obj.player.score_details[p.id]) {
 					let detail = obj.player.score_details[p.id];
-					if(detail.self){
-						report =
-						`${safeRead(detail.score)}/${safeRead(detail.self.score)},` +
-						`${safeRead(detail.self.time)} min,`;
-					}else{
-						report = `${safeRead(detail.score)},unset,`;
+					if (detail.self) {
+						row.push(`${safeRead(detail.score)}/${safeRead(detail.self.score)}`);
+						row.push(`${safeRead(detail.self.time)} min`);
+					} else {
+						row.push(`${safeRead(detail.score)}`);
+						row.push('unset');
 					}
 				} else {
-					report = 'unsubmitted,unsubmitted,';
+					row.push('unsumbitted');
+					row.push('unsumbitted');
 				}
-				csv = csv + report;
 			}
-			csv = csv + `${obj.player.score},\r\n`;
+			row.push(`${obj.player.score}`);
+			table.push(row);
 		}
 
+		let xlsx = require('node-xlsx');
 		let tmp = require('tmp-promise');
 		let tmpFile = await tmp.file();
+		let buffer = xlsx.build([{ name: `${contest.name}`, data: table }]);
 		let fs = require('bluebird').promisifyAll(require('fs'));
-		await fs.writeFileAsync(tmpFile.path, csv);
-
-		res.download(tmpFile.path, `contest_${contest_id}.csv`);
+		await fs.writeFileAsync(tmpFile.path, buffer);
+		res.download(tmpFile.path, `contest_${contest_id}.xlsx`);
 	} catch (e) {
 		zoj.error(e);
 		res.render('error', {
