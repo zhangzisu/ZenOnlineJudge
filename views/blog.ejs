@@ -58,7 +58,7 @@ if (typeof tags !== 'undefined') tagIDs = tags.map(x => x.id);
 			});
 			});
 			</script>
-			<label>Only view your blogs</label>
+			<label>Master View</label>
 		</div>
 		<% } %>
         <div class="ui toggle checkbox" id="show_tag">
@@ -96,7 +96,12 @@ if (typeof tags !== 'undefined') tagIDs = tags.map(x => x.id);
             <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['blogs', 'tag', 0, 'edit']) %>" class="ui labeled icon mini green button"><i class="plus icon"></i> Add Tags</a>
           <% } %>
           <div style="margin-left: 10px; " class="ui mini buttons">
-            <a class="ui labeled icon mini dropdown button" href="<%= zoj.utils.makeUrl(['blog', 0, 'edit']) %>"><i class="write icon"></i>New Post</a>
+            <a class="ui labeled icon mini button" href="<%= zoj.utils.makeUrl(['blog', 0, 'edit']) %>"><i class="write icon"></i>New Post</a>
+          </div>
+          <div style="margin-left: 10px; " class="ui mini buttons">
+             <% if(enableExport) { %>
+               <a class="ui labeled icon mini red button" href="<%= exportURL %>"><i class="write icon"></i>Export</a>
+              <% } %>
           </div>
         </div>
       </div>

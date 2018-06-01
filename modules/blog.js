@@ -30,9 +30,11 @@ app.get('/blogs', async (req, res) => {
 		});
 
 		res.render('blog', {
-			allowedManageTag: res.locals.user.haveAccess('manage_blog_tag'),
+			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
 			posts: posts,
-			paginate: paginate
+			paginate: paginate,
+			enableExport: await res.locals.user.haveAccess('blog_export'),
+			exportURL: zoj.utils.makeUrl(['blogs', 'export', 0])
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -71,9 +73,11 @@ app.get('/blogs/user/:id', async (req, res) => {
 		});
 
 		res.render('blog', {
-			allowedManageTag: res.locals.user.haveAccess('manage_blog_tag'),
+			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
 			posts: posts,
-			paginate: paginate
+			paginate: paginate,
+			enableExport: await res.locals.user.haveAccess('blog_export'),
+			exportURL: zoj.utils.makeUrl(['blogs', 'export', user.id])
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -124,9 +128,10 @@ app.get('/blogs/search', async (req, res) => {
 		});
 
 		res.render('blog', {
-			allowedManageTag: res.locals.user.haveAccess('manage_blog_tag'),
+			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
 			posts: posts,
-			paginate: paginate
+			paginate: paginate,
+			enableExport: false
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -177,10 +182,11 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 		});
 
 		res.render('blog', {
-			allowedManageTag: res.locals.user.haveAccess('manage_blog_tag'),
+			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
 			posts: posts,
 			tags: tags,
-			paginate: paginate
+			paginate: paginate,
+			enableExport: false
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -346,6 +352,52 @@ app.post('/blog/:id/delete', async (req, res) => {
 		await post.delete();
 
 		res.redirect(zoj.utils.makeUrl(['blogs']));
+	} catch (e) {
+		zoj.log(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
+app.get('/blogs/export/:id', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!await res.locals.user.haveAccess('blog_export'))
+			throw new ErrorMessage('Access denied');
+
+		let id = parseInt(req.params.id) || 0;
+
+		let where = {};
+		let user = await User.fromID(id);
+		if (user) where.user_id = user.id;
+		let posts = await BlogPost.query(null, where, [['id', 'desc']]);
+		let table = [
+			['Blog ID', 'User', 'From', 'Problem ID', 'Problem Title', 'Time', 'Tags', 'Link']
+		];
+		for (let post of posts) {
+			post.tags = await post.getTags();
+			await post.loadRelationships();
+			table.push(
+				[
+					post.id,
+					post.user.username,
+					post.from,
+					post.problem_id,
+					post.title,
+					zoj.utils.formatDate(post.time),
+					post.tags.join(','),
+					zoj.config.hostname + zoj.utils.makeUrl(['blog', post.id])
+				]
+			);
+		}
+		let xlsx = require('node-xlsx');
+		let tmp = require('tmp-promise');
+		let tmpFile = await tmp.file();
+		let buffer = xlsx.build([{ name: `Blog_${id}`, data: table }]);
+		let fs = require('fs');
+		fs.writeFileSync(tmpFile.path, buffer);
+		res.download(tmpFile.path, `blog_${id}.xlsx`);
 	} catch (e) {
 		zoj.log(e);
 		res.render('error', {
