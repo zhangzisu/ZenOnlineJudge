@@ -46,6 +46,7 @@
 		"node-xlsx": "^0.12.0",
 		"nodemailer": "^4.6.4",
 		"os": "^0.1.1",
+		"randomstring": "^1.1.5",
 		"request": "^2.85.0",
 		"request-promise": "^4.1.1",
 		"sequelize": "^4.37.7",

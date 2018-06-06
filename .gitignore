@@ -57,3 +57,7 @@ log.txt
 
 # Autogen sh
 *.sh
+
+# pastebin
+static/pastebin/*
+!static/pastebin/.gitkeep
