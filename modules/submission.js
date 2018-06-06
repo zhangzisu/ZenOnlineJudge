@@ -83,7 +83,7 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 				judge_state.problem_id = problems_id.indexOf(judge_state.problem_id) + 1;
 				judge_state.problem.title = zoj.utils.removeTitleTag(judge_state.problem.title);
 
-				if (contest.type === 'noi' && !contest.ended && !await judge_state.problem.isAllowedEditBy(res.locals.user)) {
+				if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge_state.problem.isAllowedEditBy(res.locals.user)) {
 					if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge_state.status)) {
 						judge_state.status = 'Submitted';
 					}
@@ -141,7 +141,7 @@ app.get('/submission/:id', async (req, res) => {
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
 			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 
-			if (contest.type === 'noi' && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
+			if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge.status)) {
 					judge.status = 'Submitted';
 				}
@@ -191,7 +191,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
 			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 
-			if (contest.type === 'noi' && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
+			if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge.status)) {
 					judge.status = 'Submitted';
 				}

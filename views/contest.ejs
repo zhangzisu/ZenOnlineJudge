@@ -99,9 +99,7 @@ let enableMath = 1;
                   <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i, status: 'Accepted' }) %>"><%= problem.statistics.accepted %></a>
                   /
                     <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i, min_score: 1 }) %>"><%= problem.statistics.partially %></a>
-                    <% if (contest.type === 'noi' || contest.type === 'ioi') { %>
                     /
-                  <% } %>
                   <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i }) %>"><%= problem.statistics.attempt %></a>
                   </td>
                 <% } %>

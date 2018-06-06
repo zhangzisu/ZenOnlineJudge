@@ -8,14 +8,6 @@ let Problem = zoj.model('problem');
 let JudgeState = zoj.model('judge_state');
 let User = zoj.model('user');
 
-function hasRecord(player, id) {
-	if (player && id) {
-		return player.score_details[id] &&
-			(player.score_details[id].score || player.score_details[id].accepted);
-	}
-	return false;
-}
-
 app.get('/contests', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
@@ -125,9 +117,10 @@ app.get('/contest/:id/export', async (req, res) => {
 			for (let p of problems) {
 				if (obj.player.score_details[p.id]) {
 					let detail = obj.player.score_details[p.id];
-					if (detail.self) {
-						row.push(`${safeRead(detail.score)}/${safeRead(detail.self.score)}`);
-						row.push(`${safeRead(detail.self.time)} min`);
+					let data = obj.player.self_details[p.id];
+					if (data) {
+						row.push(`${safeRead(detail.score)}/${safeRead(data.score)}`);
+						row.push(`${safeRead(data.time)} min`);
 					} else {
 						row.push(`${safeRead(detail.score)}`);
 						row.push('unset');
@@ -258,33 +251,15 @@ app.get('/contest/:id', async (req, res) => {
 			judge_id: null,
 			statistics: null
 		}));
+
+		let func = require(`../types/contest/${contest.type}`).getStatus;
+
 		if (player) {
 			for (let problem of problems) {
-				if (contest.type === 'noi') {
-					if (hasRecord(player, problem.problem.id)) {
-						let judge_state = await JudgeState.fromID(player.score_details[problem.problem.id].judge_id);
-						problem.status = judge_state.status;
-						if (!contest.ended && !await problem.problem.isAllowedEditBy(res.locals.user) && !['Compile Error', 'Waiting', 'Compiling'].includes(problem.status)) {
-							problem.status = 'Submitted';
-						}
-						problem.judge_id = player.score_details[problem.problem.id].judge_id;
-					}
-				} else if (contest.type === 'ioi') {
-					if (hasRecord(player, problem.problem.id)) {
-						let judge_state = await JudgeState.fromID(player.score_details[problem.problem.id].judge_id);
-						problem.status = judge_state.status;
-						problem.judge_id = player.score_details[problem.problem.id].judge_id;
-					}
-				} else if (contest.type === 'acm') {
-					if (hasRecord(player, problem.problem.id)) {
-						problem.status = {
-							accepted: player.score_details[problem.problem.id].accepted,
-							unacceptedCount: player.score_details[problem.problem.id].unacceptedCount
-						};
-						problem.judge_id = player.score_details[problem.problem.id].judge_id;
-					} else {
-						problem.status = null;
-					}
+				let result = await func(player, problem.problem.id);
+				if(result){
+					problem.status = result.status;
+					problem.judge_id = result.judge_id;
 				}
 			}
 		}
@@ -295,29 +270,11 @@ app.get('/contest/:id', async (req, res) => {
 
 			await contest.loadRelationships();
 			let players = await contest.ranklist.getPlayers();
+
+			let calc = require(`../types/contest/${contest.type}`).getStatistics;
+
 			for (let problem of problems) {
-				problem.statistics = {
-					attempt: 0,
-					accepted: 0
-				};
-
-				if (contest.type === 'ioi' || contest.type === 'noi') {
-					problem.statistics.partially = 0;
-				}
-
-				for (let player of players) {
-					if (hasRecord(player, problem.problem.id)) {
-						problem.statistics.attempt++;
-						if ((contest.type === 'acm' && player.score_details[problem.problem.id].accepted) ||
-							((contest.type === 'noi' || contest.type === 'ioi') && player.score_details[problem.problem.id].score === 100)) {
-							problem.statistics.accepted++;
-						}
-
-						if ((contest.type === 'noi' || contest.type === 'ioi') && player.score_details[problem.problem.id].score > 0) {
-							problem.statistics.partially++;
-						}
-					}
-				}
+				problem.statistics = await calc(players, problem.problem.id);
 			}
 		}
 
@@ -368,8 +325,7 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 		res.render('contest_ranklist', {
 			contest: contest,
 			ranklist: ranklist,
-			problems: problems,
-			hasRecord: hasRecord
+			problems: problems
 		});
 	} catch (e) {
 		zoj.error(e);
@@ -432,7 +388,7 @@ app.get('/contest/:id/submissions', async (req, res) => {
 			obj.problem_id = problems_id.indexOf(obj.problem_id) + 1;
 			obj.problem.title = zoj.utils.removeTitleTag(obj.problem.title);
 
-			if (contest.type === 'noi' && !contest.ended && !await obj.problem.isAllowedEditBy(res.locals.user)) {
+			if (!contest.ended && !await obj.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(obj.status)) {
 					obj.status = 'Submitted';
 				}

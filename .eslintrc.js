@@ -28,7 +28,6 @@ module.exports = {
         "no-console": "off",
         "no-undef": "off",
         "no-dupe-keys": "off",
-        "no-redeclare": "off",
-        "require-await": "warn"
+        "no-redeclare": "off"
     }
 };

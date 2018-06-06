@@ -51,8 +51,8 @@
               <tr>
                 <% let p = problem.id; i++; %>
                 <td><a href="<%= zoj.utils.makeUrl(['contest', contest.id, i]) %>"><%= zoj.utils.removeTitleTag(problem.title) %></a></td>
-                <td><div class="ui input"><input name="s_<%=p%>" type="text" value="<%=player.score_details[p].self.score%>"></div></td>
-                <td><div class="ui input"><input name="t_<%=p%>" type="text" value="<%=player.score_details[p].self.time%>"></div></td>
+                <td><div class="ui input"><input name="s_<%=p%>" type="text" value="<%=player.self_details[p].score%>"></div></td>
+                <td><div class="ui input"><input name="t_<%=p%>" type="text" value="<%=player.self_details[p].time%>"></div></td>
               </tr>
             <% } %>
             </tbody>
