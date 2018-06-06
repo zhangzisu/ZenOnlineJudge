@@ -150,7 +150,7 @@ app.get('/api/forget_confirm', async (req, res) => {
 				subject: 'forget'
 			});
 		} catch (e) {
-			throw new ErrorMessage('Token incorrect.');
+			throw new ErrorMessage(res.locals.language, 'Token incorrect.');
 		}
 		res.render('forget_confirm', {
 			token: req.query.token
@@ -204,20 +204,20 @@ app.get('/api/sign_up_confirm', async (req, res) => {
 				subject: 'register'
 			});
 		} catch (e) {
-			throw new ErrorMessage('Invalid registration verification link: ' + e.toString());
+			throw new ErrorMessage(res.locals.language, 'Invalid registration verification link: ' + e.toString());
 		}
 
 		let user = await User.fromName(obj.username);
-		if (user) throw new ErrorMessage('Username has been used.');
+		if (user) throw new ErrorMessage(res.locals.language, 'Username has been used.');
 		user = await User.findOne({
 			where: {
 				email: obj.email
 			}
 		});
-		if (user) throw new ErrorMessage('E-mail address has been used.');
+		if (user) throw new ErrorMessage(res.locals.language, 'E-mail address has been used.');
 
-		if (!(obj.email = obj.email.trim())) throw new ErrorMessage('E-mail address cannot be empty.');
-		if (!zoj.utils.isValidUsername(obj.username)) throw new ErrorMessage('User name is not valid.');
+		if (!(obj.email = obj.email.trim())) throw new ErrorMessage(res.locals.language, 'E-mail address cannot be empty.');
+		if (!zoj.utils.isValidUsername(obj.username)) throw new ErrorMessage(res.locals.language, 'User name is not valid.');
 
 		user = await User.create({
 			username: obj.username,

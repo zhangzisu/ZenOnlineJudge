@@ -65,6 +65,7 @@ testFile('.').then(async () => {
 	let result = await new Promise(async (resolve) => {
 		let errors = [];
 		for (let file of files) {
+			console.log(file);
 			if (file.endsWith('.ejs')) {
 				let text = fs.readFileSync(file);
 				let result = ejsLint(text.toString());

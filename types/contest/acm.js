@@ -2,7 +2,8 @@
 
 let config = {
 	allowedSeeCase: false,
-	hideResult: false
+	hideResult: false,
+	noEstimate: true
 };
 
 async function calcScore(player, judge_state) {

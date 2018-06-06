@@ -51,7 +51,7 @@ app.get('/blogs/user/:id', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
 		if (res.locals.user && id !== res.locals.user.id) req.cookies['selfonly_mode'] = '0';
-		if (!user) throw new ErrorMessage('No such user.');
+		if (!user) throw new ErrorMessage(res.locals.language, 'No such user.');
 		let where = { user_id: user.id };
 
 		if (user.id !== res.locals.user.id && (!await res.locals.user.haveAccess('others_blogs'))) {
@@ -202,10 +202,10 @@ app.get('/blog/:id', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
-		if (!post) throw new ErrorMessage('No such post.');
+		if (!post) throw new ErrorMessage(res.locals.language, 'No such post.');
 
 		if (!await post.isAllowedSeeBy(res.locals.user)) {
-			throw new ErrorMessage('You do not have permission to do this.');
+			throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
 		post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
@@ -213,7 +213,7 @@ app.get('/blog/:id', async (req, res) => {
 		if (post.is_public || post.allowedEdit) {
 			post.content = await zoj.utils.markdown(post.content);
 		} else {
-			throw new ErrorMessage('You do not have permission to do this.');
+			throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
 		post.tags = await post.getTags();
@@ -238,14 +238,14 @@ app.get('/blog/:id/edit', async (req, res) => {
 		let post = await BlogPost.fromID(id);
 
 		if (!post) {
-			if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+			if (!res.locals.user) throw new ErrorMessage(res.locals.language, 'Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
 			post = await BlogPost.create();
 			post.id = id;
 			post.allowedEdit = true;
 			post.tags = [];
 			post.new = true;
 		} else {
-			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 			post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
 			post.tags = await post.getTags();
 		}
@@ -268,18 +268,18 @@ app.post('/blog/:id/edit', async (req, res) => {
 		let id = parseInt(req.params.id) || 0;
 		let post = await BlogPost.fromID(id);
 		if (!post) {
-			if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
+			if (!res.locals.user) throw new ErrorMessage(res.locals.language, 'Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
 
 			post = await BlogPost.create();
 			post.user_id = res.locals.user.id;
 
 			post.time = zoj.utils.getCurrentDate();
 		} else {
-			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
-			if (!await post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+			if (!await post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
-		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
+		if (!req.body.title.trim()) throw new ErrorMessage(res.locals.language, 'Title cannot be empty.');
 		post.title = req.body.title;
 		post.content = req.body.content;
 		post.problem_id = req.body.problem_id;
@@ -314,10 +314,10 @@ async function setPublic(req, res, is_public) {
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
-		if (!post) throw new ErrorMessage('No such post.');
+		if (!post) throw new ErrorMessage(res.locals.language, 'No such post.');
 
 		let allowedEdit = await post.isAllowedEditBy(res.locals.user);
-		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this.');
+		if (!allowedEdit) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		post.is_public = is_public;
 		await post.save();
@@ -345,9 +345,9 @@ app.post('/blog/:id/delete', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
-		if (!post) throw new ErrorMessage('No such post.');
+		if (!post) throw new ErrorMessage(res.locals.language, 'No such post.');
 
-		if (!post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		await post.delete();
 
@@ -364,7 +364,7 @@ app.get('/blogs/export/:id', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; }
 		if (!await res.locals.user.haveAccess('blog_export'))
-			throw new ErrorMessage('Access denied');
+			throw new ErrorMessage(res.locals.language, 'Access denied');
 
 		let id = parseInt(req.params.id) || 0;
 

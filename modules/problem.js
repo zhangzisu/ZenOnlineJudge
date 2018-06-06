@@ -148,12 +148,12 @@ app.get('/problem/:id', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 
 		await problem.loadRelationships();
 
 		if (!await problem.isAllowedUseBy(res.locals.user)) {
-			throw new ErrorMessage('You do not have permission to do this.');
+			throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
 		problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
@@ -183,10 +183,10 @@ app.get('/problem/:id/export/:token?', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 		let token = req.params.token || '';
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 		if (await problem.isAllowedEditBy(res.locals.user)) token = zoj.config.token;
-		if (token !== zoj.config.token) throw new ErrorMessage('You do not have permission to do this.');
+		if (token !== zoj.config.token) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		let obj = {
 			title: problem.title,
@@ -223,7 +223,7 @@ app.get('/problem/:id/edit', async (req, res) => {
 			await problem.loadRelationships();
 		} else {
 			await problem.loadRelationships();
-			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 			problem.allowedEdit = true;
 			problem.tags = await problem.getTags();
 		}
@@ -256,7 +256,7 @@ app.post('/problem/:id/edit', async (req, res) => {
 			if (await res.locals.user.haveAccess('problem_id')) {
 				let customID = parseInt(req.body.id);
 				if (customID) {
-					if (await Problem.fromID(customID)) throw new ErrorMessage('ID is used.');
+					if (await Problem.fromID(customID)) throw new ErrorMessage(res.locals.language, 'ID is used.');
 					problem.id = customID;
 				} else if (id) problem.id = id;
 			}
@@ -264,18 +264,18 @@ app.post('/problem/:id/edit', async (req, res) => {
 			problem.user_id = res.locals.user.id;
 			problem.publicizer_id = res.locals.user.id;
 		} else {
-			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 			if (await res.locals.user.haveAccess('problem_id')) {
 				let customID = parseInt(req.body.id);
 				if (customID && customID !== id) {
-					if (await Problem.fromID(customID)) throw new ErrorMessage('ID is used.');
+					if (await Problem.fromID(customID)) throw new ErrorMessage(res.locals.language, 'ID is used.');
 					await problem.changeID(customID);
 				}
 			}
 		}
 
-		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
+		if (!req.body.title.trim()) throw new ErrorMessage(res.locals.language, 'Title cannot be empty.');
 		problem.title = req.body.title;
 		problem.content = req.body.content;
 		problem.is_anonymous = (req.body.is_anonymous === 'on');
@@ -330,7 +330,7 @@ app.get('/problem/:id/import', async (req, res) => {
 			problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
-			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
 		problem.allowedManage = await problem.isAllowedEditBy(res.locals.user);
@@ -357,7 +357,7 @@ app.post('/problem/:id/import', async (req, res) => {
 
 			let customID = parseInt(req.body.id);
 			if (customID) {
-				if (await Problem.fromID(customID)) throw new ErrorMessage('ID is used.');
+				if (await Problem.fromID(customID)) throw new ErrorMessage(res.locals.language, 'ID is used.');
 				problem.id = customID;
 			} else if (id) problem.id = id;
 
@@ -365,7 +365,7 @@ app.post('/problem/:id/import', async (req, res) => {
 			problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
-			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
 		let request = require('request-promise');
@@ -379,9 +379,9 @@ app.post('/problem/:id/import', async (req, res) => {
 				json: true
 			});
 
-			if (!json.success) throw new ErrorMessage('Import failed.', null, json.error);
+			if (!json.success) throw new ErrorMessage(res.locals.language, 'Import failed.', null, json.error);
 
-			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
+			if (!json.obj.title.trim()) throw new ErrorMessage(res.locals.language, 'Title cannot be empty.');
 			problem.title = json.obj.title;
 			// SYZOJ's problem format is toxic
 			let str = `# Description\n\n${json.obj.description}\n\n# Input Format\n\n${json.obj.input_format}\n\n# Output Format\n\n${json.obj.output_format}\n\n# Example\n\n${json.obj.example}\n\n# Limit and hint\n\n${json.obj.limit_and_hint}\n\n`;
@@ -419,9 +419,9 @@ app.post('/problem/:id/import', async (req, res) => {
 				json: true
 			});
 
-			if (!json.success) throw new ErrorMessage('Import failed.', null, json.error);
+			if (!json.success) throw new ErrorMessage(res.locals.language, 'Import failed.', null, json.error);
 
-			if (!json.obj.title.trim()) throw new ErrorMessage('Title cannot be empty.');
+			if (!json.obj.title.trim()) throw new ErrorMessage(res.locals.language, 'Title cannot be empty.');
 			problem.title = json.obj.title;
 			problem.content = json.obj.content;
 			problem.datainfo = json.obj.datainfo;
@@ -445,7 +445,7 @@ app.post('/problem/:id/import', async (req, res) => {
 				zoj.error(e);
 			}
 		} else {
-			throw new ErrorMessage(`Do not support ${req.body.type}.`);
+			throw new ErrorMessage(res.locals.language, `Do not support ${req.body.type}.`);
 		}
 
 		res.redirect(zoj.utils.makeUrl(['problem', problem.id]));
@@ -472,7 +472,7 @@ app.get('/problem/:id/manualimport', async (req, res) => {
 			problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
-			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
 		problem.allowedManage = await problem.isAllowedEditBy(res.locals.user);
@@ -496,7 +496,7 @@ app.post('/problem/:id/manualimport', app.multer.fields([{ name: 'testdata', max
 		let problem = await Problem.fromID(id);
 		let obj = JSON.parse(req.body.config);
 
-		if (!obj.success) throw new ErrorMessage('Config file is invalid.');
+		if (!obj.success) throw new ErrorMessage(res.locals.language, 'Config file is invalid.');
 		obj = obj.obj;
 
 		if (!problem) {
@@ -504,7 +504,7 @@ app.post('/problem/:id/manualimport', app.multer.fields([{ name: 'testdata', max
 
 			let customID = parseInt(req.body.id);
 			if (customID) {
-				if (await Problem.fromID(customID)) throw new ErrorMessage('ID is used.');
+				if (await Problem.fromID(customID)) throw new ErrorMessage(res.locals.language, 'ID is used.');
 				problem.id = customID;
 			} else if (id) problem.id = id;
 
@@ -512,7 +512,7 @@ app.post('/problem/:id/manualimport', app.multer.fields([{ name: 'testdata', max
 			problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
-			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
 		problem.title = obj.title;
@@ -550,9 +550,9 @@ app.get('/problem/:id/manage', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
-		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		res.render('problem_manage', {
 			problem: problem
@@ -572,11 +572,11 @@ app.post('/problem/:id/manage', app.multer.fields([{ name: 'testdata', maxCount:
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 
 
-		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		await problem.updateTestdataConfigManually(JSON.parse(req.body.datainfo));
 
@@ -606,14 +606,14 @@ app.post('/problem/:id/submit', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
-		if (!zoj.config.languages[req.body.language]) throw new ErrorMessage('Permission denied.');
-		if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': zoj.utils.makeUrl(['problem', id]) }) });
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
+		if (!zoj.config.languages[req.body.language]) throw new ErrorMessage(res.locals.language, 'Permission denied.');
+		if (!res.locals.user) throw new ErrorMessage(res.locals.language, 'Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': zoj.utils.makeUrl(['problem', id]) }) });
 
 		let judge_state;
 
 		let code;
-		if (req.body.code.length > zoj.config.limit.submit_code) throw new ErrorMessage('Your code is too long.');
+		if (req.body.code.length > zoj.config.limit.submit_code) throw new ErrorMessage(res.locals.language, 'Your code is too long.');
 		code = req.body.code;
 
 		judge_state = await JudgeState.create({
@@ -628,18 +628,18 @@ app.post('/problem/:id/submit', async (req, res) => {
 		let contest_id = parseInt(req.query.contest_id);
 		if (contest_id) {
 			let contest = await Contest.fromID(contest_id);
-			if (!contest) throw new ErrorMessage('No such contest.');
-			if (!await contest.isRunning()) throw new ErrorMessage('Permission denied.');
+			if (!contest) throw new ErrorMessage(res.locals.language, 'No such contest.');
+			if (!await contest.isRunning()) throw new ErrorMessage(res.locals.language, 'Permission denied.');
 			let problems_id = await contest.getProblems();
 			problems_id = await problems_id.mapAsync(x => (x.id));
-			if (!problems_id.includes(id)) throw new ErrorMessage('No such problem.');
+			if (!problems_id.includes(id)) throw new ErrorMessage(res.locals.language, 'No such problem.');
 
 			judge_state.type = 1;
 			judge_state.type_info = contest_id;
 
 			await judge_state.save();
 		} else {
-			if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 			judge_state.type = 0;
 			await judge_state.save();
 		}
@@ -667,10 +667,10 @@ app.post('/problem/:id/delete', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 
-		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		await problem.delete();
 
@@ -690,10 +690,10 @@ app.get('/problem/:id/testdata', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 
-		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		let testdata = await problem.listTestdata();
 
@@ -719,10 +719,10 @@ app.post('/problem/:id/testdata/upload', app.multer.array('file'), async (req, r
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 
-		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		if (req.files) {
 			for (let file of req.files) {
@@ -746,10 +746,10 @@ app.post('/problem/:id/testdata/delete/:filename', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 
-		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		await problem.deleteTestdataSingleFile(req.params.filename);
 
@@ -769,10 +769,10 @@ app.get('/problem/:id/testdata/download/:filename?', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 
-		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		if (!req.params.filename) {
 			if (!await zoj.utils.isFile(problem.getTestdataPath() + '.zip')) {
@@ -782,7 +782,7 @@ app.get('/problem/:id/testdata/download/:filename?', async (req, res) => {
 
 		let path = require('path');
 		let filename = req.params.filename ? path.join(problem.getTestdataPath(), req.params.filename) : (problem.getTestdataPath() + '.zip');
-		if (!await zoj.utils.isFile(filename)) throw new ErrorMessage('No such file.');
+		if (!await zoj.utils.isFile(filename)) throw new ErrorMessage(res.locals.language, 'No such file.');
 		res.download(filename, path.basename(filename));
 	} catch (e) {
 		zoj.error(e);
@@ -797,11 +797,11 @@ app.get('/problem/:id/testdata/export/:token', async (req, res) => {
 	try {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		let token = req.params.token || '';
 		await problem.loadRelationships();
 		if (await problem.isAllowedEditBy(res.locals.user)) token = zoj.config.token;
-		if (token !== zoj.config.token) throw new ErrorMessage('You do not have permission to do this.');
+		if (token !== zoj.config.token) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		if (!await zoj.utils.isFile(problem.getTestdataPath() + '.zip')) {
 			await problem.makeTestdataZip();
@@ -809,7 +809,7 @@ app.get('/problem/:id/testdata/export/:token', async (req, res) => {
 
 		let path = require('path');
 		let filename = problem.getTestdataPath() + '.zip';
-		if (!await zoj.utils.isFile(filename)) throw new ErrorMessage('No such file.');
+		if (!await zoj.utils.isFile(filename)) throw new ErrorMessage(res.locals.language, 'No such file.');
 		res.download(filename, path.basename(filename));
 	} catch (e) {
 		zoj.error(e);
@@ -827,23 +827,23 @@ app.get('/problem/:id/download/additional_file', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 
 		let contest_id = parseInt(req.query.contest_id);
 
 		await problem.loadRelationships();
 		if (contest_id) {
 			let contest = await Contest.fromID(contest_id);
-			if (!contest) throw new ErrorMessage('No such contest.');
-			if (!await contest.isRunning()) throw new ErrorMessage('Permission denied.');
+			if (!contest) throw new ErrorMessage(res.locals.language, 'No such contest.');
+			if (!await contest.isRunning()) throw new ErrorMessage(res.locals.language, 'Permission denied.');
 			let problems_id = await contest.getProblems();
 			problems_id = await problems_id.mapAsync(x => (x.id));
-			if (!problems_id.includes(id)) throw new ErrorMessage('No such problem.');
+			if (!problems_id.includes(id)) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		} else {
-			if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 		}
 
-		if (!problem.additional_file) throw new ErrorMessage('No such file.');
+		if (!problem.additional_file) throw new ErrorMessage(res.locals.language, 'No such file.');
 
 		res.download(problem.additional_file.getPath(), `additional_file_${id}.zip`);
 	} catch (e) {
@@ -862,13 +862,13 @@ app.get('/problem/:id/statistics/:type', async (req, res) => {
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
 
-		if (!problem) throw new ErrorMessage('No such problem.');
+		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
 		await problem.loadRelationships();
 
-		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await problem.isAllowedUseBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		let count = await problem.countStatistics(req.params.type);
-		if (count === null) throw new ErrorMessage('No results.');
+		if (count === null) throw new ErrorMessage(res.locals.language, 'No results.');
 
 		let paginate = zoj.utils.paginate(count, req.query.page, zoj.config.page.problem_statistics);
 		let statistics = await problem.getStatistics(req.params.type, paginate);

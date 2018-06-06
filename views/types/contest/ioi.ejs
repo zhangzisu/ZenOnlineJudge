@@ -61,7 +61,7 @@
               <% } else { %>
                 <td>
               <% } %>
-              <% if (!hasRecord(item.player, problem.id)) { %>
+              <% if (!item.player.score_details[problem.id]) { %>
                 </td>
               <% } else { %>
                   <a href="<%= zoj.utils.makeUrl(['submission', item.player.score_details[problem.id].judge_id]) %>">

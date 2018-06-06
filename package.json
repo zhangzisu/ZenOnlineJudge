@@ -36,6 +36,7 @@
 		"gravatar": "^1.5.2",
 		"jsdom": "^11.10.0",
 		"jsonwebtoken": "^8.2.1",
+		"locale": "^0.1.0",
 		"marked": "^0.3.19",
 		"moment": "^2.22.1",
 		"multer": "^1.2.0",

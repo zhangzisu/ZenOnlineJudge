@@ -66,7 +66,7 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 
 		for (let id of ids) {
 			let judge_state = await JudgeState.fromID(id);
-			if (!judge_state) throw new ErrorMessage('No such a submission.');
+			if (!judge_state) throw new ErrorMessage(res.locals.language, 'No such a submission.');
 
 			await judge_state.loadRelationships();
 
@@ -115,7 +115,7 @@ app.get('/submission/:id', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
-		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		let contest;
 		if (judge.type === 1) {
@@ -166,7 +166,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 	try {
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
-		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		let contest;
 		if (judge.type === 1) {
@@ -221,12 +221,12 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 		let judge = await JudgeState.fromID(id);
 
 
-		if (judge.pending && !await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('The submittion is judging.');
+		if (judge.pending && !await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage(res.locals.language, 'The submittion is judging.');
 
 		await judge.loadRelationships();
 
 		let allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
-		if (!allowedRejudge) throw new ErrorMessage('You do not have permission to do this.');
+		if (!allowedRejudge) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
 
 		await judge.rejudge();
 

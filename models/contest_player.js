@@ -74,14 +74,14 @@ class ContestPlayer extends Model {
 		await this.loadRelationships();
 		let type = this.contest.type;
 		let func = require(`../types/contest/${type}`).calcScore;
-		let result = await func(judge_state);
+		let result = await func(this, judge_state);
 		this.score_details = result.score_details;
 		this.score = result.score;
 		this.time_spent = result.time_spent;
 		await this.save();
 	}
 
-	updateSelfInfo(pid, selfscore, selftime) {
+	async updateSelfInfo(pid, selfscore, selftime) {
 		this.self_details[pid] = {
 			score: selfscore,
 			time: selftime

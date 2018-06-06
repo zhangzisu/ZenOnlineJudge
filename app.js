@@ -3,6 +3,8 @@
 let fs = require('fs');
 let clc = require('cli-color');
 let init = require('./first');
+let locale = require('locale');
+let supported = new locale.Locales(['en', 'en_US', 'ja']);
 
 global.firstRun = false;
 
@@ -146,6 +148,8 @@ global.zoj = {
 		app.use(Session(sessionConfig));
 
 		app.use((req, res, next) => {
+			let locales = new locale.Locales(req.headers['accept-language']);
+			res.locals.language = locales.best(supported);
 			let User = zoj.model('user');
 			if (req.session.user_id) {
 				User.fromID(req.session.user_id).then((user) => {
@@ -203,6 +207,7 @@ global.zoj = {
 			next();
 		});
 	},
+	i18n: require('./i18n'),
 	utils: require('./utility')
 };
 
