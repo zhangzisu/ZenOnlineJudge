@@ -19,13 +19,10 @@ app.get('/contests', async (req, res) => {
 		]);
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
-
-		let tmp = [];
-		for (var c of contests) {
-			await c.loadRelationships();
-			if (await c.isAllowedUseBy(res.locals.user)) tmp.push(c);
-		}
-		contests = tmp;
+		contests = await contests.filterAsync(async x => {
+			await x.loadRelationships();
+			return x.isAllowedUseBy(res.locals.user);
+		});
 
 		res.render('contests', {
 			contests: contests,
@@ -463,7 +460,6 @@ app.post('/contest/:id/estimate', async (req, res) => {
 			let scoreName = `s_${p.id}`;
 			let timeName = `t_${p.id}`;
 			if (req.body[scoreName] && req.body[timeName]) {
-				console.log(`${req.body[scoreName]}`);
 				await player.updateSelfInfo(p.id, req.body[scoreName], req.body[timeName]);
 			}
 		}

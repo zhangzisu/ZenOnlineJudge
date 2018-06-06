@@ -15,13 +15,10 @@ app.get('/problems', async (req, res) => {
 		let paginate = zoj.utils.paginate(await Problem.count({}), req.query.page, zoj.config.page.problem);
 		let problems = await Problem.query(paginate, {});
 
-
-		let tmp = [];
-		for (var p of problems) {
-			await p.loadRelationships();
-			if (await p.isAllowedUseBy(res.locals.user)) tmp.push(p);
-		}
-		problems = tmp;
+		problems = await problems.filterAsync(async x => {
+			await x.loadRelationships();
+			return x.isAllowedUseBy(res.locals.user);
+		});
 
 		await problems.forEachAsync(async problem => {
 			problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
@@ -61,12 +58,10 @@ app.get('/problems/search', async (req, res) => {
 		let paginate = zoj.utils.paginate(await Problem.count(where), req.query.page, zoj.config.page.problem);
 		let problems = await Problem.query(paginate, where, order);
 
-		let tmp = [];
-		for (var p of problems) {
-			await p.loadRelationships();
-			if (await p.isAllowedUseBy(res.locals.user)) tmp.push(p);
-		}
-		problems = tmp;
+		problems = await problems.filterAsync(async x => {
+			await x.loadRelationships();
+			return x.isAllowedUseBy(res.locals.user);
+		});
 
 		await problems.forEachAsync(async problem => {
 			problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
@@ -114,12 +109,10 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 		let paginate = zoj.utils.paginate(await Problem.count(sql), req.query.page, zoj.config.page.problem);
 		let problems = await Problem.query(sql + paginate.toSQL());
 
-		let tmp = [];
-		for (var p of problems) {
-			await p.loadRelationships();
-			if (await p.isAllowedUseBy(res.locals.user)) tmp.push(p);
-		}
-		problems = tmp;
+		problems = await problems.filterAsync(async x => {
+			await x.loadRelationships();
+			return x.isAllowedUseBy(res.locals.user);
+		});
 
 		await problems.forEachAsync(async problem => {
 			problem.allowedEdit = await problem.isAllowedEditBy(res.locals.user);
