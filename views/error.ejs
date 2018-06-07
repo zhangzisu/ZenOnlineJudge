@@ -3,7 +3,7 @@
 
 <%
 if (!(err instanceof ErrorMessage)) {
-  err = new ErrorMessage(res.locals.language, err.toString());
+  err = new ErrorMessage(err.toString());
 }
 %>
 <div class="ui negative icon message">

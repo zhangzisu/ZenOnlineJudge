@@ -31,10 +31,10 @@ app.get('/problem/:pid/discussion', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; }
 		let pid = parseInt(req.params.pid);
 		let problem = await Problem.fromID(pid);
-		if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
+		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
 		if (!await problem.isAllowedUseBy(res.locals.user)) {
-			throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+			throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		let where = { problem_id: pid };
@@ -61,7 +61,7 @@ app.get('/article/:id', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; }
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
-		if (!article) throw new ErrorMessage(res.locals.language, 'No such article.');
+		if (!article) throw new ErrorMessage('No such article.');
 
 		await article.loadRelationships();
 		article.allowedEdit = await article.isAllowedEditBy(res.locals.user);
@@ -84,7 +84,7 @@ app.get('/article/:id', async (req, res) => {
 		if (article.problem_id) {
 			problem = await Problem.fromID(article.problem_id);
 			if (!await problem.isAllowedUseBy(res.locals.user)) {
-				throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+				throw new ErrorMessage('You do not have permission to do this');
 			}
 		}
 
@@ -146,16 +146,16 @@ app.post('/article/:id/edit', async (req, res) => {
 
 			if (req.query.problem_id) {
 				let problem = await Problem.fromID(req.query.problem_id);
-				if (!problem) throw new ErrorMessage(res.locals.language, 'No such problem.');
+				if (!problem) throw new ErrorMessage('No such problem.');
 				article.problem_id = problem.id;
 			} else {
 				article.problem_id = null;
 			}
 		} else {
-			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
-		if (!req.body.title.trim()) throw new ErrorMessage(res.locals.language, 'Title cannot be empty');
+		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty');
 		article.title = req.body.title;
 		article.content = req.body.content;
 		article.update_time = time;
@@ -180,9 +180,9 @@ app.post('/article/:id/delete', async (req, res) => {
 		let article = await Article.fromID(id);
 
 		if (!article) {
-			throw new ErrorMessage(res.locals.language, 'No such article.');
+			throw new ErrorMessage('No such article.');
 		} else {
-			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		await article.destroy();
@@ -204,9 +204,9 @@ app.post('/article/:id/comment', async (req, res) => {
 		let article = await Article.fromID(id);
 
 		if (!article) {
-			throw new ErrorMessage(res.locals.language, 'No such article.');
+			throw new ErrorMessage('No such article.');
 		} else {
-			if (!await article.isAllowedCommentBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+			if (!await article.isAllowedCommentBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		let comment = await ArticleComment.create({
@@ -235,9 +235,9 @@ app.post('/article/:article_id/comment/:id/delete', async (req, res) => {
 		let comment = await ArticleComment.fromID(id);
 
 		if (!comment) {
-			throw new ErrorMessage(res.locals.language, 'No such comment');
+			throw new ErrorMessage('No such comment');
 		} else {
-			if (!await comment.isAllowedEditBy(res.locals.user)) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+			if (!await comment.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		await comment.destroy();

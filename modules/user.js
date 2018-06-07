@@ -15,7 +15,7 @@ app.get('/ranklist', async (req, res) => {
 		const sort = req.query.sort || zoj.config.sorting.ranklist.field;
 		const order = req.query.order || zoj.config.sorting.ranklist.order;
 		if (!['ac_num', 'rating', 'id', 'username'].includes(sort) || !['asc', 'desc'].includes(order)) {
-			throw new ErrorMessage(res.locals.language, 'Illegal sorting parameters.');
+			throw new ErrorMessage('Illegal sorting parameters.');
 		}
 		let paginate = zoj.utils.paginate(await User.count({}), req.query.page, zoj.config.page.ranklist);
 		let ranklist;
@@ -38,7 +38,7 @@ app.get('/ranklist', async (req, res) => {
 app.get('/find_user', async (req, res) => {
 	try {
 		let user = await User.fromName(req.query.nickname);
-		if (!user) throw new ErrorMessage(res.locals.language, 'No such user.');
+		if (!user) throw new ErrorMessage('No such user.');
 		res.redirect(zoj.utils.makeUrl(['user', user.id]));
 	} catch (e) {
 		zoj.error(e);
@@ -52,7 +52,7 @@ app.get('/find_user', async (req, res) => {
 app.get('/login', (req, res) => {
 	if (res.locals.user) {
 		res.render('error', {
-			err: new ErrorMessage(res.locals.language, 'Please logout first.', { 'Logout': zoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
+			err: new ErrorMessage('Please logout first.', { 'Logout': zoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
 		});
 	} else {
 		res.render('login');
@@ -63,7 +63,7 @@ app.get('/login', (req, res) => {
 app.get('/sign_up', (req, res) => {
 	if (res.locals.user) {
 		res.render('error', {
-			err: new ErrorMessage(res.locals.language, 'Please logout first.', { 'Logout': zoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
+			err: new ErrorMessage('Please logout first.', { 'Logout': zoj.utils.makeUrl(['logout'], { 'url': req.originalUrl }) })
 		});
 	} else {
 		res.render('sign_up');
@@ -90,7 +90,7 @@ app.get('/user/:id', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
-		if (!user) throw new ErrorMessage(res.locals.language, 'No such user.');
+		if (!user) throw new ErrorMessage('No such user.');
 		await user.loadRelationships();
 
 		user.ac_problems = await user.getACProblems();
@@ -139,12 +139,12 @@ app.get('/user/:id/edit', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
-		if (!user) throw new ErrorMessage(res.locals.language, 'No such user.');
+		if (!user) throw new ErrorMessage('No such user.');
 		await user.loadRelationships();
 
 		let allowedEdit = await user.isAllowedEditBy(res.locals.user);
 		if (!allowedEdit) {
-			throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+			throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		res.locals.user.allowedManage = await res.locals.user.haveAccess('user_edit');
@@ -170,18 +170,18 @@ app.post('/user/:id/edit', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		user = await User.fromID(id);
-		if (!user) throw new ErrorMessage(res.locals.language, 'No such user.');
+		if (!user) throw new ErrorMessage('No such user.');
 
 		let allowedEdit = await user.isAllowedEditBy(res.locals.user);
-		if (!allowedEdit) throw new ErrorMessage(res.locals.language, 'You do not have permission to do this');
+		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this');
 
 		if (req.body.new_password) {
-			if (user.password !== req.body.old_password && !(await res.locals.user.haveAccess('change_password'))) throw new ErrorMessage(res.locals.language, 'Password error.');
+			if (user.password !== req.body.old_password && !(await res.locals.user.haveAccess('change_password'))) throw new ErrorMessage('Password error.');
 			user.password = req.body.new_password;
 		}
 
 		if (await res.locals.user.haveAccess('change_username')) {
-			if (!zoj.utils.isValidUsername(req.body.username)) throw new ErrorMessage(res.locals.language, 'Invalid user name.');
+			if (!zoj.utils.isValidUsername(req.body.username)) throw new ErrorMessage('Invalid user name.');
 			user.username = req.body.username;
 		}
 

@@ -10,8 +10,8 @@ Array.prototype.filterAsync = async function (fn) {
 };
 
 global.ErrorMessage = class ErrorMessage {
-	constructor(lang, message, nextUrls, details) {
-		this.message = zoj.i18n(lang, message);
+	constructor(message, nextUrls, details) {
+		this.message = message;
 		this.nextUrls = nextUrls || {};
 		this.details = details;
 	}
