@@ -256,11 +256,13 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 		let id = parseInt(keyword);
 		if (id) {
 			let problemById = await Problem.fromID(parseInt(keyword));
+			await problemById.loadRelationships();
 			if (problemById && await problemById.isAllowedUseBy(res.locals.user)) {
 				result.push(problemById);
 			}
 		}
 		await problems.forEachAsync(async problem => {
+			await problem.loadRelationships();
 			if (await problem.isAllowedUseBy(res.locals.user) && result.length < zoj.config.page.edit_contest_problem_list && problem.id !== id) {
 				result.push(problem);
 			}

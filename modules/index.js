@@ -6,7 +6,7 @@ let Contest = zoj.model('contest');
 
 app.get('/', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let ranklist = await User.query([1, 10], null, [['rating', 'desc']]);
 
@@ -19,13 +19,10 @@ app.get('/', async (req, res) => {
 		let contests = await Contest.query([1, 5], null, [['start_time', 'desc']]);
 
 		await contests.forEachAsync(async x => x.subtitle = await zoj.utils.markdown(x.subtitle));
-
-		let tmp = [];
-		for (var c of contests) {
-			await c.loadRelationships();
-			if (await c.isAllowedUseBy(res.locals.user)) tmp.push(c);
-		}
-		contests = tmp;
+		contests = await contests.filterAsync(async x => {
+			await x.loadRelationships();
+			return x.isAllowedUseBy(res.locals.user);
+		});
 
 		res.render('index', {
 			ranklist: ranklist,

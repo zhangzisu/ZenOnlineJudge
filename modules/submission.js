@@ -6,7 +6,7 @@ let Contest = zoj.model('contest');
 
 app.get('/submissions', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let user = await User.fromName(req.query.submitter || '');
 		let where = {};
@@ -37,13 +37,12 @@ app.get('/submissions', async (req, res) => {
 		let paginate = zoj.utils.paginate(await JudgeState.count(where), req.query.page, zoj.config.page.judge_state);
 		let judge_state = await JudgeState.query(paginate, where, [['submit_time', 'desc']]);
 
-		let tmp = [];
-		for (var js of judge_state) {
-			await js.loadRelationships();
-			await js.problem.loadRelationships();
-			if (await js.problem.isAllowedUseBy(res.locals.user)) tmp.push(js);
-		}
-		judge_state = tmp;
+		judge_state = await judge_state.filterAsync(async x => {
+			await x.loadRelationships();
+			await x.problem.loadRelationships();
+			return x.problem.isAllowedUseBy(res.locals.user);
+		});
+
 		await judge_state.forEachAsync(async obj => obj.allowedSeeCode = await obj.isAllowedSeeCodeBy(res.locals.user));
 		await judge_state.forEachAsync(async obj => obj.allowedSeeData = await obj.isAllowedSeeDataBy(res.locals.user));
 
@@ -81,9 +80,8 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 				let problems_id = await contest.getProblems();
 				problems_id = await problems_id.mapAsync(x => (x.id));
 				judge_state.problem_id = problems_id.indexOf(judge_state.problem_id) + 1;
-				judge_state.problem.title = zoj.utils.removeTitleTag(judge_state.problem.title);
 
-				if (contest.type === 'noi' && !contest.ended && !await judge_state.problem.isAllowedEditBy(res.locals.user)) {
+				if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge_state.problem.isAllowedEditBy(res.locals.user)) {
 					if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge_state.status)) {
 						judge_state.status = 'Submitted';
 					}
@@ -111,11 +109,11 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 
 app.get('/submission/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
-		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 
 		let contest;
 		if (judge.type === 1) {
@@ -139,9 +137,8 @@ app.get('/submission/:id', async (req, res) => {
 
 			problems_id = await problems_id.mapAsync(x => (x.id));
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
-			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 
-			if (contest.type === 'noi' && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
+			if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge.status)) {
 					judge.status = 'Submitted';
 				}
@@ -166,7 +163,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 	try {
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
-		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!judge || !await judge.isAllowedVisitBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 
 		let contest;
 		if (judge.type === 1) {
@@ -189,9 +186,8 @@ app.get('/submission/:id/ajax', async (req, res) => {
 			let problems_id = await contest.getProblems();
 			problems_id = await problems_id.mapAsync(x => (x.id));
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
-			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 
-			if (contest.type === 'noi' && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
+			if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge.status)) {
 					judge.status = 'Submitted';
 				}
@@ -215,7 +211,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 
 app.post('/submission/:id/rejudge', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
@@ -226,7 +222,7 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 		await judge.loadRelationships();
 
 		let allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
-		if (!allowedRejudge) throw new ErrorMessage('You do not have permission to do this.');
+		if (!allowedRejudge) throw new ErrorMessage('You do not have permission to do this');
 
 		await judge.rejudge();
 

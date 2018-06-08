@@ -1,0 +1,56 @@
+<% this.title = 'PasteBin'; %>
+<% include header %>
+<div class="ui center aligned grid">
+    <% if(typeof message !== 'undefined') { %>
+        <div class="row">
+            <div class="ui positive icon message">
+                <p>Your code has been pasted successfully.
+                    <br>Please save your pasteID:
+                    <a href="/pastebin/<%= message %>"><code><%= message %></code></a>
+                </p>
+            </div>
+        </div>
+    <% } %>
+    <form method="POST">
+        <div class="row">
+            <h1>Paste</h1>
+            <p>This site is intended for use as a short-term exchange of pasted information between parties.
+                All submitted data is considered public information. Submitted data is not guaranteed to
+                be permanent, and may be removed at any time. Please do not set up programs to send data
+                to this site in an automated fashion; it is intended to be used directly by humans.</p>
+            <div id="content" style="height: 500px;"></div>
+            <input type="hidden" name="content">
+            <button class="ui button" type="submit">Paste!</button>
+        </div>
+    </form>
+</div>
+<script src="/ace/ace.js"></script>
+<script type="text/javascript">
+    $('#go').click(function(){
+        let id = $('#pid').val();
+        window.location = `/pastebin/${id}`;
+    });
+
+    function registerACEditor(editorID, containerName, mode) {
+        var editor = ace.edit(editorID);
+
+        editor.setTheme("ace/theme/tomorrow");
+        editor.getSession().setMode(mode);
+        editor.getSession().setUseSoftTabs(false);
+
+        editor.container.name = containerName;
+        editor.container.style.lineHeight = 1.6;
+        editor.container.style.fontSize = '14px';
+        editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+        editor.setShowPrintMargin(false);
+        editor.renderer.updateFontSize();
+
+        var input = $(`[name="${containerName}"]`);
+        editor.getSession().on("change", function () {
+            input.val(editor.getSession().getValue());
+        });
+    }
+
+    registerACEditor("content", "content", "ace/mode/text");
+</script>
+<% include footer %>

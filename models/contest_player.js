@@ -18,12 +18,15 @@ let model = db.define('contest_player',
 		user_id: {
 			type: Sequelize.INTEGER
 		},
-
 		score: {
 			type: Sequelize.INTEGER
 		},
 		// Sum score
 		score_details: {
+			type: Sequelize.TEXT,
+			json: true
+		},
+		self_details: {
 			type: Sequelize.TEXT,
 			json: true
 		},
@@ -50,6 +53,7 @@ class ContestPlayer extends Model {
 			user_id: 0,
 			score: 0,
 			score_details: '{}',
+			self_details: '{}',
 			time_spent: 0
 		}, val)));
 	}
@@ -68,111 +72,17 @@ class ContestPlayer extends Model {
 
 	async updateScore(judge_state) {
 		await this.loadRelationships();
-		if (this.contest.type === 'ioi') {
-			if (!judge_state.pending) {
-				if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
-				if (!this.score_details[judge_state.problem_id].score) {
-					this.score_details[judge_state.problem_id].score = judge_state.score;
-					this.score_details[judge_state.problem_id].judge_id = judge_state.id;
-					this.score_details[judge_state.problem_id].submissions = {};
-				}
-
-				this.score_details[judge_state.problem_id].submissions[judge_state.id] = {
-					judge_id: judge_state.id,
-					score: judge_state.score,
-					time: judge_state.submit_time
-					// Running time of the judge
-				};
-
-				let arr = Object.values(this.score_details[judge_state.problem_id].submissions);
-				arr.sort((a, b) => a.time - b.time);
-
-				let maxScoreSubmission = null;
-				for (let x of arr) {
-					if (!maxScoreSubmission || x.score >= maxScoreSubmission.score && maxScoreSubmission.score < 100) {
-						maxScoreSubmission = x;
-					}
-				}
-				// Let the score of this problem be the MAX score of all submissions
-				this.score_details[judge_state.problem_id].judge_id = maxScoreSubmission.judge_id;
-				this.score_details[judge_state.problem_id].score = maxScoreSubmission.score;
-				this.score_details[judge_state.problem_id].time = maxScoreSubmission.time;
-
-				await this.refreshScore(true);
-			}
-		} else if (this.contest.type === 'noi') {
-			// Current submittion is later than the recorded one.
-			if (this.score_details[judge_state.problem_id] && this.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
-
-			if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
-			this.score_details[judge_state.problem_id].score = judge_state.score;
-			this.score_details[judge_state.problem_id].judge_id = judge_state.id;
-
-			await this.refreshScore(true);
-		} else if (this.contest.type === 'acm') {
-			if (!judge_state.pending) {
-				if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
-				if (!this.score_details[judge_state.problem_id].accepted) {
-					this.score_details[judge_state.problem_id].accepted = false;
-					this.score_details[judge_state.problem_id].unacceptedCount = 0;
-					this.score_details[judge_state.problem_id].acceptedTime = 0;
-					this.score_details[judge_state.problem_id].judge_id = 0;
-					this.score_details[judge_state.problem_id].submissions = {};
-				}
-
-				this.score_details[judge_state.problem_id].submissions[judge_state.id] = {
-					judge_id: judge_state.id,
-					accepted: judge_state.status === 'Accepted',
-					compiled: judge_state.status !== 'Compile Error',
-					time: judge_state.submit_time
-					// The time from the the contest began to the user submitted
-				};
-
-				let arr = Object.values(this.score_details[judge_state.problem_id].submissions);
-				arr.sort((a, b) => a.time - b.time);
-
-				this.score_details[judge_state.problem_id].unacceptedCount = 0;
-				this.score_details[judge_state.problem_id].judge_id = 0;
-				this.score_details[judge_state.problem_id].accepted = 0;
-				for (let x of arr) {
-					if (x.accepted) {
-						this.score_details[judge_state.problem_id].accepted = true;
-						this.score_details[judge_state.problem_id].acceptedTime = x.time;
-						this.score_details[judge_state.problem_id].judge_id = x.judge_id;
-						break;
-					} else if (x.compiled) {
-						this.score_details[judge_state.problem_id].unacceptedCount++;
-					}
-				}
-
-				if (!this.score_details[judge_state.problem_id].accepted) {
-					this.score_details[judge_state.problem_id].judge_id = arr[arr.length - 1].judge_id;
-				}
-
-				await this.refreshScore(true);
-			}
-		}
-	}
-
-	async refreshScore(loaded) {
-		if (!loaded) await this.loadRelationships();
-		this.score = 0;
-		if (this.contest.type === 'acm') {
-			for (let x in this.score_details) {
-				if (this.score_details[x].accepted) this.score++;
-			}
-		} else {
-			for (let x of this.contest.problems) {
-				if (!this.score_details[x.id]) continue;
-				this.score += Math.round(this.score_details[x.id].score / 100 * x.score);
-			}
-		}
+		let type = this.contest.type;
+		let func = require(`../types/contest/${type}`).calcScore;
+		let result = await func(this, judge_state);
+		this.score_details = result.score_details;
+		this.score = result.score;
+		this.time_spent = result.time_spent;
 		await this.save();
 	}
 
-	updateSelfInfo(pid, selfscore, selftime) {
-		if (!this.score_details[pid]) this.score_details[pid] = new Object();
-		this.score_details[pid].self = {
+	async updateSelfInfo(pid, selfscore, selftime) {
+		this.self_details[pid] = {
 			score: selfscore,
 			time: selftime
 		};

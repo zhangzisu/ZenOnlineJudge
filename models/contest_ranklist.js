@@ -52,44 +52,8 @@ class ContestRanklist extends Model {
 			players.push(player);
 		}
 
-		let JudgeState = zoj.model('judge_state');
-
-		if (contest.type === 'noi' || contest.type === 'ioi') {
-			for (let player of players) {
-				player.latest = 0;
-				for (let i in player.score_details) {
-					if (!player.score_details[i].score) continue;
-					let judge_state = await JudgeState.fromID(player.score_details[i].judge_id);
-					player.latest = Math.max(player.latest, judge_state.submit_time);
-				}
-			}
-
-			players.sort((a, b) => {
-				if (a.score > b.score) return -1;
-				if (b.score > a.score) return 1;
-				if (a.latest < b.latest) return -1;
-				if (a.latest > b.latest) return 1;
-				return 0;
-			});
-		} else if (contest.type === 'acm') {
-			for (let player of players) {
-				player.timeSum = 0;
-				for (let i in player.score_details) {
-					if (!player.score_details[i].score) continue;
-					if (player.score_details[i].accepted) {
-						player.timeSum += (player.score_details[i].acceptedTime - contest.start_time) + (player.score_details[i].unacceptedCount * 20 * 60);
-					}
-				}
-			}
-
-			players.sort((a, b) => {
-				if (a.score > b.score) return -1;
-				if (b.score > a.score) return 1;
-				if (a.timeSum < b.timeSum) return -1;
-				if (a.timeSum > b.timeSum) return 1;
-				return 0;
-			});
-		}
+		let func = require(`../types/contest/${contest.type}`).updateRank;
+		players = await func(players);
 
 		this.ranklist = {
 			player_num: players.length

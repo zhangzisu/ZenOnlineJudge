@@ -6,7 +6,7 @@ let User = zoj.model('user');
 
 app.get('/blogs', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		if (req.cookies['selfonly_mode'] === '1') { res.redirect(`/blogs/user/${res.locals.user.id}`); return; }
 
 		req.cookies['selfonly_mode'] = '0';
@@ -46,7 +46,7 @@ app.get('/blogs', async (req, res) => {
 
 app.get('/blogs/user/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
@@ -89,7 +89,7 @@ app.get('/blogs/user/:id', async (req, res) => {
 
 app.get('/blogs/search', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.query.keyword) || 0;
 
@@ -143,7 +143,7 @@ app.get('/blogs/search', async (req, res) => {
 
 app.get('/blogs/tag/:tagIDs', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let tagIDs = Array.from(new Set(req.params.tagIDs.split(',').map(x => parseInt(x))));
 		let tags = await tagIDs.mapAsync(async tagID => await BlogPostTag.fromID(tagID));
@@ -198,14 +198,14 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 
 app.get('/blog/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
 		if (!post) throw new ErrorMessage('No such post.');
 
 		if (!await post.isAllowedSeeBy(res.locals.user)) {
-			throw new ErrorMessage('You do not have permission to do this.');
+			throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
@@ -213,7 +213,7 @@ app.get('/blog/:id', async (req, res) => {
 		if (post.is_public || post.allowedEdit) {
 			post.content = await zoj.utils.markdown(post.content);
 		} else {
-			throw new ErrorMessage('You do not have permission to do this.');
+			throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		post.tags = await post.getTags();
@@ -232,7 +232,7 @@ app.get('/blog/:id', async (req, res) => {
 
 app.get('/blog/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let post = await BlogPost.fromID(id);
@@ -245,7 +245,7 @@ app.get('/blog/:id/edit', async (req, res) => {
 			post.tags = [];
 			post.new = true;
 		} else {
-			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 			post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
 			post.tags = await post.getTags();
 		}
@@ -263,7 +263,7 @@ app.get('/blog/:id/edit', async (req, res) => {
 
 app.post('/blog/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let post = await BlogPost.fromID(id);
@@ -275,8 +275,8 @@ app.post('/blog/:id/edit', async (req, res) => {
 
 			post.time = zoj.utils.getCurrentDate();
 		} else {
-			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
-			if (!await post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
+			if (!await post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
@@ -310,14 +310,14 @@ app.post('/blog/:id/edit', async (req, res) => {
 // Set post public
 async function setPublic(req, res, is_public) {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
 		if (!post) throw new ErrorMessage('No such post.');
 
 		let allowedEdit = await post.isAllowedEditBy(res.locals.user);
-		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this.');
+		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this');
 
 		post.is_public = is_public;
 		await post.save();
@@ -341,13 +341,13 @@ app.post('/blog/:id/dis_public', async (req, res) => {
 
 app.post('/blog/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
 		if (!post) throw new ErrorMessage('No such post.');
 
-		if (!post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+		if (!post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 
 		await post.delete();
 
@@ -362,7 +362,7 @@ app.post('/blog/:id/delete', async (req, res) => {
 
 app.get('/blogs/export/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		if (!await res.locals.user.haveAccess('blog_export'))
 			throw new ErrorMessage('Access denied');
 

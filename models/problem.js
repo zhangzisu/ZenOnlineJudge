@@ -253,12 +253,12 @@ class Problem extends Model {
 		await zoj.utils.lock(['Promise::Testdata', this.id], async () => {
 			let dir = this.getTestdataPath();
 			if (await zoj.utils.isFile(dir + '.zip')) return;
-			if (!await zoj.utils.isDir(dir)) throw new ErrorMessage('No testdata.');
+			if (!await zoj.utils.isDir(dir)) throw new ErrorMessage('No testdata');
 
 			let p7zip = new (require('node-7z'));
 
 			let list = await this.listTestdata(), path = require('path'), pathlist = list.files.map(file => path.join(dir, file.filename));
-			if (!pathlist.length) throw new ErrorMessage('No testdata.');
+			if (!pathlist.length) throw new ErrorMessage('No testdata');
 			await p7zip.add(dir + '.zip', pathlist);
 		});
 	}

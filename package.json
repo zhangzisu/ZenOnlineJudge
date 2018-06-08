@@ -1,6 +1,6 @@
 {
 	"name": "zoj",
-	"version": "16.0.0",
+	"version": "17.0.0",
 	"description": "A powerful manage system for OI",
 	"main": "app.js",
 	"scripts": {
@@ -36,6 +36,7 @@
 		"gravatar": "^1.5.2",
 		"jsdom": "^11.10.0",
 		"jsonwebtoken": "^8.2.1",
+		"locale": "^0.1.0",
 		"marked": "^0.3.19",
 		"moment": "^2.22.1",
 		"multer": "^1.2.0",
@@ -45,6 +46,7 @@
 		"node-xlsx": "^0.12.0",
 		"nodemailer": "^4.6.4",
 		"os": "^0.1.1",
+		"randomstring": "^1.1.5",
 		"request": "^2.85.0",
 		"request-promise": "^4.1.1",
 		"sequelize": "^4.37.7",

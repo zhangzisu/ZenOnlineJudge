@@ -93,15 +93,13 @@ let enableMath = 1;
                   <% } %>
                 <% } %>
                 </td>
-                <td><a href="<%= zoj.utils.makeUrl(['contest', contest.id, i]) %>"><%= zoj.utils.removeTitleTag(problem.problem.title) %></a></td>
+                <td><a href="<%= zoj.utils.makeUrl(['contest', contest.id, i]) %>"><%= problem.problem.title %></a></td>
                 <% if (hasStatistics) { %>
                   <td class="center aligned" style="white-space: nowrap; ">
                   <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i, status: 'Accepted' }) %>"><%= problem.statistics.accepted %></a>
                   /
                     <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i, min_score: 1 }) %>"><%= problem.statistics.partially %></a>
-                    <% if (contest.type === 'noi' || contest.type === 'ioi') { %>
                     /
-                  <% } %>
                   <a href="<%= zoj.utils.makeUrl(['contest', contest.id, 'submissions'], { problem_id: i }) %>"><%= problem.statistics.attempt %></a>
                   </td>
                 <% } %>

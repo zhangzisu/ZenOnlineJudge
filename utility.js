@@ -147,9 +147,6 @@ module.exports = {
 			}
 		};
 	},
-	removeTitleTag(s) {
-		return s.replace(/[[\S\s]+?]/, '');
-	},
 	md5(data) {
 		let crypto = require('crypto');
 		let md5 = crypto.createHash('md5');

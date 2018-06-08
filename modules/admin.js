@@ -8,13 +8,13 @@ const RatingCalculation = zoj.model('rating_calculation');
 const RatingHistory = zoj.model('rating_history');
 let ContestPlayer = zoj.model('contest_player');
 const os = require('os');
-const {getNewRatings} = require('codeforces-rating-system');
+const { getNewRatings } = require('codeforces-rating-system');
 
 app.get('/admin/group', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this');
 
 		let groups = await Group.query(null, null, null);
 
@@ -31,9 +31,9 @@ app.get('/admin/group', async (req, res) => {
 
 app.get('/admin/group/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this');
 
 		let id = parseInt(req.params.id);
 		let group;
@@ -58,9 +58,9 @@ app.get('/admin/group/:id', async (req, res) => {
 
 app.post('/admin/group/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this');
 
 		let id = parseInt(req.params.id), group;
 
@@ -88,9 +88,9 @@ app.post('/admin/group/:id', async (req, res) => {
 
 app.get('/admin/message', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this');
 
 		res.render('admin_message', {
 		});
@@ -104,9 +104,9 @@ app.get('/admin/message', async (req, res) => {
 
 app.post('/admin/message', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this');
 		let id = parseInt(req.body.user_id) || null;
 		io.emit(req.body.type, {
 			user_id: id,
@@ -123,9 +123,9 @@ app.post('/admin/message', async (req, res) => {
 
 app.get('/admin/rating', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this');
 
 		const contests = await Contest.query(null, {}, [['start_time', 'desc']]);
 		const calcs = await RatingCalculation.query(null, {}, [['id', 'desc']]);
@@ -146,9 +146,9 @@ app.get('/admin/rating', async (req, res) => {
 
 app.post('/admin/rating/add', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this');
 
 		const contest = await Contest.fromID(req.body.contest);
 		if (!contest) throw new ErrorMessage('No such contest');
@@ -191,9 +191,9 @@ app.post('/admin/rating/add', async (req, res) => {
 
 app.post('/admin/rating/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this');
 
 		const calcList = await RatingCalculation.query(null, { id: { $gte: req.body.calc_id } }, [['id', 'desc']]);
 		if (calcList.length === 0) throw new ErrorMessage('ID incorrect');
@@ -213,9 +213,9 @@ app.post('/admin/rating/delete', async (req, res) => {
 
 app.get('/admin/info', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_info')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_info')) throw new ErrorMessage('You do not have permission to do this');
 
 		let allSubmissionsCount = await JudgeState.count();
 		let todaySubmissionsCount = await JudgeState.count({ submit_time: { $gte: zoj.utils.getCurrentDate(true) } });
@@ -245,9 +245,9 @@ app.get('/admin/info', async (req, res) => {
 
 app.get('/admin/rejudge', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('You do not have permission to do this');
 
 		res.render('admin_rejudge', {
 			form: {},
@@ -263,9 +263,9 @@ app.get('/admin/rejudge', async (req, res) => {
 
 app.post('/admin/rejudge', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('You do not have permission to do this');
 
 		let user = await User.fromName(req.body.submitter || '');
 		let where = {};
@@ -336,9 +336,9 @@ app.post('/admin/rejudge', async (req, res) => {
 
 app.get('/admin/links', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_link')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_link')) throw new ErrorMessage('You do not have permission to do this');
 
 		res.render('admin_links', {
 			links: zoj.config.links || []
@@ -353,9 +353,9 @@ app.get('/admin/links', async (req, res) => {
 
 app.post('/admin/links', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_link')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_link')) throw new ErrorMessage('You do not have permission to do this');
 
 		zoj.config.links = JSON.parse(req.body.data);
 		await zoj.utils.saveConfig();
@@ -371,9 +371,9 @@ app.post('/admin/links', async (req, res) => {
 
 app.get('/admin/raw', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_raw')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_raw')) throw new ErrorMessage('You do not have permission to do this');
 
 		res.render('admin_raw', {
 			data: JSON.stringify(zoj.config, null, 2)
@@ -388,9 +388,9 @@ app.get('/admin/raw', async (req, res) => {
 
 app.post('/admin/raw', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_raw')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_raw')) throw new ErrorMessage('You do not have permission to do this');
 
 		zoj.config = JSON.parse(req.body.data);
 		await zoj.utils.saveConfig();
@@ -406,9 +406,9 @@ app.post('/admin/raw', async (req, res) => {
 
 app.get('/admin/upgrade', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_upgrade')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_upgrade')) throw new ErrorMessage('You do not have permission to do this');
 
 		res.render('admin_upgrade', {});
 	} catch (e) {
@@ -421,9 +421,9 @@ app.get('/admin/upgrade', async (req, res) => {
 
 app.post('/admin/upgrade', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		if (!await res.locals.user.haveAccess('admin_upgrade')) throw new ErrorMessage('You do not have permission to do this.');
+		if (!await res.locals.user.haveAccess('admin_upgrade')) throw new ErrorMessage('You do not have permission to do this');
 
 		var exec = require('child_process').exec;
 		exec('sh upgrade.sh', function (error) {

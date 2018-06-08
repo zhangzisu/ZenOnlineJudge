@@ -6,7 +6,7 @@ let ArticleComment = zoj.model('article-comment');
 
 app.get('/discussion', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let where = { problem_id: null };
 		let paginate = zoj.utils.paginate(await Article.count(where), req.query.page, zoj.config.page.discussion);
 		let articles = await Article.query(paginate, where, [['public_time', 'desc']]);
@@ -28,13 +28,13 @@ app.get('/discussion', async (req, res) => {
 
 app.get('/problem/:pid/discussion', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let pid = parseInt(req.params.pid);
 		let problem = await Problem.fromID(pid);
 		if (!problem) throw new ErrorMessage('No such problem.');
 		await problem.loadRelationships();
 		if (!await problem.isAllowedUseBy(res.locals.user)) {
-			throw new ErrorMessage('You do not have permission to do this.');
+			throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		let where = { problem_id: pid };
@@ -58,7 +58,7 @@ app.get('/problem/:pid/discussion', async (req, res) => {
 
 app.get('/article/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
 		if (!article) throw new ErrorMessage('No such article.');
@@ -83,8 +83,9 @@ app.get('/article/:id', async (req, res) => {
 		let problem = null;
 		if (article.problem_id) {
 			problem = await Problem.fromID(article.problem_id);
+			await problem.loadRelationships();
 			if (!await problem.isAllowedUseBy(res.locals.user)) {
-				throw new ErrorMessage('You do not have permission to do this.');
+				throw new ErrorMessage('You do not have permission to do this');
 			}
 		}
 
@@ -105,7 +106,7 @@ app.get('/article/:id', async (req, res) => {
 
 app.get('/article/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let id = parseInt(req.params.id);
@@ -133,7 +134,7 @@ app.get('/article/:id/edit', async (req, res) => {
 
 app.post('/article/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -152,13 +153,14 @@ app.post('/article/:id/edit', async (req, res) => {
 				article.problem_id = null;
 			}
 		} else {
-			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty');
 		article.title = req.body.title;
 		article.content = req.body.content;
 		article.update_time = time;
+		article.is_notice = res.locals.user.haveAccess('set_bulletin') && req.body.is_notice === 'on';
 
 		await article.save();
 
@@ -173,7 +175,7 @@ app.post('/article/:id/edit', async (req, res) => {
 
 app.post('/article/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -181,7 +183,7 @@ app.post('/article/:id/delete', async (req, res) => {
 		if (!article) {
 			throw new ErrorMessage('No such article.');
 		} else {
-			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await article.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		await article.destroy();
@@ -197,7 +199,7 @@ app.post('/article/:id/delete', async (req, res) => {
 
 app.post('/article/:id/comment', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -205,7 +207,7 @@ app.post('/article/:id/comment', async (req, res) => {
 		if (!article) {
 			throw new ErrorMessage('No such article.');
 		} else {
-			if (!await article.isAllowedCommentBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await article.isAllowedCommentBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		let comment = await ArticleComment.create({
@@ -228,7 +230,7 @@ app.post('/article/:id/comment', async (req, res) => {
 
 app.post('/article/:article_id/comment/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let comment = await ArticleComment.fromID(id);
@@ -236,7 +238,7 @@ app.post('/article/:article_id/comment/:id/delete', async (req, res) => {
 		if (!comment) {
 			throw new ErrorMessage('No such comment');
 		} else {
-			if (!await comment.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this.');
+			if (!await comment.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		await comment.destroy();

@@ -123,7 +123,7 @@ class Contest extends Model {
 	async newSubmission(judge_state) {
 		let problems = await this.getProblems();
 		problems = await problems.mapAsync(x => (x.id));
-		if (!problems.includes(judge_state.problem_id)) throw new ErrorMessage('No such problem in the current contest.');
+		if (!problems.includes(judge_state.problem_id)) throw new ErrorMessage('No such problem in the current contest');
 
 		await zoj.utils.lock(['Contest::newSubmission', judge_state.user_id], async () => {
 			let player = await ContestPlayer.findInContest({
