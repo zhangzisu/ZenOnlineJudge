@@ -238,6 +238,8 @@ app.get('/api/sign_up_confirm', async (req, res) => {
 
 app.get('/api/search/problems/:keyword*?', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+
 		let Problem = zoj.model('problem');
 
 		let keyword = req.params.keyword || '';
@@ -285,8 +287,10 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 	}
 });
 
-app.get('/api/v2/search/blogs/:keyword*?', async (req, res) => {
+app.get('/api/search/blogs/:keyword*?', async (req, res) => {
 	try {
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+
 		let BlogPost = zoj.model('blog_post');
 
 		let keyword = req.params.keyword || '';
