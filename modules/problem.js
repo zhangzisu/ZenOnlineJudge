@@ -160,7 +160,7 @@ app.get('/problem/:id', async (req, res) => {
 		res.render('problem', {
 			problem: problem,
 			state: state,
-			lastLanguage: res.locals.user ? await res.locals.user.getLastSubmitLanguage() : null,
+			lastLanguage: await res.locals.user.getLastSubmitLanguage(),
 			discussionCount: discussionCount
 		});
 	} catch (e) {
