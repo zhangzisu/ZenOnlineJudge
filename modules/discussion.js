@@ -83,6 +83,7 @@ app.get('/article/:id', async (req, res) => {
 		let problem = null;
 		if (article.problem_id) {
 			problem = await Problem.fromID(article.problem_id);
+			await problem.loadRelationships();
 			if (!await problem.isAllowedUseBy(res.locals.user)) {
 				throw new ErrorMessage('You do not have permission to do this');
 			}

@@ -261,6 +261,7 @@ app.get('/api/search/problems/:keyword*?', async (req, res) => {
 			}
 		}
 		await problems.forEachAsync(async problem => {
+			await problem.loadRelationships();
 			if (await problem.isAllowedUseBy(res.locals.user) && result.length < zoj.config.page.edit_contest_problem_list && problem.id !== id) {
 				result.push(problem);
 			}
