@@ -94,7 +94,7 @@ async function getStatistics(players, pid) {
 			if (judge_state.status === 'Accepted') {
 				statistics.accepted++;
 			} else if (judge_state.score > 0) {
-				problem.statistics.partially++;
+				statistics.partially++;
 			}
 		}
 	}
