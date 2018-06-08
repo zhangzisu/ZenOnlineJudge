@@ -10,7 +10,7 @@ let Article = zoj.model('article');
 
 app.get('/problems', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let paginate = zoj.utils.paginate(await Problem.count({}), req.query.page, zoj.config.page.problem);
 		let problems = await Problem.query(paginate, {});
@@ -41,7 +41,7 @@ app.get('/problems', async (req, res) => {
 
 app.get('/problems/search', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let id = parseInt(req.query.keyword) || 0;
@@ -84,7 +84,7 @@ app.get('/problems/search', async (req, res) => {
 
 app.get('/problems/tag/:tagIDs', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let tagIDs = Array.from(new Set(req.params.tagIDs.split(',').map(x => parseInt(x))));
@@ -136,7 +136,7 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 
 app.get('/problem/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let id = parseInt(req.params.id);
@@ -201,7 +201,7 @@ app.get('/problem/:id/export/:token?', async (req, res) => {
 
 app.get('/problem/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let id = parseInt(req.params.id) || 0;
@@ -237,7 +237,7 @@ app.get('/problem/:id/edit', async (req, res) => {
 
 app.post('/problem/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let problem = await Problem.fromID(id);
@@ -310,7 +310,7 @@ app.post('/problem/:id/edit', async (req, res) => {
 
 app.get('/problem/:id/import', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let problem = await Problem.fromID(id);
@@ -341,7 +341,7 @@ app.get('/problem/:id/import', async (req, res) => {
 
 app.post('/problem/:id/import', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let problem = await Problem.fromID(id);
@@ -452,7 +452,7 @@ app.post('/problem/:id/import', async (req, res) => {
 
 app.get('/problem/:id/manualimport', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let problem = await Problem.fromID(id);
@@ -483,7 +483,7 @@ app.get('/problem/:id/manualimport', async (req, res) => {
 
 app.post('/problem/:id/manualimport', app.multer.fields([{ name: 'testdata', maxCount: 1 }, { name: 'additional_file', maxCount: 1 }]), async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -538,7 +538,7 @@ app.post('/problem/:id/manualimport', app.multer.fields([{ name: 'testdata', max
 
 app.get('/problem/:id/manage', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -560,7 +560,7 @@ app.get('/problem/:id/manage', async (req, res) => {
 
 app.post('/problem/:id/manage', app.multer.fields([{ name: 'testdata', maxCount: 1 }, { name: 'additional_file', maxCount: 1 }]), async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -594,7 +594,7 @@ app.post('/problem/:id/manage', app.multer.fields([{ name: 'testdata', maxCount:
 
 app.post('/problem/:id/submit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -656,7 +656,7 @@ app.post('/problem/:id/submit', async (req, res) => {
 
 app.post('/problem/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -678,7 +678,7 @@ app.post('/problem/:id/delete', async (req, res) => {
 
 app.get('/problem/:id/testdata', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -707,7 +707,7 @@ app.get('/problem/:id/testdata', async (req, res) => {
 
 app.post('/problem/:id/testdata/upload', app.multer.array('file'), async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -734,7 +734,7 @@ app.post('/problem/:id/testdata/upload', app.multer.array('file'), async (req, r
 
 app.post('/problem/:id/testdata/delete/:filename', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -757,7 +757,7 @@ app.post('/problem/:id/testdata/delete/:filename', async (req, res) => {
 
 app.get('/problem/:id/testdata/download/:filename?', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -815,7 +815,7 @@ app.get('/problem/:id/testdata/export/:token', async (req, res) => {
 
 app.get('/problem/:id/download/additional_file', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
@@ -850,7 +850,7 @@ app.get('/problem/:id/download/additional_file', async (req, res) => {
 
 app.get('/problem/:id/statistics/:type', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);

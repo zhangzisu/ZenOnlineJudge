@@ -6,7 +6,7 @@ let Contest = zoj.model('contest');
 
 app.get('/submissions', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let user = await User.fromName(req.query.submitter || '');
 		let where = {};
@@ -109,7 +109,7 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 
 app.get('/submission/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
@@ -211,7 +211,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 
 app.post('/submission/:id/rejudge', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);

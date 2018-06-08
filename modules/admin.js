@@ -8,11 +8,11 @@ const RatingCalculation = zoj.model('rating_calculation');
 const RatingHistory = zoj.model('rating_history');
 let ContestPlayer = zoj.model('contest_player');
 const os = require('os');
-const {getNewRatings} = require('codeforces-rating-system');
+const { getNewRatings } = require('codeforces-rating-system');
 
 app.get('/admin/group', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -31,7 +31,7 @@ app.get('/admin/group', async (req, res) => {
 
 app.get('/admin/group/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -58,7 +58,7 @@ app.get('/admin/group/:id', async (req, res) => {
 
 app.post('/admin/group/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_group')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -88,7 +88,7 @@ app.post('/admin/group/:id', async (req, res) => {
 
 app.get('/admin/message', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -104,7 +104,7 @@ app.get('/admin/message', async (req, res) => {
 
 app.post('/admin/message', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_message')) throw new ErrorMessage('You do not have permission to do this');
 		let id = parseInt(req.body.user_id) || null;
@@ -123,7 +123,7 @@ app.post('/admin/message', async (req, res) => {
 
 app.get('/admin/rating', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -146,7 +146,7 @@ app.get('/admin/rating', async (req, res) => {
 
 app.post('/admin/rating/add', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -191,7 +191,7 @@ app.post('/admin/rating/add', async (req, res) => {
 
 app.post('/admin/rating/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_rating')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -213,7 +213,7 @@ app.post('/admin/rating/delete', async (req, res) => {
 
 app.get('/admin/info', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_info')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -245,7 +245,7 @@ app.get('/admin/info', async (req, res) => {
 
 app.get('/admin/rejudge', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -263,7 +263,7 @@ app.get('/admin/rejudge', async (req, res) => {
 
 app.post('/admin/rejudge', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -336,7 +336,7 @@ app.post('/admin/rejudge', async (req, res) => {
 
 app.get('/admin/links', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_link')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -353,7 +353,7 @@ app.get('/admin/links', async (req, res) => {
 
 app.post('/admin/links', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_link')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -371,7 +371,7 @@ app.post('/admin/links', async (req, res) => {
 
 app.get('/admin/raw', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_raw')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -388,7 +388,7 @@ app.get('/admin/raw', async (req, res) => {
 
 app.post('/admin/raw', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_raw')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -406,7 +406,7 @@ app.post('/admin/raw', async (req, res) => {
 
 app.get('/admin/upgrade', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_upgrade')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -421,7 +421,7 @@ app.get('/admin/upgrade', async (req, res) => {
 
 app.post('/admin/upgrade', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('admin_upgrade')) throw new ErrorMessage('You do not have permission to do this');
 

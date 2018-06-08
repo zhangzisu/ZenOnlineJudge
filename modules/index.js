@@ -6,7 +6,7 @@ let Contest = zoj.model('contest');
 
 app.get('/', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let ranklist = await User.query([1, 10], null, [['rating', 'desc']]);
 

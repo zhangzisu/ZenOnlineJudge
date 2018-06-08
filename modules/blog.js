@@ -6,7 +6,7 @@ let User = zoj.model('user');
 
 app.get('/blogs', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		if (req.cookies['selfonly_mode'] === '1') { res.redirect(`/blogs/user/${res.locals.user.id}`); return; }
 
 		req.cookies['selfonly_mode'] = '0';
@@ -46,7 +46,7 @@ app.get('/blogs', async (req, res) => {
 
 app.get('/blogs/user/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
@@ -89,7 +89,7 @@ app.get('/blogs/user/:id', async (req, res) => {
 
 app.get('/blogs/search', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.query.keyword) || 0;
 
@@ -143,7 +143,7 @@ app.get('/blogs/search', async (req, res) => {
 
 app.get('/blogs/tag/:tagIDs', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let tagIDs = Array.from(new Set(req.params.tagIDs.split(',').map(x => parseInt(x))));
 		let tags = await tagIDs.mapAsync(async tagID => await BlogPostTag.fromID(tagID));
@@ -198,7 +198,7 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 
 app.get('/blog/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
@@ -232,7 +232,7 @@ app.get('/blog/:id', async (req, res) => {
 
 app.get('/blog/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let post = await BlogPost.fromID(id);
@@ -263,7 +263,7 @@ app.get('/blog/:id/edit', async (req, res) => {
 
 app.post('/blog/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
 		let post = await BlogPost.fromID(id);
@@ -310,7 +310,7 @@ app.post('/blog/:id/edit', async (req, res) => {
 // Set post public
 async function setPublic(req, res, is_public) {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
@@ -341,7 +341,7 @@ app.post('/blog/:id/dis_public', async (req, res) => {
 
 app.post('/blog/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let post = await BlogPost.fromID(id);
@@ -362,7 +362,7 @@ app.post('/blog/:id/delete', async (req, res) => {
 
 app.get('/blogs/export/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		if (!await res.locals.user.haveAccess('blog_export'))
 			throw new ErrorMessage('Access denied');
 

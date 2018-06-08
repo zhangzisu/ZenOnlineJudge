@@ -6,7 +6,7 @@ let fs = require('fs');
 
 app.get('/pastebin', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		res.render('pastebin');
 	} catch (e) {
@@ -19,7 +19,7 @@ app.get('/pastebin', async (req, res) => {
 
 app.post('/pastebin', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		console.log();
 		let content = req.body.content;
 		let id = `${parseInt(+new Date())}_${randomstring.generate(10)}_${zoj.utils.md5(content)}`;

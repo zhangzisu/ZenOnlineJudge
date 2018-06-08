@@ -10,7 +10,7 @@ const ContestPlayer = zoj.model('contest_player');
 // Ranklist
 app.get('/ranklist', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		const sort = req.query.sort || zoj.config.sorting.ranklist.field;
 		const order = req.query.order || zoj.config.sorting.ranklist.order;
@@ -86,7 +86,7 @@ app.get('/forget', (req, res) => {
 // User page
 app.get('/user/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
@@ -135,7 +135,7 @@ app.get('/user/:id', async (req, res) => {
 
 app.get('/user/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let user = await User.fromID(id);
@@ -165,7 +165,7 @@ app.get('/user/:id/edit', async (req, res) => {
 app.post('/user/:id/edit', async (req, res) => {
 	let user;
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let id = parseInt(req.params.id);

@@ -10,7 +10,7 @@ let User = zoj.model('user');
 
 app.get('/contests', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let paginate = zoj.utils.paginate(await Contest.count({}), req.query.page, zoj.config.page.contest);
@@ -38,7 +38,7 @@ app.get('/contests', async (req, res) => {
 
 app.get('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -66,7 +66,7 @@ app.get('/contest/:id/edit', async (req, res) => {
 
 app.get('/contest/:id/export', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -148,7 +148,7 @@ app.get('/contest/:id/export', async (req, res) => {
 
 app.post('/contest/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		if (!await res.locals.user.haveAccess('contest_manage')) throw new ErrorMessage('You do not have permission to do this');
 
@@ -198,7 +198,7 @@ app.post('/contest/:id/edit', async (req, res) => {
 
 app.get('/contest/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let contest_id = parseInt(req.params.id);
@@ -275,7 +275,7 @@ app.get('/contest/:id', async (req, res) => {
 
 app.get('/contest/:id/ranklist', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
@@ -319,7 +319,7 @@ app.get('/contest/:id/ranklist', async (req, res) => {
 
 app.get('/contest/:id/submissions', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 
@@ -392,7 +392,7 @@ app.get('/contest/:id/submissions', async (req, res) => {
 
 app.get('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
@@ -431,7 +431,7 @@ app.get('/contest/:id/estimate', async (req, res) => {
 
 app.post('/contest/:id/estimate', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
@@ -476,7 +476,7 @@ app.post('/contest/:id/estimate', async (req, res) => {
 
 app.get('/contest/:id/:pid', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let contest_id = parseInt(req.params.id);
 		let contest = await Contest.fromID(contest_id);
 		if (!contest) throw new ErrorMessage('No such contest.');
@@ -525,7 +525,7 @@ app.get('/contest/:id/:pid', async (req, res) => {
 
 app.get('/contest/:id/:pid/download/additional_file', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let id = parseInt(req.params.id);
 		let contest = await Contest.fromID(id);
 		if (!contest) throw new ErrorMessage('No such contest.');

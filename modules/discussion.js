@@ -6,7 +6,7 @@ let ArticleComment = zoj.model('article-comment');
 
 app.get('/discussion', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let where = { problem_id: null };
 		let paginate = zoj.utils.paginate(await Article.count(where), req.query.page, zoj.config.page.discussion);
 		let articles = await Article.query(paginate, where, [['public_time', 'desc']]);
@@ -28,7 +28,7 @@ app.get('/discussion', async (req, res) => {
 
 app.get('/problem/:pid/discussion', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let pid = parseInt(req.params.pid);
 		let problem = await Problem.fromID(pid);
 		if (!problem) throw new ErrorMessage('No such problem.');
@@ -58,7 +58,7 @@ app.get('/problem/:pid/discussion', async (req, res) => {
 
 app.get('/article/:id', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
 		if (!article) throw new ErrorMessage('No such article.');
@@ -105,7 +105,7 @@ app.get('/article/:id', async (req, res) => {
 
 app.get('/article/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 
 		let id = parseInt(req.params.id);
@@ -133,7 +133,7 @@ app.get('/article/:id/edit', async (req, res) => {
 
 app.post('/article/:id/edit', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -174,7 +174,7 @@ app.post('/article/:id/edit', async (req, res) => {
 
 app.post('/article/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -198,7 +198,7 @@ app.post('/article/:id/delete', async (req, res) => {
 
 app.post('/article/:id/comment', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let article = await Article.fromID(id);
@@ -229,7 +229,7 @@ app.post('/article/:id/comment', async (req, res) => {
 
 app.post('/article/:article_id/comment/:id/delete', async (req, res) => {
 	try {
-		if (!res.locals.user) { res.redirect('/login'); return; }
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
 		let comment = await ArticleComment.fromID(id);
