@@ -2,7 +2,7 @@
 <%
 if (typeof contest === 'undefined') contest = null;
 if (contest) {
-  this.title = this.alpha(pid) + '. ' + zoj.utils.removeTitleTag(problem.title) + ' - ' + contest.title + ' - Contest';
+  this.title = this.alpha(pid) + '. ' + problem.title + ' - ' + contest.title + ' - Contest';
 } else {
   this.title = problem.title + ' - Problem';
 }
@@ -29,7 +29,7 @@ div[class*=ace_br] {
     <div class="row">
       <h1 class="ui header">
         <% if (contest) { %>
-          <%= this.alpha(pid) %>. <%= zoj.utils.removeTitleTag(problem.title) %>
+          <%= this.alpha(pid) %>. <%= problem.title %>
         <% } else { %>
           #<%= problem.id %>. <%= problem.title %>
         <% } %>

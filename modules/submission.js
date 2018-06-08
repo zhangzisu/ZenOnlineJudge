@@ -80,7 +80,6 @@ app.get('/submissions/:ids/ajax', async (req, res) => {
 				let problems_id = await contest.getProblems();
 				problems_id = await problems_id.mapAsync(x => (x.id));
 				judge_state.problem_id = problems_id.indexOf(judge_state.problem_id) + 1;
-				judge_state.problem.title = zoj.utils.removeTitleTag(judge_state.problem.title);
 
 				if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge_state.problem.isAllowedEditBy(res.locals.user)) {
 					if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge_state.status)) {
@@ -138,7 +137,6 @@ app.get('/submission/:id', async (req, res) => {
 
 			problems_id = await problems_id.mapAsync(x => (x.id));
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
-			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 
 			if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge.status)) {
@@ -188,7 +186,6 @@ app.get('/submission/:id/ajax', async (req, res) => {
 			let problems_id = await contest.getProblems();
 			problems_id = await problems_id.mapAsync(x => (x.id));
 			judge.problem_id = problems_id.indexOf(judge.problem_id) + 1;
-			judge.problem.title = zoj.utils.removeTitleTag(judge.problem.title);
 
 			if (require(`../types/contest/${contest.type}`).config.hideResult && !contest.ended && !await judge.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(judge.status)) {

@@ -368,7 +368,6 @@ app.get('/contest/:id/submissions', async (req, res) => {
 		await judge_state.forEachAsync(async obj => {
 			await obj.loadRelationships();
 			obj.problem_id = problems_id.indexOf(obj.problem_id) + 1;
-			obj.problem.title = zoj.utils.removeTitleTag(obj.problem.title);
 
 			if (!contest.ended && !await obj.problem.isAllowedEditBy(res.locals.user)) {
 				if (!['Compile Error', 'Waiting', 'Compiling'].includes(obj.status)) {
