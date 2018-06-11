@@ -155,44 +155,40 @@ class Problem extends Model {
 				let path = require('path');
 				let list = await (await fs.readdirAsync(dir)).filterAsync(async x => await zoj.utils.isFile(path.join(dir, x)));
 
-				let cases = [];
+				let cases = {};
 				for (let file of list) {
 					let parsedName = path.parse(file);
+					let caseName = zoj.utils.parseTestcaseDataName(parsedName.name);
 					if (parsedName.ext === '.in') {
 						if (list.includes(`${parsedName.name}.out`)) {
 							let o = {
 								input: file,
 								output: `${parsedName.name}.out`
 							};
-							cases.push(o);
+							if (!cases[caseName]) cases[caseName] = [];
+							cases[caseName].push(o);
 						} else if (list.includes(`${parsedName.name}.ans`)) {
 							let o = {
 								input: file,
 								output: `${parsedName.name}.ans`
 							};
-							cases.push(o);
+							if (!cases[caseName]) cases[caseName] = [];
+							cases[caseName].push(o);
 						}
 					}
 				}
-				cases.sort((a, b) => {
-					if (a.input.length < b.input.length) return -1;
-					if (a.input.length > b.input.length) return 1;
-					if (a.input < b.input) return -1;
-					if (a.input > b.input) return 1;
-					return 0;
-				});
-				let subtask = Object();
-				subtask.type = 'sum';
-				subtask.score = 100;
-				subtask.cases = cases;
-
 				let testcases = [];
-				testcases.push(subtask);
-				this.datainfo.testcases = testcases;
-				for (var obj of list) if (obj.startsWith('spj_')) {
-					this.datainfo.spj = obj;
-					break;
+				for (let casename in cases) {
+					let testcase = cases[casename];
+					let subtask = {};
+					subtask.type = 'sum';
+					subtask.score = 100;
+					subtask.cases = testcase;
+					subtask.name = casename;
+					testcases.push(subtask);
 				}
+
+				this.datainfo.testcases = testcases;
 			} catch (e) {
 				zoj.error(e);
 			}
