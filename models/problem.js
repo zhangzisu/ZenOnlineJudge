@@ -156,6 +156,7 @@ class Problem extends Model {
 				let list = await (await fs.readdirAsync(dir)).filterAsync(async x => await zoj.utils.isFile(path.join(dir, x)));
 
 				let cases = {};
+				let caseNum = 0;
 				for (let file of list) {
 					let parsedName = path.parse(file);
 					let caseName = zoj.utils.parseTestcaseDataName(parsedName.name);
@@ -167,6 +168,7 @@ class Problem extends Model {
 							};
 							if (!cases[caseName]) cases[caseName] = [];
 							cases[caseName].push(o);
+							++caseNum;
 						} else if (list.includes(`${parsedName.name}.ans`)) {
 							let o = {
 								input: file,
@@ -174,21 +176,32 @@ class Problem extends Model {
 							};
 							if (!cases[caseName]) cases[caseName] = [];
 							cases[caseName].push(o);
+							++caseNum;
 						}
 					}
 				}
-				let testcases = [];
-				for (let casename in cases) {
-					let testcase = cases[casename];
-					let subtask = {};
-					subtask.type = 'sum';
-					subtask.score = 100;
-					subtask.cases = testcase;
-					subtask.name = casename;
-					testcases.push(subtask);
-				}
+				if (caseNum) {
+					let testcases = [];
+					for (let casename in cases) {
+						let testcase = cases[casename];
+						let subtask = {};
+						subtask.type = 'sum';
+						subtask.score = 100;
+						subtask.cases = testcase;
+						subtask.name = casename;
+						testcases.push(subtask);
+					}
 
-				this.datainfo.testcases = testcases;
+					let scorePerCase = Math.floor(100 / caseNum);
+					let remainScore = 100 - caseNum * scorePerCase;
+
+					for (let i = 0; i < testcases.length; i++) {
+						testcases[i].score = scorePerCase * testcases[i].cases.length;
+						if (i == testcases.length - 1) testcases[i].score += remainScore;
+					}
+
+					this.datainfo.testcases = testcases;
+				}
 			} catch (e) {
 				zoj.error(e);
 			}
