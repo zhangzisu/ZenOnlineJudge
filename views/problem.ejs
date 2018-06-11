@@ -166,6 +166,7 @@ div[class*=ace_br] {
     if (typeof contest !== 'undefined' && contest && contest.ended || (!problem.datainfo.testcases)) {
       noSubmit = true;
     }
+    if(problem.datainfo.noSubmit)noSubmit = true;
     %>
     <% if (!noSubmit) { %>
     <div class="row">

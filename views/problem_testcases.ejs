@@ -17,15 +17,9 @@ if (problem.datainfo.testcases) {
     <tbody>
       <% let i = 0; %>
       <% for (let subtask of problem.datainfo.testcases) { %>
-        <% if (problem.datainfo.testcases.length !== 1) { %>
           <tr>
-            <td style="background-color: #F9FAFB" colspan="2"><h4 style="margin-bottom: 3px; ">Subtasks <%= ++i %></h4><span style="font-weight: normal; "><%= subtaskType[subtask.type] %>，Total Score <%= subtask.score %></span></th>
+            <td style="background-color: #F9FAFB" colspan="2"><h4 style="margin-bottom: 3px; ">Subtasks <%= ++i %>.<%= subtask.name %></h4><span style="font-weight: normal; "><%= subtaskType[subtask.type] %>，Total Score <%= subtask.score %></span></th>
           </tr>
-        <% } else { %>
-          <tr>
-            <td style="background-color: #F9FAFB" colspan="2"><h4 style="margin-bottom: 3px; ">Single Subtask</h4><span style="font-weight: normal; "><%= subtaskType[subtask.type] %></span></th>
-          </tr>
-        <% } %>
           <% for (let testcase of subtask.cases) { %>
             <tr class="center aligned">
               <td style="width: 50%; "><%= testcase.input || '-' %></td>

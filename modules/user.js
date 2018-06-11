@@ -207,7 +207,8 @@ app.post('/user/:id/edit', async (req, res) => {
 		await user.loadRelationships();
 		res.render('user_edit', {
 			edited_user: user,
-			error_info: e.message
+			error_info: e.message,
+			groupAccess: await res.locals.user.haveAccess('user_edit')
 		});
 	}
 });

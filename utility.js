@@ -190,5 +190,9 @@ module.exports = {
 	async saveConfig() {
 		let fs = require('fs-extra');
 		await fs.writeFileAsync(zoj.rootDir + '/config.json', JSON.stringify(zoj.config, null, 2));
+	},
+	parseTestcaseDataName(name) {
+		let pos = name.lastIndexOf('_');
+		return pos <= 0 ? '_default' : name.substr(0, pos);
 	}
 };
