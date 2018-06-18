@@ -180,6 +180,7 @@ class Problem extends Model {
 						}
 					}
 				}
+				cases.sort((A, B) => {return A.input.length == B.input.length ? A.input < B.input : A.input.length < B.input.length; });
 				if (caseNum) {
 					let testcases = [];
 					for (let casename in cases) {
