@@ -163,7 +163,7 @@ div[class*=ace_br] {
   <% } %>
     <% let noSubmit = false; %>
     <%
-    if (typeof contest !== 'undefined' && contest && contest.ended || (!problem.datainfo.testcases)) {
+    if (typeof contest !== 'undefined' && contest && contest.ended || ((!problem.datainfo.testcases) || (!problem.datainfo.testcases.length))) {
       noSubmit = true;
     }
     if(problem.datainfo.noSubmit)noSubmit = true;
