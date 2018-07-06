@@ -103,8 +103,8 @@ class Problem extends Model {
 	}
 
 	match(gA, gB) {
-		gA.sort((a, b) => { a.id < b.id; });
-		gB.sort((a, b) => { a.id < b.id; });
+		gA.sort((a, b) => { return a.id < b.id; });
+		gB.sort((a, b) => { return a.id < b.id; });
 		let idA = 0, idB = 0;
 		while (idA < gA.length && idB < gB.length) {
 			if (gA[idA].id === gB[idB].id) return true;
