@@ -6,6 +6,8 @@ let config = {
 	noEstimate: true
 };
 
+let Contest = zoj.model('contest');
+
 async function calcScore(player, judge_state) {
 	if (!judge_state.pending) {
 		if (!player.score_details[judge_state.problem_id]) {
@@ -53,6 +55,9 @@ async function calcScore(player, judge_state) {
 }
 
 async function updateRank(players) {
+	if (!players.length) return;
+	let contest = await Contest.fromID(players[0].contest_id);
+
 	for (let player of players) {
 		player.timeSum = 0;
 		for (let i in player.score_details) {
