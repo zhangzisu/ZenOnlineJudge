@@ -7,16 +7,12 @@ let config = {
 	hideResult: true
 };
 
-let Contest = zoj.model('contest');
-
 async function calcScore(player, judge_state) {
 	if (this.score_details[judge_state.problem_id] && this.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
 
 	if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
 	this.score_details[judge_state.problem_id].score = judge_state.score;
 	this.score_details[judge_state.problem_id].judge_id = judge_state.id;
-
-	let contest = await Contest.fromID(player.contest_id);
 
 	for (let x of player.contest.problems) {
 		if (!player.score_details[x.id]) continue;
@@ -52,9 +48,7 @@ async function getStatus(player, pid) {
 		let judge_state = await JudgeState.fromID(player.score_details[pid].judge_id);
 		let status = judge_state.status;
 
-		let contest = await Contest.fromID(player.contest_id);
-
-		if (!contest.ended && !['Compile Error', 'Waiting', 'Compiling'].includes(status)) {
+		if (!player.contest.ended && !['Compile Error', 'Waiting', 'Compiling'].includes(status)) {
 			status = 'Submitted';
 		}
 		let judge_id = player.score_details[pid].judge_id;

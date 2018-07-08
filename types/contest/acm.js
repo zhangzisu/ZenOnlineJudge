@@ -55,7 +55,7 @@ async function calcScore(player, judge_state) {
 }
 
 async function updateRank(players) {
-	if (!players.length) return;
+	if (!players.length) return [];
 	let contest = await Contest.fromID(players[0].contest_id);
 
 	for (let player of players) {

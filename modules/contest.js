@@ -225,6 +225,7 @@ app.get('/contest/:id', async (req, res) => {
 				contest_id: contest.id,
 				user_id: res.locals.user.id
 			});
+			await player.loadRelationships();
 		}
 
 		problems = problems.map(x => ({

@@ -6,8 +6,6 @@ let config = {
 	allowedSeeCase: true
 };
 
-let Contest = zoj.model('contest');
-
 async function calcScore(player, judge_state) {
 	if (!judge_state.pending) {
 		if (!player.score_details[judge_state.problem_id]) player.score_details[judge_state.problem_id] = new Object();
@@ -37,8 +35,6 @@ async function calcScore(player, judge_state) {
 		player.score_details[judge_state.problem_id].judge_id = maxScoreSubmission.judge_id;
 		player.score_details[judge_state.problem_id].score = maxScoreSubmission.score;
 		player.score_details[judge_state.problem_id].time = maxScoreSubmission.time;
-
-		let contest = await Contest.fromID(player.contest_id);
 
 		for (let x of player.contest.problems) {
 			if (!player.score_details[x.id]) continue;
