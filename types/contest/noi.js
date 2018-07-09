@@ -8,7 +8,7 @@ let config = {
 };
 
 async function calcScore(player, judge_state) {
-	if (player.score_details[judge_state.problem_id] && player.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
+	if (player.score_details[judge_state.problem_id] && player.score_details[judge_state.problem_id].judge_id > judge_state.id) return player;
 
 	if (!player.score_details[judge_state.problem_id]) player.score_details[judge_state.problem_id] = new Object();
 	player.score_details[judge_state.problem_id].score = judge_state.score;
