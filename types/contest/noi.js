@@ -8,11 +8,11 @@ let config = {
 };
 
 async function calcScore(player, judge_state) {
-	if (this.score_details[judge_state.problem_id] && this.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
+	if (player.score_details[judge_state.problem_id] && player.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
 
-	if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
-	this.score_details[judge_state.problem_id].score = judge_state.score;
-	this.score_details[judge_state.problem_id].judge_id = judge_state.id;
+	if (!player.score_details[judge_state.problem_id]) player.score_details[judge_state.problem_id] = new Object();
+	player.score_details[judge_state.problem_id].score = judge_state.score;
+	player.score_details[judge_state.problem_id].judge_id = judge_state.id;
 
 	for (let x of player.contest.problems) {
 		if (!player.score_details[x.id]) continue;
