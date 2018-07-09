@@ -47,8 +47,8 @@ async function calcScore(player, judge_state) {
 			player.score_details[judge_state.problem_id].judge_id = arr[arr.length - 1].judge_id;
 		}
 
-		for (let x in this.score_details) {
-			if (this.score_details[x].accepted) this.score++;
+		for (let x in player.score_details) {
+			if (player.score_details[x].accepted) player.score++;
 		}
 	}
 	return player;
