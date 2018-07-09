@@ -14,6 +14,7 @@ async function calcScore(player, judge_state) {
 	player.score_details[judge_state.problem_id].score = judge_state.score;
 	player.score_details[judge_state.problem_id].judge_id = judge_state.id;
 
+	player.score = 0;
 	for (let x of player.contest.problems) {
 		if (!player.score_details[x.id]) continue;
 		player.score += Math.round(player.score_details[x.id].score / 100 * x.score);
