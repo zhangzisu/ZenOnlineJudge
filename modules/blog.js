@@ -368,7 +368,7 @@ app.get('/blogs/export/:id', async (req, res) => {
 
 		let id = parseInt(req.params.id) || 0;
 
-		let where = {};
+		let where = { is_public: 1 };
 		let user = await User.fromID(id);
 		if (user) where.user_id = user.id;
 		let posts = await BlogPost.query(null, where, [['id', 'desc']]);
