@@ -373,7 +373,7 @@ app.get('/blogs/export/:id', async (req, res) => {
 		if (user) where.user_id = user.id;
 		let posts = await BlogPost.query(null, where, [['id', 'desc']]);
 		let table = [
-			['Blog ID', 'User', 'From', 'Problem ID', 'Problem Title', 'Time', 'Tags', 'Link']
+			['Blog ID', 'User', 'Motto', 'From', 'Problem ID', 'Problem Title', 'Time', 'Tags', 'Link']
 		];
 		for (let post of posts) {
 			await post.loadRelationships();
@@ -383,6 +383,7 @@ app.get('/blogs/export/:id', async (req, res) => {
 				[
 					post.id,
 					post.user.username,
+					post.user.information,
 					post.from,
 					post.problem_id,
 					post.title,
