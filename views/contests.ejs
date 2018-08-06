@@ -1,7 +1,7 @@
 <% this.title = 'Contest' %>
 <% include header %>
 <div class="padding">
-    <% if (user.haveAccess('contest_manage')) { %>
+    <% if (await user.haveAccess('contest_manage')) { %>
     <div class="ui grid">
       <div class="row">
         <div class="column">

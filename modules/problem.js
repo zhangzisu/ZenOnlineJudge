@@ -27,7 +27,7 @@ app.get('/problems', async (req, res) => {
 		});
 
 		res.render('problems', {
-			allowedManageTag: res.locals.user.haveAccess('manage_tag'),
+			allowedManageTag: await res.locals.user.haveAccess('manage_tag'),
 			problems: problems,
 			paginate: paginate
 		});
@@ -70,7 +70,7 @@ app.get('/problems/search', async (req, res) => {
 		});
 
 		res.render('problems', {
-			allowedManageTag: res.locals.user.haveAccess('manage_tag'),
+			allowedManageTag: await res.locals.user.haveAccess('manage_tag'),
 			problems: problems,
 			paginate: paginate
 		});
@@ -121,7 +121,7 @@ app.get('/problems/tag/:tagIDs', async (req, res) => {
 		});
 
 		res.render('problems', {
-			allowedManageTag: res.locals.user.haveAccess('manage_tag'),
+			allowedManageTag: await res.locals.user.haveAccess('manage_tag'),
 			problems: problems,
 			tags: tags,
 			paginate: paginate
@@ -758,7 +758,7 @@ app.post('/problem/:id/testdata/delete/:filename', async (req, res) => {
 app.get('/problem/:id/testdata/download/:filename?', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
-		if (!res.locals.user.haveAccess('testdata_download')) throw new Error('You do not have permission to do this');
+		if (!await res.locals.user.haveAccess('testdata_download')) throw new Error('You do not have permission to do this');
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
