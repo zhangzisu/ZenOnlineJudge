@@ -1,5 +1,7 @@
 'use strict';
 
+let JudgeState = zoj.model('judge_state');
+
 let config = {
 	allowedSeeCase: false,
 	hideResult: false,
