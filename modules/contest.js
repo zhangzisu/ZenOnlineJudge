@@ -26,7 +26,8 @@ app.get('/contests', async (req, res) => {
 
 		res.render('contests', {
 			contests: contests,
-			paginate: paginate
+			paginate: paginate,
+			async: true
 		});
 	} catch (e) {
 		zoj.error(e);
