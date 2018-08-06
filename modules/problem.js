@@ -758,6 +758,7 @@ app.post('/problem/:id/testdata/delete/:filename', async (req, res) => {
 app.get('/problem/:id/testdata/download/:filename?', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+		if (!res.locals.user.haveAccess('testdata_download')) throw new Error('You do not have permission to do this');
 
 		let id = parseInt(req.params.id);
 		let problem = await Problem.fromID(id);
