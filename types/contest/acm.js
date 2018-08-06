@@ -11,6 +11,7 @@ let Contest = zoj.model('contest');
 async function calcScore(player, judge_state) {
 	if (!judge_state.pending) {
 		if (!player.score_details[judge_state.problem_id]) {
+			if (!player.score_details[judge_state.problem_id]) player.score_details[judge_state.problem_id] = {};
 			player.score_details[judge_state.problem_id].accepted = false;
 			player.score_details[judge_state.problem_id].unacceptedCount = 0;
 			player.score_details[judge_state.problem_id].acceptedTime = 0;
