@@ -1,6 +1,6 @@
 # Zen Online Judge
 
-## It looks like that Zhang_Zisu not update this project often, and there are many new Bugs
+## It looks like that Zhang_Zisu doesn't update this project often, and there are many new Bugs
 
 [![GitHub release](https://img.shields.io/github/release/ZhangZisu/ZenOnlineJudge.svg)](https://github.com/ZhangZisu/ZenOnlineJudge)
 [![license](https://img.shields.io/github/license/ZhangZisu/ZenOnlineJudge.svg)](https://github.com/ZhangZisu/ZenOnlineJudge)
