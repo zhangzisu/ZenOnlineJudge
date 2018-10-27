@@ -1,7 +1,5 @@
 # Zen Online Judge
 
-## It looks like that Zhang_Zisu doesn't update this project often, and there are many new Bugs
-
 [![GitHub release](https://img.shields.io/github/release/ZhangZisu/ZenOnlineJudge.svg)](https://github.com/ZhangZisu/ZenOnlineJudge)
 [![license](https://img.shields.io/github/license/ZhangZisu/ZenOnlineJudge.svg)](https://github.com/ZhangZisu/ZenOnlineJudge)
 [![Build status](https://ci.appveyor.com/api/projects/status/0sc873ikiw8a5ecc/branch/master?svg=true)](https://ci.appveyor.com/project/ZhangZisu/zenonlinejudge/branch/master)
