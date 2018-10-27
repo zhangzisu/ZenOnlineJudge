@@ -43,21 +43,8 @@ div[class*=ace_br] {
     <% if (!contest) { %>
         <div class="row" style="margin-top: -23px">
             <span class="ui label">Uploaded by：
-            <% if (problem.is_anonymous && !problem.allowedManage) { %>
-              Anonymous
-            <% } else { %>
               <a user href="<%= zoj.utils.makeUrl(['user', problem.user_id]) %>"><%= problem.user.username %></a>
-            <% } %>
             </span>
-            <% if (problem.allowedManage) { %>
-                <span class="ui label">Published by:
-                <% if (problem.publicizer) { %>
-                  <a user href="<%= zoj.utils.makeUrl(['user', problem.publicizer_id]) %>"><%= problem.publicizer.username %></a>
-                <% } else { %>
-                  Unknown
-                <% } %>
-                </span>
-            <% } %>
         </div>
     <% } %>
 </div>

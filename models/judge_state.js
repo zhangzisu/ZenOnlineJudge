@@ -132,6 +132,11 @@ class JudgeState extends Model {
 		if (await this.problem.isAllowedUseBy(user)) return true;
 		return await user.haveAccess('others_submission');
 	}
+	
+	async isAllowedDeleteBy(user) {
+		if (!user) return false;
+		return await user.haveAccess('judge_state_delete');
+	} 
 
 	updateResult(result) {
 		this.score = result.score;
@@ -214,6 +219,22 @@ class JudgeState extends Model {
 				await contest.newSubmission(this);
 			}
 		});
+	}
+
+	async delete() {
+
+		await this.loadRelationships();
+		this.problem.submit_num--;
+		if (this.status == 'Accepted') {
+			this.problem.ac_num--;
+		}
+		await this.problem.save();
+		await this.user.refreshSubmitInfo();
+		await this.user.save();
+
+		await db.query('DELETE FROM `judge_state` WHERE `id` = ' + this.id);
+		await db.query('DELETE FROM `waiting_judge` WHERE `judge_id` = ' + this.id);
+
 	}
 
 	async getProblemType() {

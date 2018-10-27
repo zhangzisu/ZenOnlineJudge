@@ -7,6 +7,7 @@ let WaitingJudge = zoj.model('waiting_judge');
 let Contest = zoj.model('contest');
 let ProblemTag = zoj.model('problem_tag');
 let Article = zoj.model('article');
+let User = zoj.model('user');
 
 app.get('/problems', async (req, res) => {
 	try {
@@ -255,7 +256,7 @@ app.post('/problem/:id/edit', async (req, res) => {
 			}
 
 			problem.user_id = res.locals.user.id;
-			problem.publicizer_id = res.locals.user.id;
+			// problem.publicizer_id = res.locals.user.id;
 		} else {
 			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 
@@ -271,7 +272,7 @@ app.post('/problem/:id/edit', async (req, res) => {
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
 		problem.title = req.body.title;
 		problem.content = req.body.content;
-		problem.is_anonymous = (req.body.is_anonymous === 'on');
+		// problem.is_anonymous = (req.body.is_anonymous === 'on');
 
 		// Save the problem first, to have the `id` allocated
 		await problem.save();
@@ -320,7 +321,7 @@ app.get('/problem/:id/import', async (req, res) => {
 			problem.id = id;
 			problem.new = true;
 			problem.user_id = res.locals.user.id;
-			problem.publicizer_id = res.locals.user.id;
+			// problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
 			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
@@ -355,7 +356,7 @@ app.post('/problem/:id/import', async (req, res) => {
 			} else if (id) problem.id = id;
 
 			problem.user_id = res.locals.user.id;
-			problem.publicizer_id = res.locals.user.id;
+			// problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
 			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
@@ -462,7 +463,7 @@ app.get('/problem/:id/manualimport', async (req, res) => {
 			problem.id = id;
 			problem.new = true;
 			problem.user_id = res.locals.user.id;
-			problem.publicizer_id = res.locals.user.id;
+			// problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
 			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
@@ -502,7 +503,7 @@ app.post('/problem/:id/manualimport', app.multer.fields([{ name: 'testdata', max
 			} else if (id) problem.id = id;
 
 			problem.user_id = res.locals.user.id;
-			problem.publicizer_id = res.locals.user.id;
+			// problem.publicizer_id = res.locals.user.id;
 		} else {
 			await problem.loadRelationships();
 			if (!await problem.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');

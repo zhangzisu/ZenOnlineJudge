@@ -148,11 +148,13 @@ app.get('/user/:id/edit', async (req, res) => {
 		}
 
 		res.locals.user.allowedManage = await res.locals.user.haveAccess('user_edit');
+		res.locals.user.allowedDelete = await res.locals.user.haveAccess('user_delete');
 
 		res.render('user_edit', {
 			edited_user: user,
 			error_info: null,
-			groupAccess: await res.locals.user.haveAccess('user_edit')
+			groupAccess: await res.locals.user.haveAccess('user_edit'),
+			allowedDelete: await res.locals.user.haveAccess('user_delete')
 		});
 	} catch (e) {
 		zoj.error(e);
@@ -208,7 +210,38 @@ app.post('/user/:id/edit', async (req, res) => {
 		res.render('user_edit', {
 			edited_user: user,
 			error_info: e.message,
-			groupAccess: await res.locals.user.haveAccess('user_edit')
+			groupAccess: await res.locals.user.haveAccess('user_edit'),
+			allowedDelete: await res.locals.user.haveAccess('user_delete')
+		});
+	}
+});
+
+app.post('/user/:id/delete', async(req, res) => {
+	let user;
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; }
+		await res.locals.user.loadRelationships();
+
+		let id = parseInt(req.params.id) || 0;
+		user = await User.fromID(id);
+		// zoj.log(user);
+		if (!user) throw new ErrorMessage('No such user.');
+		await user.loadRelationships();
+
+		let allowedDelete = await user.isAllowedDeleteBy(res.locals.user);
+		if (!allowedDelete) throw new ErrorMessage('You do not have permission to do this');
+
+		await user.delete();
+		res.redirect('/');
+
+	} catch (e) {
+		await user.loadRelationships();
+		// zoj.log(e.message);
+		res.render('user_edit', {
+			edited_user: user,
+			error_info: e.message,
+			groupAccess: await res.locals.user.haveAccess('user_edit'),
+			allowedDelete: await res.locals.user.haveAccess('user_delete')
 		});
 	}
 });

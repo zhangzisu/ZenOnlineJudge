@@ -74,6 +74,29 @@
       <div style="text-align: center; ">
         <button type="submit" class="ui button">Modify</button>
         <a href="<%= zoj.utils.makeUrl(['user', edited_user.id]) %>" class="ui blue button">Return to Personal Information</a>
+        <% if (allowedDelete) { %>
+          <div class="ui basic modal" id="modal-delete">
+            <div class="ui icon header">
+              <i class="trash icon"></i>
+              <p style="margin-top: 15px; ">Delete User</p>
+            </div>
+            <div class="content" style="text-align: center; ">
+              <p>Are you sure to delete this user? He(she)'s submissions,discussions and blogs will be deleted.<br>
+                This operation is irreversiable</p>
+            </div>
+            <div class="actions">
+              <div class="ui red basic cancel inverted button">
+                <i class="remove icon"></i>
+                No
+              </div>
+              <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['user', edited_user.id, 'delete']) %>">
+                <i class="checkmark icon"></i>
+                Yes
+              </a>
+            </div>
+          </div>
+          <div class="small ui red button" onclick="$('#modal-delete').modal('show')">Delete</div>
+        <% } %>
       </div>
 		</form>
 	</div>
