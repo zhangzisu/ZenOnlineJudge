@@ -83,4 +83,88 @@
     </script>
   <% } %>
 </div>
+<div class="ui comments" style="max-width: none;">
+<!-- Comments -->
+  <% if (comments.length) { %>
+  <div class="ui comments" style="max-width: none;">
+    <h3 class="ui dividing header">Total replies: <%= commentsCount %></h3>
+    <% for (let comment of comments) { %>
+      <div class="comment">
+        <a class="avatar">
+          <img src="<%= zoj.utils.gravatar(comment.user.email, 120) %>">
+        </a>
+        <div class="content">
+          <a user class="author" href="<%= zoj.utils.makeUrl(['user', comment.user_id]) %>"><%= comment.user.username %></a>
+          <div class="metadata">
+            <span class="date"><%= zoj.utils.formatDate(comment.public_time) %></span>
+          </div>
+          <div class="text font-content"><%- comment.content %></div>
+          <% if (comment.allowedEdit) { %>
+            <div class="actions"><a onclick="$('#modal-delete-<%= comment.id %>').modal('show')">Delete</a></div>
+            <div class="ui basic modal" id="modal-delete-<%= comment.id %>">
+              <div class="ui icon header">
+                <i class="trash icon"></i>
+                <p style="margin-top: 15px; ">Delete This Comment</p>
+              </div>
+              <div class="content" style="text-align: center; ">
+                <p>Are you sure to delete this?</p>
+              </div>
+              <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                  <i class="remove icon"></i>
+                  No
+                </div>
+                <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['blog', post.id, 'comment', comment.id, 'delete']) %>">
+                  <i class="checkmark icon"></i>
+                  Yes
+                </a>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+  <div style="margin-bottom: 50px; ">
+    <% include page %>
+  </div>
+  <% } %>
+  
+  <% if (allowedComment) { %>
+   <form class="ui reply form" method="post" action="<%= zoj.utils.makeUrl(['blog', post.id, 'comment']) %>">
+      <div class="field">
+        <div id="comment" style="height: 300px;"></div>
+				<input type="hidden" name="comment" value="">
+      </div>
+      <button type="submit" class="ui labeled submit icon button">
+        <i class="icon edit"></i><i class="mega-octicon octicon-markdown"></i>Reply
+      </button>
+   </form>
+    <script src="/ace/ace.js"></script>
+    <script type="text/javascript">
+    function registerACEditor(editorID, containerName, mode){
+      var editor = ace.edit(editorID);
+
+      editor.setTheme("ace/theme/tomorrow");
+      editor.getSession().setMode(mode);
+      editor.getSession().setUseSoftTabs(false);
+
+      editor.container.name = containerName;
+      editor.container.style.lineHeight = 1.6;
+      editor.container.style.fontSize = '14px';
+      editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+      editor.setShowPrintMargin(false);
+      editor.renderer.updateFontSize();
+
+      var input = $(`[name="${containerName}"]`);
+      editor.getSession().on("change", function () {
+        input.val(editor.getSession().getValue());
+      });
+    }
+
+    registerACEditor("comment", "comment", "ace/mode/markdown");
+
+    </script>
+   <% } %>
+</div>
 <% include footer %>

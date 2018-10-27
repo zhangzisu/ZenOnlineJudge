@@ -2,6 +2,7 @@
 
 let BlogPost = zoj.model('blog_post');
 let BlogPostTag = zoj.model('blog_post_tag');
+let BlogComment = zoj.model('blog-comment');
 let User = zoj.model('user');
 
 app.get('/blogs', async (req, res) => {
@@ -31,6 +32,7 @@ app.get('/blogs', async (req, res) => {
 
 		res.render('blog', {
 			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
+			allowedComment: await res.locals.user.haveAccess('blog_comment'),
 			posts: posts,
 			paginate: paginate,
 			enableExport: await res.locals.user.haveAccess('blog_export'),
@@ -221,14 +223,91 @@ app.get('/blog/:id', async (req, res) => {
 			throw new ErrorMessage('You do not have permission to do this');
 		}
 
+		let where = { post_id: id };
+		let commentsCount = await BlogComment.count(where);
+		let paginate = zoj.utils.paginate(commentsCount, req.query.page, zoj.config.page.post_comment);
+		
+		let comments = await BlogComment.query(paginate, where, [['public_time', 'desc']]);
+
+		// zoj.log();
+
+		for (let comment of comments) {
+			comment.content = await zoj.utils.markdown(comment.content);
+			comment.allowedEdit = await comment.isAllowedEditBy(res.locals.user);
+			await comment.loadRelationships();
+		}
+
 		post.tags = await post.getTags();
 		await post.loadRelationships();
 
 		res.render('post', {
-			post: post
+			post: post,
+			paginate: paginate,
+			allowedComment: await res.locals.user.haveAccess('blog_comment'),
+			comments: comments,
+			commentsCount: commentsCount
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
+app.post('/blog/:id/comment', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+
+		let id = parseInt(req.params.id) || 0;
+		let blog = await BlogPost.fromID(id);
+
+		if (!blog) throw new ErrorMessage('No such a blog.');
+		if (!await res.locals.user.haveAccess('blog_comment')) {
+			throw new ErrorMessage('Permission denied');
+		}
+
+		if (!await res.locals.user.haveAccess('admin') && !blog.is_public) {
+			throw new ErrorMessage('Permission denied');
+		}
+
+
+		let comment = await BlogComment.create({
+			content: req.body.comment,
+			post_id: id,
+			user_id: res.locals.user.id,
+			public_time: zoj.utils.getCurrentDate()
+		});
+
+		await comment.save();
+
+		res.redirect(zoj.utils.makeUrl(['blog', id]));
+	} catch(e) {
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		})
+	}
+});
+
+app.post('/blog/:blog_id/comment/:id/delete', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+
+		let id = parseInt(req.params.id);
+		let comment = await BlogComment.fromID(id);
+
+		if (!comment) {
+			throw new ErrorMessage('No such comment');
+		} else {
+			if (!await comment.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
+		}
+
+		await comment.destroy();
+
+		res.redirect(zoj.utils.makeUrl(['blog', comment.post_id]));
+	} catch (e) {
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});

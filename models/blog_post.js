@@ -118,6 +118,7 @@ class BlogPost extends Model {
 	async delete() {
 		await db.query('DELETE FROM `blog_post`         WHERE `id`      = ' + this.id);
 		await db.query('DELETE FROM `blog_post_tag_map` WHERE `post_id` = ' + this.id);
+		await db.query('DELETE FROM `blog_comment` WHERE `post_id` = ' + this.id);
 	}
 
 	getModel() { return model; }

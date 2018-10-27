@@ -60,7 +60,8 @@
             "blog_edit": false,
             "others_blogs": false,
             "manage_blog_tag": false,
-            "change_username": false
+            "change_username": false,
+            "blog_comment": false
         }
     },
     "sorting": {
@@ -93,7 +94,8 @@
         "contest": 10,
         "edit_contest_problem_list": 10,
         "edit_problem_tag_list": 10,
-        "post": 20
+        "post": 20,
+        "post_comment": 20
     },
     "languages": {
         "cpp": {
