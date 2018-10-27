@@ -8,12 +8,13 @@ let config = {
 };
 
 async function calcScore(player, judge_state) {
-	if (this.score_details[judge_state.problem_id] && this.score_details[judge_state.problem_id].judge_id > judge_state.id) return;
+	if (player.score_details[judge_state.problem_id] && player.score_details[judge_state.problem_id].judge_id > judge_state.id) return player;
 
-	if (!this.score_details[judge_state.problem_id]) this.score_details[judge_state.problem_id] = new Object();
-	this.score_details[judge_state.problem_id].score = judge_state.score;
-	this.score_details[judge_state.problem_id].judge_id = judge_state.id;
+	if (!player.score_details[judge_state.problem_id]) player.score_details[judge_state.problem_id] = new Object();
+	player.score_details[judge_state.problem_id].score = judge_state.score;
+	player.score_details[judge_state.problem_id].judge_id = judge_state.id;
 
+	player.score = 0;
 	for (let x of player.contest.problems) {
 		if (!player.score_details[x.id]) continue;
 		player.score += Math.round(player.score_details[x.id].score / 100 * x.score);
@@ -47,7 +48,8 @@ async function getStatus(player, pid) {
 	if (player.score_details[pid]) {
 		let judge_state = await JudgeState.fromID(player.score_details[pid].judge_id);
 		let status = judge_state.status;
-		if (!contest.ended && !['Compile Error', 'Waiting', 'Compiling'].includes(status)) {
+
+		if (!player.contest.ended && !['Compile Error', 'Waiting', 'Compiling'].includes(status)) {
 			status = 'Submitted';
 		}
 		let judge_id = player.score_details[pid].judge_id;

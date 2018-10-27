@@ -127,6 +127,7 @@ app.get('/submission/:id', async (req, res) => {
 		judge.allowedSeeCase = await judge.isAllowedSeeCaseBy(res.locals.user);
 		judge.allowedSeeData = await judge.isAllowedSeeDataBy(res.locals.user);
 		judge.allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
+		judge.allowedDelete  = await judge.isAllowedDeleteBy(res.locals.user);
 
 		judge.codeLength = judge.code.length;
 		judge.code = await zoj.utils.highlight(judge.code, zoj.config.languages[judge.language].highlight);
@@ -180,6 +181,7 @@ app.get('/submission/:id/ajax', async (req, res) => {
 		judge.allowedSeeCase = await judge.isAllowedSeeCaseBy(res.locals.user);
 		judge.allowedSeeData = await judge.isAllowedSeeDataBy(res.locals.user);
 		judge.allowedRejudge = await judge.problem.isAllowedEditBy(res.locals.user);
+		judge.allowedDelete  = await judge.isAllowedDeleteBy(res.locals.user);
 
 		let hideScore = false;
 		if (contest) {
@@ -215,7 +217,8 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 
 		let id = parseInt(req.params.id);
 		let judge = await JudgeState.fromID(id);
-
+		
+		if (!judge) throw new ErrorMessage('No such a judge state.');
 
 		if (judge.pending && !await res.locals.user.haveAccess('admin_rejudge')) throw new ErrorMessage('The submittion is judging.');
 
@@ -228,6 +231,33 @@ app.post('/submission/:id/rejudge', async (req, res) => {
 
 		res.redirect(zoj.utils.makeUrl(['submission', id]));
 	} catch (e) {
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
+app.post('/submission/:id/delete', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+
+		let id = parseInt(req.params.id) || 0;
+		let judge = await JudgeState.fromID(id);
+
+		if (!judge) throw new ErrorMessage('No such a judge state.');
+
+		if (!await res.locals.user.haveAccess('judge_delete')) throw new ErrorMessage('You do not have permission to do this.');
+
+		await judge.loadRelationships();
+
+		let allowedDelete = await judge.isAllowedDeleteBy(res.locals.user);
+		if (!allowedDelete) throw new ErrorMessage('You do not have permission to do this');
+
+		await judge.delete();
+
+		res.redirect(zoj.utils.makeUrl(['submissions']));
+	} catch(e) {
 		zoj.error(e);
 		res.render('error', {
 			err: e

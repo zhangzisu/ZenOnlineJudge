@@ -64,7 +64,7 @@ class BlogPost extends Model {
 		if (!user) return false;
 		if (await this.is_public) return true;
 		if (this.user_id === user.id) return true;
-		return user.haveAccess('others_blogs');
+		return await user.haveAccess('others_blogs');
 		// 1.The post is public and the user is indoor student
 		// 2.The user is teacher/system admin
 		// 3.The user is the owner of this post
@@ -118,6 +118,7 @@ class BlogPost extends Model {
 	async delete() {
 		await db.query('DELETE FROM `blog_post`         WHERE `id`      = ' + this.id);
 		await db.query('DELETE FROM `blog_post_tag_map` WHERE `post_id` = ' + this.id);
+		await db.query('DELETE FROM `blog_comment` WHERE `post_id` = ' + this.id);
 	}
 
 	getModel() { return model; }

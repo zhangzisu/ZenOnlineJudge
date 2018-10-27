@@ -88,7 +88,7 @@ app.get('/article/:id', async (req, res) => {
 				throw new ErrorMessage('You do not have permission to do this');
 			}
 		}
-
+		// zoj.log("Call Comments");
 		res.render('article', {
 			article: article,
 			comments: comments,
@@ -160,7 +160,7 @@ app.post('/article/:id/edit', async (req, res) => {
 		article.title = req.body.title;
 		article.content = req.body.content;
 		article.update_time = time;
-		article.is_notice = res.locals.user.haveAccess('set_bulletin') && req.body.is_notice === 'on';
+		article.is_notice = (await res.locals.user.haveAccess('set_bulletin')) && req.body.is_notice === 'on';
 
 		await article.save();
 
