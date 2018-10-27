@@ -2,7 +2,7 @@
 
 let Problem = zoj.model('problem');
 let Article = zoj.model('article');
-let ArticleComment = zoj.model('article-comment');
+let ArticleComment = zoj.model('article_comment');
 
 app.get('/discussion', async (req, res) => {
 	try {

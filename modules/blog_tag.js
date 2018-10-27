@@ -1,6 +1,6 @@
 'use strict';
 
-let PostTag = zoj.model('blog_post_tag');
+let BlogTag = zoj.model('blog_tag');
 
 app.get('/blogs/tag/:id/edit', async (req, res) => {
 	try {
@@ -8,14 +8,14 @@ app.get('/blogs/tag/:id/edit', async (req, res) => {
 		if (!await res.locals.user.haveAccess('manage_blog_tag')) throw new ErrorMessage('You do not have permission to do this');
 
 		let id = parseInt(req.params.id) || 0;
-		let tag = await PostTag.fromID(id);
+		let tag = await BlogTag.fromID(id);
 
 		if (!tag) {
-			tag = await PostTag.create();
+			tag = await BlogTag.create();
 			tag.id = id;
 		}
 
-		res.render('post_tag_edit', {
+		res.render('blog_tag_edit', {
 			tag: tag
 		});
 	} catch (e) {
@@ -32,16 +32,16 @@ app.post('/blogs/tag/:id/edit', async (req, res) => {
 		if (!await res.locals.user.haveAccess('manage_blog_tag')) throw new ErrorMessage('You do not have permission to do this');
 
 		let id = parseInt(req.params.id) || 0;
-		let tag = await PostTag.fromID(id);
+		let tag = await BlogTag.fromID(id);
 
 		if (!tag) {
-			tag = await PostTag.create();
+			tag = await BlogTag.create();
 			tag.id = id;
 		}
 
 		req.body.name = req.body.name.trim();
 		if (tag.name !== req.body.name) {
-			if (await PostTag.findOne({ where: { name: req.body.name } })) {
+			if (await BlogTag.findOne({ where: { name: req.body.name } })) {
 				throw new ErrorMessage('The label name is already used.');
 			}
 		}

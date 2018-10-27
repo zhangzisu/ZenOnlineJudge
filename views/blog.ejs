@@ -1,192 +1,170 @@
-<% this.title = 'Blog' %>
-<% include header %>
+<% include util %>
 <%
-let tagIDs = [];
-if (typeof tags !== 'undefined') tagIDs = tags.map(x => x.id);
+  this.title = blog.title;
+  let enableMath = 1;
 %>
-<div class="padding">
-  <div class="ui grid" style="margin-bottom: 10px; ">
-    <div class="row" style="white-space: nowrap; ">
-      <div class="seven wide column">
-        <% if (typeof tags !== 'undefined') { %>
-          <%
-          tags.sort((a, b) => {
-            return a.color > b.color ? 1 : -1;
-          });
-          %>
-          <% for (let tag of tags) { %>
-              <% let tagListRemovedThisTag = tagIDs.filter(x => x != tag.id).sort().join(','); %>
-              <% let url = tagListRemovedThisTag ? zoj.utils.makeUrl(['blogs', 'tag', tagListRemovedThisTag]) : zoj.utils.makeUrl(['blogs']); %>
-              <a href="<%= url %>" class="ui tiny <%= tag.color %> label">
-                <%= tag.name %>
-              </a>
-          <% } %>
-        <% } else { %>
-          <form action="<%= zoj.utils.makeUrl(['blogs', 'search']) %>" method="get">
-            <div class="ui search" style="width: 280px; height: 28px; margin-top: -5.3px; ">
-              <div class="ui left icon input" style="width: 100%; ">
-                <input class="prompt" style="width: 100%; " type="text" placeholder="ID / Title …" name="keyword">
-                <i class="search icon"></i>
-              </div>
-              <div class="results" style="width: 100%; "></div>
-            </div>
-          </form>
-        <% } %>
-      </div>
-	  <div class="nine wide right aligned column">
-		<% if (res.locals.user) { %>
-		<div class="ui toggle checkbox" id="onlyself">
-			<style id="onlyself_style"></style>
-			<script>
-			<% if (req.cookies['selfonly_mode'] == '1') { %>
-			document.write('<input type="checkbox" checked>');
-			<% } else { %>
-			document.write('<input type="checkbox">');
-			<% } %> 
-			</script>
-			<script>
-			$(function () {
-			$('#onlyself').checkbox('setting', 'onChange', function () {
-				let checked = $('#onlyself').checkbox('is checked');
-				localStorage.setItem('onlyself', checked ? '1' : '0');
-				document.cookie='selfonly_mode='+(checked?1:0)+";path=/";
-				if (checked) {
-				window.location = '/blogs/user/<%= res.locals.user.id %>';
-				} else {
-				window.location = '/blogs';
-				}
-			});
-			});
-			</script>
-			<label>Master View</label>
-		</div>
-		<% } %>
-        <div class="ui toggle checkbox" id="show_tag">
-          <style id="show_tag_style"></style>
-          <script>
-          if (localStorage.getItem('show_tag') === '1') {
-            document.write('<input type="checkbox" checked>');
-            document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { white-space: nowrap; overflow: hidden; }';
-          } else {
-            document.write('<input type="checkbox">');
-            document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { width: 0; white-space: nowrap; overflow: hidden; }';
-          }
-          </script>
-
-          <script>
-          $(function () {
-            $('#show_tag').checkbox('setting', 'onChange', function () {
-              let checked = $('#show_tag').checkbox('is checked');
-              localStorage.setItem('show_tag', checked ? '1' : '0');
-              if (checked) {
-                document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { white-space: nowrap; overflow: hidden; }';
-              } else {
-                document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { width: 0; white-space: nowrap; overflow: hidden; }';
-              }
-            });
-          });
-          </script>
-          <label>Show Tags</label>
-        </div>
-        <div style="margin-left: 10px; display: inline-block; ">
-          <% if (allowedManageTag) { %>
-            <% if (typeof tags !== 'undefined' && tags.length === 1) { %>
-              <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['blogs', 'tag', tags[0].id, 'edit']) %>" class="ui labeled icon mini blue button"><i class="write icon"></i> Edit Tags</a>
+<% include header %>
+<div class="ui center aligned grid">
+    <div class="row">
+      <h1 class="ui header">
+          <%= blog.from %> #<%= blog.problem_id %>. <%= blog.title %><% if (blog.allowedEdit) { if (!blog.is_public) {%><span class="ui tiny red label">U</span><% }} %>
+      </h1>
+    </div>
+    <div class="row" style="margin-top: -23px">
+        <span class="ui label">Author:
+            <a user href="<%= zoj.utils.makeUrl(['user', blog.user_id]) %>"><%= blog.user.username %></a>
+        </span>
+        <span class="ui label">Time:
+            <a><%= zoj.utils.formatDate(blog.time) %></a>
+        </span>
+    </div>
+</div>
+<div class="ui grid">
+  <div class="row">
+    <div class="column">
+        <div class="ui buttons right floated">
+          <% if (blog.allowedEdit) { %>
+            <a class="small ui button" href="<%= zoj.utils.makeUrl(['blog', blog.id, 'edit']) %>">Edit</a>
+            <% if (blog.is_public) {  %>
+                <a class="small ui button" id="dis_public" href-post="<%= zoj.utils.makeUrl(['blog', blog.id, 'dis_public']) %>">Unpublish</a>
+            <% } else { %>
+                <a class="small ui button" id="public" href-post="<%= zoj.utils.makeUrl(['blog', blog.id, 'public']) %>">Publish</a>
             <% } %>
-            <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['blogs', 'tag', 0, 'edit']) %>" class="ui labeled icon mini green button"><i class="plus icon"></i> Add Tags</a>
+            <div class="ui basic modal" id="modal-delete">
+                <div class="ui icon header">
+                  <i class="trash icon"></i>
+                  <p style="margin-top: 15px; ">Delete the Article</p>
+                </div>
+                <div class="content" style="text-align: center; ">
+                    <p>Are you sure to delete this?</p>
+                </div>
+                <div class="actions">
+                    <div class="ui red basic cancel inverted button">
+                    <i class="remove icon"></i>No</div>
+                    <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['blog', blog.id, 'delete']) %>">
+                    <i class="checkmark icon"></i>Yes</a>
+                </div>
+            </div>
+            <div class="small ui red button" onclick="$('#modal-delete').modal('show')">Delete</div>
           <% } %>
-          <div style="margin-left: 10px; " class="ui mini buttons">
-            <a class="ui labeled icon mini button" href="<%= zoj.utils.makeUrl(['blog', 0, 'edit']) %>"><i class="write icon"></i>New Post</a>
-          </div>
-          <div style="margin-left: 10px; " class="ui mini buttons">
-             <% if(enableExport) { %>
-               <a class="ui labeled icon mini red button" href="<%= exportURL %>"><i class="file excel icon"></i>Export</a>
-              <% } %>
-          </div>
+        </div>
+    </div>
+  </div>
+  <% if (blog.content) { %>
+  <div class="row">
+    <div class="column">
+      <div class="ui bottom attached segment font-content"><%- blog.content %></div>
+    </div>
+  </div>
+  <% } %>
+  <% if (blog.tags && blog.tags.length) { %>
+    <div class="row">
+      <div class="column">
+        <h4 class="ui block header" id="show_tag_title_div" style="margin-bottom: 0; margin-left: -1px; margin-right: -1px; "><a href="#" id="show_tag_button" style="color: #000; ">Show the Tags</a></h4>
+        <div class="ui bottom attached segment" style="display: none; " id="show_tag_div">
+          <% for (let tag of blog.tags) { %>
+            <a href="<%= zoj.utils.makeUrl(['blogs', 'tag', tag.id]) %>" class="ui medium <%= tag.color %> label">
+              <%= tag.name %>
+            </a>
+          <% } %>
         </div>
       </div>
     </div>
+    <script>
+    $(function () {
+      $('#show_tag_button').click(function (e) {
+        e.preventDefault();
+        $('#show_tag_title_div').addClass('top');
+        $('#show_tag_title_div').addClass('top attached');
+        $('#show_tag_title_div').text('Tags');
+        $('#show_tag_div').css('display', '');
+      })
+    });
+    </script>
+  <% } %>
+</div>
+<div class="ui comments" style="max-width: none;">
+<!-- Comments -->
+  <% if (comments.length) { %>
+  <div class="ui comments" style="max-width: none;">
+    <h3 class="ui dividing header">Total replies: <%= commentsCount %></h3>
+    <% for (let comment of comments) { %>
+      <div class="comment">
+        <a class="avatar">
+          <img src="<%= zoj.utils.gravatar(comment.user.email, 120) %>">
+        </a>
+        <div class="content">
+          <a user class="author" href="<%= zoj.utils.makeUrl(['user', comment.user_id]) %>"><%= comment.user.username %></a>
+          <div class="metadata">
+            <span class="date"><%= zoj.utils.formatDate(comment.public_time) %></span>
+          </div>
+          <div class="text font-content"><%- comment.content %></div>
+          <% if (comment.allowedEdit) { %>
+            <div class="actions"><a onclick="$('#modal-delete-<%= comment.id %>').modal('show')">Delete</a></div>
+            <div class="ui basic modal" id="modal-delete-<%= comment.id %>">
+              <div class="ui icon header">
+                <i class="trash icon"></i>
+                <p style="margin-top: 15px; ">Delete This Comment</p>
+              </div>
+              <div class="content" style="text-align: center; ">
+                <p>Are you sure to delete this?</p>
+              </div>
+              <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                  <i class="remove icon"></i>
+                  No
+                </div>
+                <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['blog', blog.id, 'comment', comment.id, 'delete']) %>">
+                  <i class="checkmark icon"></i>
+                  Yes
+                </a>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
   </div>
-
-  <div style="margin-bottom: 30px; ">
+  <div style="margin-bottom: 50px; ">
     <% include page %>
   </div>
+  <% } %>
+  
+  <% if (allowedComment) { %>
+   <form class="ui reply form" method="post" action="<%= zoj.utils.makeUrl(['blog', blog.id, 'comment']) %>">
+      <div class="field">
+        <div id="comment" style="height: 300px;"></div>
+				<input type="hidden" name="comment" value="">
+      </div>
+      <button type="submit" class="ui labeled submit icon button">
+        <i class="icon edit"></i><i class="mega-octicon octicon-markdown"></i>Reply
+      </button>
+   </form>
+    <script src="/ace/ace.js"></script>
+    <script type="text/javascript">
+    function registerACEditor(editorID, containerName, mode){
+      var editor = ace.edit(editorID);
 
-  <table class="ui very basic center aligned table">
-    <thead>
-      <tr>
-        <th class="one wide">ID</th>
-        <th class="one wide">Author</th>
-        <th class="one wide">From</th>
-        <th class="one wide">Problem ID</th>
-        <th class="three wide">Time</th>
-        <th>Title</th>
-      </tr>
-    </thead>
-    <tbody>
-    <% for (let blog of posts) { %>
-        <% if (blog.is_public || blog.allowedEdit) { %>
-        <tr style="height: 44px; ">
-            <td><%= blog.id %></td>
-            <td><a user href="<%= zoj.utils.makeUrl(['user', blog.user_id]) %>"><%= blog.user.username %></a></td>
-            <td><%= blog.from %></td>
-            <td><%= blog.problem_id %></td>
-            <td><%= zoj.utils.formatDate(blog.time) %></td>
-            <td>
-              <a style="vertical-align: middle; " href="<%= zoj.utils.makeUrl(['blog', blog.id]) %>"><%= blog.title %>
-                <% if (!blog.is_public) { %><span class="ui header"><span class="ui tiny red label">U</span></span><% } %>
-              </a>
-              <div class="show_tag_controled" style="float: right; ">
-                <%
-                if (blog.tags) {
-                  for (let tag of blog.tags) {
-                    let tagListToggledThisTag;
-                    if (!tagIDs.includes(tag.id)) tagListToggledThisTag = tagIDs.concat([tag.id]);
-                    else tagListToggledThisTag = tagIDs.filter(x => x != tag.id);
-                    tagListToggledThisTag = tagListToggledThisTag.sort().join(',');
+      editor.setTheme("ace/theme/tomorrow");
+      editor.getSession().setMode(mode);
+      editor.getSession().setUseSoftTabs(false);
 
-                    let url = tagListToggledThisTag ? zoj.utils.makeUrl(['blogs', 'tag', tagListToggledThisTag]) : zoj.utils.makeUrl(['blogs']);
-                  %>
-                  <span class="ui header">
-                    <a href="<%= url %>" class="ui tiny <%= tag.color %> label">
-                      <%= tag.name %>
-                    </a>
-                  </span>
-                  <%
-                  }
-                }
-                %>
-              </div>
-            </td>
-        </tr>
-        <% } %>
-    <% } %>
-    </tbody>
-  </table><br>
-  <% include page  %>
-<script>
-document.addEventListener('keydown', function (event) {
-  if (event.keyCode === 39) document.getElementById('page_next').click();
-  else if (event.keyCode === 37) document.getElementById('page_prev').click();
-});
+      editor.container.name = containerName;
+      editor.container.style.lineHeight = 1.6;
+      editor.container.style.fontSize = '14px';
+      editor.container.style.fontFamily = "'Roboto Mono', 'Bitstream Vera Sans Mono', 'Menlo', 'Consolas', 'Lucida Console', monospace";
+      editor.setShowPrintMargin(false);
+      editor.renderer.updateFontSize();
 
-$(function () {
-  $('#add_post_dropdown').dropdown();
-});
-</script>
-<script>
-$(function () {
-  $('.ui.search').search({
-    debug: true,
-    apiSettings: {
-      url: '/api/search/blogs/{query}',
-      cache: false
-    },
-    fields: {
-      title: 'name'
+      var input = $(`[name="${containerName}"]`);
+      editor.getSession().on("change", function () {
+        input.val(editor.getSession().getValue());
+      });
     }
-  });
-});
-</script>
+
+    registerACEditor("comment", "comment", "ace/mode/markdown");
+
+    </script>
+   <% } %>
 </div>
 <% include footer %>
