@@ -226,6 +226,7 @@ class User extends Model {
 
 		await db.query('DELETE FROM `user` WHERE `id` = ' + this.id);
 		await db.query('DELETE FROM `comment` WHERE `user_id` = ' + this.id);
+		await db.query('DELETE FROM `comment` WHERE `article_id` IN (SELECT `id` FROM `article` WHERE `user_id` = ' + this.id + ');');
 		await db.query('DELETE FROM `blog_post` WHERE `user_id` = ' + this.id);
 		await db.query('DELETE FROM `article` WHERE `user_id` = ' + this.id);
 		await db.query('DELETE FROM `contest_player` WHERE `user_id` = ' + this.id);
