@@ -171,6 +171,11 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 				sql += 'AND (`blog_post`.`is_public` = 1)';
 			}
 		}
+
+		if (req.cookies['selfonly_mode'] == '1') {
+			sql += 'AND (`user_id` = ' + res.locals.user.id + ')';
+		}
+
 		sql += 'ORDER BY `id` DESC';
 		let paginate = zoj.utils.paginate(await BlogPost.count(sql), req.query.page, zoj.config.page.post);
 		let posts = await BlogPost.query(sql + paginate.toSQL(), {});
