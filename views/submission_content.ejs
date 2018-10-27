@@ -41,6 +41,9 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
         <% if (judge.allowedRejudge) { %>
           <th>Rejudge</th>
         <% } %>
+        <% if (judge.allowedDelete) { %>
+          <th>Delete</th>
+        <% } %>
       </tr>
      </thead>
      <tbody>
@@ -111,6 +114,32 @@ else problemUrl = zoj.utils.makeUrl(['problem', judge.problem_id]);
             </div>
           </td>
         <% } %>
+
+        <% if (judge.allowedDelete) { %>
+          <td>
+            <a id="rejudge-button" onclick="$('#modal-delete').modal('show');" style="color: black; " href="#"><i class="remove icon"></i></a>
+            <div class="ui basic modal" id="modal-delete">
+              <div class="ui icon header">
+                <i class="retweet icon"></i>
+                <p style="margin-top: 15px; ">Delete</p>
+              </div>
+              <div class="content" style="text-align: center; ">
+                <p>Are you sure to delete this submission?<br>This operation is irreversiable</p>
+              </div>
+              <div class="actions">
+                <div class="ui red basic cancel inverted button">
+                  <i class="remove icon"></i>
+                  No
+                </div>
+                <a class="ui green ok inverted button" href-post="<%= zoj.utils.makeUrl(['submission', judge.id, 'delete']) %>">
+                  <i class="checkmark icon"></i>
+                  Yes
+                </a>
+              </div>
+            </div>
+          </td>
+        <% } %>
+
        </tr>
      </tbody>
   </table>

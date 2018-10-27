@@ -1,7 +1,8 @@
 'use strict';
 
-let BlogPost = zoj.model('blog_post');
-let BlogPostTag = zoj.model('blog_post_tag');
+let Blog = zoj.model('blog');
+let BlogTag = zoj.model('blog_tag');
+let BlogComment = zoj.model('blog_comment');
 let User = zoj.model('user');
 
 app.get('/blogs', async (req, res) => {
@@ -20,18 +21,19 @@ app.get('/blogs', async (req, res) => {
 			};
 		}
 
-		let paginate = zoj.utils.paginate(await BlogPost.count(where), req.query.page, zoj.config.page.post);
-		let posts = await BlogPost.query(paginate, where, [['id', 'desc']]);
+		let paginate = zoj.utils.paginate(await Blog.count(where), req.query.page, zoj.config.page.blog);
+		let blogs = await Blog.query(paginate, where, [['id', 'desc']]);
 
-		await posts.forEachAsync(async post => {
-			await post.loadRelationships();
-			post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
-			post.tags = await post.getTags();
+		await blogs.forEachAsync(async blog => {
+			await blog.loadRelationships();
+			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
+			blog.tags = await blog.getTags();
 		});
 
-		res.render('blog', {
+		res.render('blogs', {
 			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
-			posts: posts,
+			allowedComment: await res.locals.user.haveAccess('blog_comment'),
+			blogs: blogs,
 			paginate: paginate,
 			enableExport: await res.locals.user.haveAccess('blog_export'),
 			exportURL: zoj.utils.makeUrl(['blogs', 'export', 0])
@@ -63,18 +65,18 @@ app.get('/blogs/user/:id', async (req, res) => {
 			};
 		}
 
-		let paginate = zoj.utils.paginate(await BlogPost.count(where), req.query.page, zoj.config.page.post);
-		let posts = await BlogPost.query(paginate, where, [['id', 'desc']]);
+		let paginate = zoj.utils.paginate(await Blog.count(where), req.query.page, zoj.config.page.blog);
+		let blogs = await Blog.query(paginate, where, [['id', 'desc']]);
 
-		await posts.forEachAsync(async post => {
-			await post.loadRelationships();
-			post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
-			post.tags = await post.getTags();
+		await blogs.forEachAsync(async blog => {
+			await blog.loadRelationships();
+			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
+			blog.tags = await blog.getTags();
 		});
 
-		res.render('blog', {
+		res.render('blogs', {
 			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
-			posts: posts,
+			blogs: blogs,
 			paginate: paginate,
 			enableExport: await res.locals.user.haveAccess('blog_export'),
 			exportURL: zoj.utils.makeUrl(['blogs', 'export', user.id])
@@ -118,18 +120,18 @@ app.get('/blogs/search', async (req, res) => {
 
 		let order = [zoj.db.literal('`id` = ' + id + ' DESC'), ['id', 'DESC']];
 
-		let paginate = zoj.utils.paginate(await BlogPost.count(where), req.query.page, zoj.config.page.post);
-		let posts = await BlogPost.query(paginate, where, order);
+		let paginate = zoj.utils.paginate(await Blog.count(where), req.query.page, zoj.config.page.blog);
+		let blogs = await Blog.query(paginate, where, order);
 
-		await posts.forEachAsync(async post => {
-			post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
-			post.tags = await post.getTags();
-			await post.loadRelationships();
+		await blogs.forEachAsync(async blog => {
+			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
+			blog.tags = await blog.getTags();
+			await blog.loadRelationships();
 		});
 
-		res.render('blog', {
+		res.render('blogs', {
 			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
-			posts: posts,
+			blogs: blogs,
 			paginate: paginate,
 			enableExport: false
 		});
@@ -146,7 +148,7 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let tagIDs = Array.from(new Set(req.params.tagIDs.split(',').map(x => parseInt(x))));
-		let tags = await tagIDs.mapAsync(async tagID => await BlogPostTag.fromID(tagID));
+		let tags = await tagIDs.mapAsync(async tagID => await BlogTag.fromID(tagID));
 
 		// Validate the tagIDs
 		for (let tag of tags) {
@@ -155,35 +157,40 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 			}
 		}
 
-		let sql = 'SELECT * FROM `blog_post` WHERE\n';
+		let sql = 'SELECT * FROM `blog` WHERE\n';
 		for (let tagID of tagIDs) {
 			if (tagID !== tagIDs[0]) {
 				sql += 'AND\n';
 			}
 
-			sql += '`blog_post`.`id` IN (SELECT `post_id` FROM `blog_post_tag_map` WHERE `tag_id` = ' + tagID + ')';
+			sql += '`blog`.`id` IN (SELECT `blog_id` FROM `blog_tag_map` WHERE `tag_id` = ' + tagID + ')';
 		}
 
 		if (!await res.locals.user.haveAccess('others_blogs')) {
 			if (res.locals.user) {
-				sql += 'AND (`blog_post`.`is_public` = 1 OR `blog_post`.`user_id` = ' + res.locals.user.id + ')';
+				sql += 'AND (`blog`.`is_public` = 1 OR `blog`.`user_id` = ' + res.locals.user.id + ')';
 			} else {
-				sql += 'AND (`blog_post`.`is_public` = 1)';
+				sql += 'AND (`blog`.`is_public` = 1)';
 			}
 		}
 
-		let paginate = zoj.utils.paginate(await BlogPost.count(sql), req.query.page, zoj.config.page.post);
-		let posts = await BlogPost.query(sql + paginate.toSQL(), {}, [['id', 'desc']]);
+		if (req.cookies['selfonly_mode'] == '1') {
+			sql += 'AND (`user_id` = ' + res.locals.user.id + ')';
+		}
 
-		await posts.forEachAsync(async post => {
-			await post.loadRelationships();
-			post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
-			post.tags = await post.getTags();
+		sql += 'ORDER BY `id` DESC';
+		let paginate = zoj.utils.paginate(await Blog.count(sql), req.query.page, zoj.config.page.blog);
+		let blogs = await Blog.query(sql + paginate.toSQL(), {});
+
+		await blogs.forEachAsync(async blog => {
+			await blog.loadRelationships();
+			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
+			blog.tags = await blog.getTags();
 		});
 
-		res.render('blog', {
+		res.render('blogs', {
 			allowedManageTag: await res.locals.user.haveAccess('manage_blog_tag'),
-			posts: posts,
+			blogs: blogs,
 			tags: tags,
 			paginate: paginate,
 			enableExport: false
@@ -201,29 +208,106 @@ app.get('/blog/:id', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
-		let post = await BlogPost.fromID(id);
-		if (!post) throw new ErrorMessage('No such post.');
+		let blog = await Blog.fromID(id);
+		if (!blog) throw new ErrorMessage('No such blog.');
 
-		if (!await post.isAllowedSeeBy(res.locals.user)) {
+		if (!await blog.isAllowedSeeBy(res.locals.user)) {
 			throw new ErrorMessage('You do not have permission to do this');
 		}
 
-		post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
+		blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
 
-		if (post.is_public || post.allowedEdit) {
-			post.content = await zoj.utils.markdown(post.content);
+		if (blog.is_public || blog.allowedEdit) {
+			blog.content = await zoj.utils.markdown(blog.content);
 		} else {
 			throw new ErrorMessage('You do not have permission to do this');
 		}
 
-		post.tags = await post.getTags();
-		await post.loadRelationships();
+		let where = { blog_id: id };
+		let commentsCount = await BlogComment.count(where);
+		let paginate = zoj.utils.paginate(commentsCount, req.query.page, zoj.config.page.blog_comment);
+		
+		let comments = await BlogComment.query(paginate, where, [['public_time', 'desc']]);
 
-		res.render('post', {
-			post: post
+		// zoj.log();
+
+		for (let comment of comments) {
+			comment.content = await zoj.utils.markdown(comment.content);
+			comment.allowedEdit = await comment.isAllowedEditBy(res.locals.user);
+			await comment.loadRelationships();
+		}
+
+		blog.tags = await blog.getTags();
+		await blog.loadRelationships();
+
+		res.render('blog', {
+			blog: blog,
+			paginate: paginate,
+			allowedComment: await res.locals.user.haveAccess('blog_comment'),
+			comments: comments,
+			commentsCount: commentsCount
 		});
 	} catch (e) {
-		zoj.log(e);
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		});
+	}
+});
+
+app.post('/blog/:id/comment', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+
+		let id = parseInt(req.params.id) || 0;
+		let blog = await Blog.fromID(id);
+
+		if (!blog) throw new ErrorMessage('No such a blog.');
+		if (!await res.locals.user.haveAccess('blog_comment')) {
+			throw new ErrorMessage('Permission denied');
+		}
+
+		if (!await res.locals.user.haveAccess('admin') && !blog.is_public) {
+			throw new ErrorMessage('Permission denied');
+		}
+
+
+		let comment = await BlogComment.create({
+			content: req.body.comment,
+			blog_id: id,
+			user_id: res.locals.user.id,
+			public_time: zoj.utils.getCurrentDate()
+		});
+
+		await comment.save();
+
+		res.redirect(zoj.utils.makeUrl(['blog', id]));
+	} catch(e) {
+		zoj.error(e);
+		res.render('error', {
+			err: e
+		})
+	}
+});
+
+app.post('/blog/:blog_id/comment/:id/delete', async (req, res) => {
+	try {
+		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
+
+		let id = parseInt(req.params.id);
+		let comment = await BlogComment.fromID(id);
+
+		if (!comment) {
+			throw new ErrorMessage('No such comment');
+		} else {
+			if (!await comment.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
+		}
+
+		await comment.destroy();
+
+		res.redirect(zoj.utils.makeUrl(['blog', comment.blog_id]));
+	} catch (e) {
+		zoj.error(e);
 		res.render('error', {
 			err: e
 		});
@@ -235,23 +319,23 @@ app.get('/blog/:id/edit', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
-		let post = await BlogPost.fromID(id);
+		let blog = await Blog.fromID(id);
 
-		if (!post) {
+		if (!blog) {
 			if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
-			post = await BlogPost.create();
-			post.id = id;
-			post.allowedEdit = true;
-			post.tags = [];
-			post.new = true;
+			blog = await Blog.create();
+			blog.id = id;
+			blog.allowedEdit = true;
+			blog.tags = [];
+			blog.new = true;
 		} else {
-			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
-			post.allowedEdit = await post.isAllowedEditBy(res.locals.user);
-			post.tags = await post.getTags();
+			if (!await blog.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
+			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
+			blog.tags = await blog.getTags();
 		}
 
-		res.render('post_edit', {
-			post: post
+		res.render('blog_edit', {
+			blog: blog
 		});
 	} catch (e) {
 		zoj.log(e);
@@ -266,27 +350,27 @@ app.post('/blog/:id/edit', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id) || 0;
-		let post = await BlogPost.fromID(id);
-		if (!post) {
+		let blog = await Blog.fromID(id);
+		if (!blog) {
 			if (!res.locals.user) throw new ErrorMessage('Please login.', { 'login': zoj.utils.makeUrl(['login'], { 'url': req.originalUrl }) });
 
-			post = await BlogPost.create();
-			post.user_id = res.locals.user.id;
+			blog = await Blog.create();
+			blog.user_id = res.locals.user.id;
 
-			post.time = zoj.utils.getCurrentDate();
+			blog.time = zoj.utils.getCurrentDate();
 		} else {
-			if (!await post.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
-			if (!await post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
+			if (!await blog.isAllowedSeeBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
+			if (!await blog.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
 		if (!req.body.title.trim()) throw new ErrorMessage('Title cannot be empty.');
-		post.title = req.body.title;
-		post.content = req.body.content;
-		post.problem_id = req.body.problem_id;
-		post.from = req.body.from;
+		blog.title = req.body.title;
+		blog.content = req.body.content;
+		blog.problem_id = req.body.problem_id;
+		blog.from = req.body.from;
 
 		// Save the post first, to have the `id` allocated
-		await post.save();
+		await blog.save();
 
 		if (!req.body.tags) {
 			req.body.tags = [];
@@ -294,10 +378,10 @@ app.post('/blog/:id/edit', async (req, res) => {
 			req.body.tags = [req.body.tags];
 		}
 
-		let newTagIDs = await req.body.tags.map(x => parseInt(x)).filterAsync(async x => await BlogPostTag.fromID(x));
-		await post.setTags(newTagIDs);
+		let newTagIDs = await req.body.tags.map(x => parseInt(x)).filterAsync(async x => await BlogTag.fromID(x));
+		await blog.setTags(newTagIDs);
 
-		res.redirect(zoj.utils.makeUrl(['blog', post.id]));
+		res.redirect(zoj.utils.makeUrl(['blog', blog.id]));
 	} catch (e) {
 		zoj.log(e);
 		res.render('error', {
@@ -313,14 +397,14 @@ async function setPublic(req, res, is_public) {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
-		let post = await BlogPost.fromID(id);
-		if (!post) throw new ErrorMessage('No such post.');
+		let blog = await Blog.fromID(id);
+		if (!blog) throw new ErrorMessage('No such blog.');
 
-		let allowedEdit = await post.isAllowedEditBy(res.locals.user);
+		let allowedEdit = await blog.isAllowedEditBy(res.locals.user);
 		if (!allowedEdit) throw new ErrorMessage('You do not have permission to do this');
 
-		post.is_public = is_public;
-		await post.save();
+		blog.is_public = is_public;
+		await blog.save();
 
 		res.redirect(zoj.utils.makeUrl(['blog', id]));
 	} catch (e) {
@@ -344,12 +428,12 @@ app.post('/blog/:id/delete', async (req, res) => {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
 		let id = parseInt(req.params.id);
-		let post = await BlogPost.fromID(id);
-		if (!post) throw new ErrorMessage('No such post.');
+		let blog = await Blog.fromID(id);
+		if (!blog) throw new ErrorMessage('No such blog.');
 
-		if (!post.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
+		if (!blog.isAllowedEditBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 
-		await post.delete();
+		await blog.delete();
 
 		res.redirect(zoj.utils.makeUrl(['blogs']));
 	} catch (e) {
@@ -368,27 +452,28 @@ app.get('/blogs/export/:id', async (req, res) => {
 
 		let id = parseInt(req.params.id) || 0;
 
-		let where = {};
+		let where = { is_public: 1 };
 		let user = await User.fromID(id);
 		if (user) where.user_id = user.id;
-		let posts = await BlogPost.query(null, where, [['id', 'desc']]);
+		let blogs = await Blog.query(null, where, [['id', 'desc']]);
 		let table = [
-			['Blog ID', 'User', 'From', 'Problem ID', 'Problem Title', 'Time', 'Tags', 'Link']
+			['Blog ID', 'User', 'Motto', 'From', 'Problem ID', 'Problem Title', 'Time', 'Tags', 'Link']
 		];
-		for (let post of posts) {
-			await post.loadRelationships();
-			post.tags = await post.getTags();
+		for (let blog of blogs) {
+			await blog.loadRelationships();
+			blog.tags = await blog.getTags();
 
 			table.push(
 				[
-					post.id,
-					post.user.username,
-					post.from,
-					post.problem_id,
-					post.title,
-					zoj.utils.formatDate(post.time),
-					post.tags.map((x) => { return x.name; }).join(','),
-					zoj.config.hostname + zoj.utils.makeUrl(['blog', post.id])
+					blog.id,
+					blog.user.username,
+					blog.user.information,
+					blog.from,
+					blog.problem_id,
+					blog.title,
+					zoj.utils.formatDate(blog.time),
+					blog.tags.map((x) => { return x.name; }).join(','),
+					zoj.config.hostname + zoj.utils.makeUrl(['blog', blog.id])
 				]
 			);
 		}

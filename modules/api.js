@@ -291,18 +291,18 @@ app.get('/api/search/blogs/:keyword*?', async (req, res) => {
 	try {
 		if (!res.locals.user) { res.redirect('/login'); return; } await res.locals.user.loadRelationships();
 
-		let BlogPost = zoj.model('blog_post');
+		let Blog = zoj.model('blog');
 
 		let keyword = req.params.keyword || '';
-		let posts;
+		let blogs;
 
 		if (req.cookies['selfonly_mode'] == '1' && res.locals.user) {
-			posts = await BlogPost.query(null, {
+			blogs = await Blog.query(null, {
 				title: { like: `%${req.params.keyword}%` },
 				user_id: res.locals.user.id
 			}, [['id', 'desc']]);
 		} else {
-			posts = await BlogPost.query(null, {
+			blogs = await Blog.query(null, {
 				title: { like: `%${req.params.keyword}%` }
 			}, [['id', 'desc']]);
 		}
@@ -311,14 +311,14 @@ app.get('/api/search/blogs/:keyword*?', async (req, res) => {
 
 		let id = parseInt(keyword);
 		if (id) {
-			let postByID = await BlogPost.fromID(parseInt(keyword));
-			if (postByID && await postByID.isAllowedSeeBy(res.locals.user)) {
-				result.push(postByID);
+			let blog = await Blog.fromID(parseInt(keyword));
+			if (blog && await blog.isAllowedSeeBy(res.locals.user)) {
+				result.push(blog);
 			}
 		}
-		await posts.forEachAsync(async post => {
-			if (await post.isAllowedSeeBy(res.locals.user) && result.length < zoj.config.page.edit_contest_problem_list && post.id !== id) {
-				result.push(post);
+		await blogs.forEachAsync(async blog => {
+			if (await blog.isAllowedSeeBy(res.locals.user) && result.length < zoj.config.page.edit_contest_problem_list && blog.id !== id) {
+				result.push(blog);
 			}
 		});
 
@@ -363,16 +363,16 @@ app.get('/api/search/tags_problem/:keyword*?', async (req, res) => {
 	}
 });
 
-app.get('/api/search/tags_blog_post/:keyword*?', async (req, res) => {
+app.get('/api/search/tags_blog/:keyword*?', async (req, res) => {
 	try {
-		let PostTag = zoj.model('blog_post_tag');
+		let blogTag = zoj.model('blog_tag');
 
 		let keyword = req.params.keyword || '';
-		let tags = await PostTag.query(null, {
+		let tags = await blogTag.query(null, {
 			name: { like: `%${keyword}%` }
 		}, [['name', 'asc']]);
 
-		let result = tags.slice(0, zoj.config.page.edit_post_tag_list);
+		let result = tags.slice(0, zoj.config.page.edit_blog_tag_list);
 
 		result = result.map(x => ({ name: x.name, value: x.id }));
 		res.send({ success: true, results: result });

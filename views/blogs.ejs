@@ -1,0 +1,193 @@
+<% this.title = 'Blog' %>
+<% include header %>
+<%
+let tagIDs = [];
+if (typeof tags !== 'undefined') tagIDs = tags.map(x => x.id);
+%>
+<div class="padding">
+  <div class="ui grid" style="margin-bottom: 10px; ">
+    <div class="row" style="white-space: nowrap; ">
+      <div class="seven wide column">
+        <% if (typeof tags !== 'undefined') { %>
+          <%
+          tags.sort((a, b) => {
+            return a.color > b.color ? 1 : -1;
+          });
+          %>
+          <% for (let tag of tags) { %>
+              <% let tagListRemovedThisTag = tagIDs.filter(x => x != tag.id).sort().join(','); %>
+              <% let url = tagListRemovedThisTag ? zoj.utils.makeUrl(['blogs', 'tag', tagListRemovedThisTag]) : zoj.utils.makeUrl(['blogs']); %>
+              <a href="<%= url %>" class="ui tiny <%= tag.color %> label">
+                <%= tag.name %>
+              </a>
+          <% } %>
+        <% } else { %>
+          <form action="<%= zoj.utils.makeUrl(['blogs', 'search']) %>" method="get">
+            <div class="ui search" style="width: 280px; height: 28px; margin-top: -5.3px; ">
+              <div class="ui left icon input" style="width: 100%; ">
+                <input class="prompt" style="width: 100%; " type="text" placeholder="ID / Title …" name="keyword">
+                <i class="search icon"></i>
+              </div>
+              <div class="results" style="width: 100%; "></div>
+            </div>
+          </form>
+        <% } %>
+      </div>
+	  <div class="nine wide right aligned column">
+		<% if (res.locals.user) { %>
+		<div class="ui toggle checkbox" id="onlyself">
+			<style id="onlyself_style"></style>
+			<script>
+			<% if (req.cookies['selfonly_mode'] == '1') { %>
+			document.write('<input type="checkbox" checked>');
+			<% } else { %>
+			document.write('<input type="checkbox">');
+			<% } %> 
+			</script>
+			<script>
+			$(function () {
+			$('#onlyself').checkbox('setting', 'onChange', function () {
+				let checked = $('#onlyself').checkbox('is checked');
+				localStorage.setItem('onlyself', checked ? '1' : '0');
+				document.cookie='selfonly_mode='+(checked?1:0)+";path=/";
+				if (checked) {
+				window.location = '/blogs/user/<%= res.locals.user.id %>';
+				} else {
+				window.location = '/blogs';
+				}
+			});
+			});
+			</script>
+			<label>Master View</label>
+		</div>
+		<% } %>
+        <div class="ui toggle checkbox" id="show_tag">
+          <style id="show_tag_style"></style>
+          <script>
+          if (localStorage.getItem('show_tag') === '1') {
+            document.write('<input type="checkbox" checked>');
+            document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { white-space: nowrap; overflow: hidden; }';
+          } else {
+            document.write('<input type="checkbox">');
+            document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { width: 0; white-space: nowrap; overflow: hidden; }';
+          }
+          </script>
+
+          <script>
+          $(function () {
+            $('#show_tag').checkbox('setting', 'onChange', function () {
+              let checked = $('#show_tag').checkbox('is checked');
+              localStorage.setItem('show_tag', checked ? '1' : '0');
+              if (checked) {
+                document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { white-space: nowrap; overflow: hidden; }';
+              } else {
+                document.getElementById('show_tag_style').innerHTML = '.show_tag_controled { width: 0; white-space: nowrap; overflow: hidden; }';
+              }
+            });
+          });
+          </script>
+          <label>Show Tags</label>
+        </div>
+        <div style="margin-left: 10px; display: inline-block; ">
+          <% if (allowedManageTag) { %>
+            <% if (typeof tags !== 'undefined' && tags.length === 1) { %>
+              <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['blogs', 'tag', tags[0].id, 'edit']) %>" class="ui labeled icon mini blue button"><i class="write icon"></i> Edit Tags</a>
+            <% } %>
+            <a style="margin-left: 10px; " href="<%= zoj.utils.makeUrl(['blogs', 'tag', 0, 'edit']) %>" class="ui labeled icon mini green button"><i class="plus icon"></i> Add Tags</a>
+          <% } %>
+          <div style="margin-left: 10px; " class="ui mini buttons">
+            <a class="ui labeled icon mini button" href="<%= zoj.utils.makeUrl(['blog', 0, 'edit']) %>"><i class="write icon"></i>New Blog</a>
+          </div>
+          <div style="margin-left: 10px; " class="ui mini buttons">
+             <% if(enableExport) { %>
+               <a class="ui labeled icon mini red button" href="<%= exportURL %>"><i class="file excel icon"></i>Export</a>
+              <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-bottom: 30px; ">
+    <% include page %>
+  </div>
+
+  <table class="ui very basic center aligned table">
+    <thead>
+      <tr>
+        <th class="one wide">ID</th>
+        <th class="one wide">Author</th>
+        <th class="one wide">From</th>
+        <th class="one wide">Problem ID</th>
+        <th class="three wide">Time</th>
+        <th>Title</th>
+      </tr>
+    </thead>
+    <tbody>
+    <% for (let blog of blogs) { %>
+        <% if (blog.is_public || blog.allowedEdit) { %>
+        <tr style="height: 44px; ">
+            <td><%= blog.id %></td>
+            <td><a user href="<%= zoj.utils.makeUrl(['user', blog.user_id]) %>"><%= blog.user.username %></a></td>
+            <td><%= blog.from %></td>
+            <td><%= blog.problem_id %></td>
+            <td><%= zoj.utils.formatDate(blog.time) %></td>
+            <td>
+              <a style="vertical-align: middle; " href="<%= zoj.utils.makeUrl(['blog', blog.id]) %>"><%= blog.title %>
+                <% if (!blog.is_public) { %><span class="ui header"><span class="ui tiny red label">U</span></span><% } %>
+              </a>
+              <div class="show_tag_controled" style="float: right; ">
+                <%
+                if (blog.tags) {
+                  for (let tag of blog.tags) {
+                    let tagListToggledThisTag;
+                    if (!tagIDs.includes(tag.id)) tagListToggledThisTag = tagIDs.concat([tag.id]);
+                    else tagListToggledThisTag = tagIDs.filter(x => x != tag.id);
+                    tagListToggledThisTag = tagListToggledThisTag.sort().join(',');
+
+                    let url = tagListToggledThisTag ? zoj.utils.makeUrl(['blogs', 'tag', tagListToggledThisTag]) : zoj.utils.makeUrl(['blogs']);
+                  %>
+                  <span class="ui header">
+                    <a href="<%= url %>" class="ui tiny <%= tag.color %> label">
+                      <%= tag.name %>
+                    </a>
+                  </span>
+                  <%
+                  }
+                }
+                %>
+              </div>
+            </td>
+        </tr>
+        <% } %>
+    <% } %>
+    </tbody>
+  </table><br>
+  <% include page  %>
+<script>
+document.addEventListener('keydown', function (event) {
+  if (event.keyCode === 39) document.getElementById('page_next').click();
+  else if (event.keyCode === 37) document.getElementById('page_prev').click();
+});
+
+$(function () {
+  $('#add_blog_dropdown').dropdown();
+});
+
+</script>
+<script>
+$(function () {
+  $('.ui.search').search({
+    debug: true,
+    apiSettings: {
+      url: '/api/search/blogs/{query}',
+      cache: false
+    },
+    fields: {
+      title: 'name'
+    }
+  });
+});
+</script>
+</div>
+<% include footer %>

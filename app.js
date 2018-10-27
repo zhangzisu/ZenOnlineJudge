@@ -177,7 +177,7 @@ global.zoj = {
 							req.session.user_id = user.id;
 							next();
 						}).catch(err => {
-							zoj.log(err);
+							// zoj.log(err);
 							res.locals.user = null;
 							req.session.user_id = null;
 							next();

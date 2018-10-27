@@ -1,14 +1,19 @@
 'use strict';
 
+let JudgeState = zoj.model('judge_state');
+
 let config = {
 	allowedSeeCase: false,
 	hideResult: false,
 	noEstimate: true
 };
 
+let Contest = zoj.model('contest');
+
 async function calcScore(player, judge_state) {
 	if (!judge_state.pending) {
 		if (!player.score_details[judge_state.problem_id]) {
+			if (!player.score_details[judge_state.problem_id]) player.score_details[judge_state.problem_id] = {};
 			player.score_details[judge_state.problem_id].accepted = false;
 			player.score_details[judge_state.problem_id].unacceptedCount = 0;
 			player.score_details[judge_state.problem_id].acceptedTime = 0;
@@ -45,14 +50,18 @@ async function calcScore(player, judge_state) {
 			player.score_details[judge_state.problem_id].judge_id = arr[arr.length - 1].judge_id;
 		}
 
-		for (let x in this.score_details) {
-			if (this.score_details[x].accepted) this.score++;
+		player.score = 0;
+		for (let x in player.score_details) {
+			if (player.score_details[x].accepted) player.score++;
 		}
 	}
 	return player;
 }
 
 async function updateRank(players) {
+	if (!players.length) return [];
+	let contest = await Contest.fromID(players[0].contest_id);
+
 	for (let player of players) {
 		player.timeSum = 0;
 		for (let i in player.score_details) {

@@ -36,6 +36,7 @@ let model = db.define('problem',
 				key: 'id'
 			}
 		},
+		/*
 		publicizer_id: {
 			type: Sequelize.INTEGER,
 			references: {
@@ -43,7 +44,8 @@ let model = db.define('problem',
 				key: 'id'
 			}
 		},
-		is_anonymous: { type: Sequelize.BOOLEAN },
+		*/
+		// is_anonymous: { type: Sequelize.BOOLEAN },
 
 		content: { type: Sequelize.TEXT },
 
@@ -73,8 +75,8 @@ class Problem extends Model {
 		return await Problem.fromRecord(Problem.model.build(Object.assign({
 			title: '',
 			user_id: '',
-			publicizer_id: '',
-			is_anonymous: false,
+			// publicizer_id: '',
+			// is_anonymous: false,
 			content: '',
 
 			ac_num: 0,
@@ -89,8 +91,10 @@ class Problem extends Model {
 	}
 
 	async loadRelationships() {
+		let User = zoj.model('user');
+		// zoj.log(User);
 		this.user = await User.fromID(this.user_id);
-		this.publicizer = await User.fromID(this.publicizer_id);
+		// this.publicizer = await User.fromID(this.publicizer_id);
 		this.additional_file = await File.fromID(this.additional_file_id);
 		this.groups_exlude = [];
 		for (var group of this.groups_exlude_config) {
@@ -103,8 +107,8 @@ class Problem extends Model {
 	}
 
 	match(gA, gB) {
-		gA.sort((a, b) => { a.id < b.id; });
-		gB.sort((a, b) => { a.id < b.id; });
+		gA.sort((a, b) => { return a.id > b.id; });
+		gB.sort((a, b) => { return a.id > b.id; });
 		let idA = 0, idB = 0;
 		while (idA < gA.length && idB < gB.length) {
 			if (gA[idA].id === gB[idB].id) return true;
@@ -180,7 +184,6 @@ class Problem extends Model {
 						}
 					}
 				}
-				cases.sort((A, B) => {return A.input.length == B.input.length ? A.input < B.input : A.input.length < B.input.length; });
 				if (caseNum) {
 					let testcases = [];
 					for (let casename in cases) {

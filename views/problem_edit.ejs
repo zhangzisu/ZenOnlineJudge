@@ -41,11 +41,6 @@
              </a>
           <% } %>
           </div>
-          <div class="ui <% if (problem.is_anonymous) { %>checked <% } %>checkbox" style="margin-top: 15px; ">
-            <input <% if (problem.is_anonymous) { %>checked=""<% } %> name="is_anonymous" type="checkbox">
-            <label><strong>Anonymous Upload</strong></label>
-            <p style="margin-top: 5px; ">The user name won't show in the problem page if you choose it.</p>
-          </div>
         </div>
       </div>
       <% if(groupAccess) { %>

@@ -36,6 +36,7 @@ async function calcScore(player, judge_state) {
 		player.score_details[judge_state.problem_id].score = maxScoreSubmission.score;
 		player.score_details[judge_state.problem_id].time = maxScoreSubmission.time;
 
+		player.score = 0;
 		for (let x of player.contest.problems) {
 			if (!player.score_details[x.id]) continue;
 			player.score += Math.round(player.score_details[x.id].score / 100 * x.score);
