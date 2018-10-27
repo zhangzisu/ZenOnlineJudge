@@ -31,6 +31,7 @@ let model = db.define('user',
 
 let Model = require('./common');
 let Group = zoj.model('group');
+let Problem = zoj.model('problem');
 
 class User extends Model {
 	static async create(val) {
@@ -84,6 +85,12 @@ class User extends Model {
 		if (!user) return false;
 		if (this.id === user.id) return true;
 		return await user.haveAccess('user_edit');
+	}
+
+	async isAllowedDeleteBy(user) {
+		if (!user) return false;
+		if (this.id === user.id) return false;
+		return await user.haveAccess('user_delete');
 	}
 
 	async refreshSubmitInfo() {
@@ -176,6 +183,54 @@ class User extends Model {
 		}
 
 		return res;
+	}
+
+	async delete() {
+		let judgeState = zoj.model('judge_state');
+		let Problem = zoj.model('problem');
+		let Contest = zoj.model('contest');
+
+		let submissions = await judgeState.query(null, { user_id: this.id }), submitCnt = {}, acProblems = new Set();
+
+		for (let sm of submissions) {
+			if (sm.status == "Accepted") acProblems.add(sm.problem_id);
+			if (!submitCnt[sm.problem_id]) {
+				submitCnt[sm.problem_id] = 1;
+			} else {
+				submitCnt[sm.problem_id]++;
+			}
+		}
+
+		for (let u in submitCnt) {
+			let problem = await Problem.fromID(u);
+			problem.submit_num -= submitCnt[u];
+			if (acProblems.has(parseInt(u))) problem.ac_num--; 
+			await problem.save();
+		}
+
+		let problems = await Problem.query(null, { user_id: this.id });
+
+		for (let p of problems) {
+			let problem = await Problem.fromID(p.id);
+			problem.user_id = 1;
+			await problem.save();
+		}
+
+		let contests = await Contest.query(null, { holder_id: this.id });
+
+		for (let p of contests) {
+			let contest = await Contest.fromID(p.id);
+			contest.holder_id = 1;
+			await contest.save();
+		}
+
+		await db.query('DELETE FROM `user` WHERE `id` = ' + this.id);
+		await db.query('DELETE FROM `comment` WHERE `user_id` = ' + this.id);
+		await db.query('DELETE FROM `blog_post` WHERE `user_id` = ' + this.id);
+		await db.query('DELETE FROM `article` WHERE `user_id` = ' + this.id);
+		await db.query('DELETE FROM `contest_player` WHERE `user_id` = ' + this.id);
+		await db.query('DELETE FROM `waiting_judge` WHERE `judge_id` IN (SELECT `id` FROM `judge_state` WHERE `user_id` = ' + this.id + ');');
+		await db.query('DELETE FROM `judge_state` WHERE `user_id` = ' + this.id);
 	}
 
 	async getLastSubmitLanguage() {

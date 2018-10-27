@@ -88,7 +88,7 @@ app.get('/article/:id', async (req, res) => {
 				throw new ErrorMessage('You do not have permission to do this');
 			}
 		}
-
+		// zoj.log("Call Comments");
 		res.render('article', {
 			article: article,
 			comments: comments,
