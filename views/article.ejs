@@ -93,15 +93,17 @@
   </div>
   <% } %>
    <% if (article.allowedComment) { %>
-   <form class="ui reply form" method="post" action="<%= zoj.utils.makeUrl(['article', article.id, 'comment']) %>">
-      <div class="field">
-        <div id="comment" style="height: 300px;"></div>
-				<input type="hidden" name="comment" value="">
-      </div>
-      <button type="submit" class="ui labeled submit icon button">
-        <i class="icon edit"></i><i class="mega-octicon octicon-markdown"></i>Reply
-      </button>
-   </form>
+   <div id='$'>
+    <form class="ui reply form" method="post" action="<%= zoj.utils.makeUrl(['article', article.id, 'comment']) %>">
+        <div class="field">
+          <div id="comment" style="height: 300px;"></div>
+          <input type="hidden" name="comment" value="">
+        </div>
+        <button type="submit" class="ui labeled submit icon button">
+          <i class="icon edit"></i><i class="mega-octicon octicon-markdown"></i>Reply
+        </button>
+    </form>
+   </div>
     <script src="/ace/ace.js"></script>
     <script type="text/javascript">
     function registerACEditor(editorID, containerName, mode){

@@ -28,6 +28,7 @@ app.get('/blogs', async (req, res) => {
 			await blog.loadRelationships();
 			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
 			blog.tags = await blog.getTags();
+			blog.commentsCount = await BlogComment.count({ blog_id: blog.id });
 		});
 
 		res.render('blogs', {
@@ -72,6 +73,7 @@ app.get('/blogs/user/:id', async (req, res) => {
 			await blog.loadRelationships();
 			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
 			blog.tags = await blog.getTags();
+			blog.commentsCount = await BlogComment.count({ blog_id: blog.id });
 		});
 
 		res.render('blogs', {
@@ -126,6 +128,7 @@ app.get('/blogs/search', async (req, res) => {
 		await blogs.forEachAsync(async blog => {
 			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
 			blog.tags = await blog.getTags();
+			blog.commentsCount = await BlogComment.count({ blog_id: blog.id });
 			await blog.loadRelationships();
 		});
 
@@ -185,6 +188,7 @@ app.get('/blogs/tag/:tagIDs', async (req, res) => {
 		await blogs.forEachAsync(async blog => {
 			await blog.loadRelationships();
 			blog.allowedEdit = await blog.isAllowedEditBy(res.locals.user);
+			blog.commentsCount = await BlogComment.count({ blog_id: blog.id });
 			blog.tags = await blog.getTags();
 		});
 
@@ -270,7 +274,8 @@ app.post('/blog/:id/comment', async (req, res) => {
 		if (!await res.locals.user.haveAccess('admin') && !blog.is_public) {
 			throw new ErrorMessage('Permission denied');
 		}
-
+		
+		if (req.body.comment.trim().length < 1) throw new ErrorMessage('Comment is too short');
 
 		let comment = await BlogComment.create({
 			content: req.body.comment,
@@ -281,7 +286,7 @@ app.post('/blog/:id/comment', async (req, res) => {
 
 		await comment.save();
 
-		res.redirect(zoj.utils.makeUrl(['blog', id]));
+		res.redirect(zoj.utils.makeUrl(['blog', id]) + '#$');
 	} catch(e) {
 		zoj.error(e);
 		res.render('error', {

@@ -63,7 +63,7 @@ $(function () {
     .dropdown({
       debug: true,
       apiSettings: {
-        url: '/api/search/tags_blog_blog/{query}',
+        url: '/api/search/tags_blog/{query}',
         onResponse: function (response) {
           var a = $('#search_tags').val().map(function (x) { return parseInt(x) });
           if (response.results) {
