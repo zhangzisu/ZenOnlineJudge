@@ -5,22 +5,22 @@
       <div class="ui bottom attached tab segment active" data-tab="edit">
         <div class="field">
           <label for="title">Title</label>
-          <input class="font-content" type="text" id="title" name="title" value="<%= post.title %>">
+          <input class="font-content" type="text" id="title" name="title" value="<%= blog.title %>">
           <label for="title">From</label>
-          <input class="font-content" type="text" id="from" name="from" value="<%= post.from %>">
+          <input class="font-content" type="text" id="from" name="from" value="<%= blog.from %>">
           <label for="title">Problem ID</label>
-          <input class="font-content" type="text" id="problem_id" name="problem_id" value="<%= post.problem_id %>">
+          <input class="font-content" type="text" id="problem_id" name="problem_id" value="<%= blog.problem_id %>">
           <label style="margin-top: 15px; " for="content">Content<i class="mega-octicon octicon-markdown"></i></label>
-          <div id="content" style="height: 1000px;"><%= post.content %></div>
-          <input type="hidden" name="content" value="<%= post.content %>">
+          <div id="content" style="height: 1000px;"><%= blog.content %></div>
+          <input type="hidden" name="content" value="<%= blog.content %>">
           <label style="margin-top: 15px; ">Add Tags</label>
           <select class="ui fluid search dropdown" multiple="" id="search_tags" name="tags">
-            <% for (let tag of post.tags) { %>
+            <% for (let tag of blog.tags) { %>
               <option value="<%= tag.id %>" selected><%= tag.name %></option>
             <% } %>
           </select>
           <div class="ui segment" style="display: none">
-          <% for (let tag of post.tags) { %>
+          <% for (let tag of blog.tags) { %>
              <a class="ui large label transition visible" data-value="<%= tag.id %>"> 
               <%= tag.name %>
              </a>
@@ -28,7 +28,7 @@
           </div>
         </div>
       </div>
-      <% if (post.allowedEdit) { %>
+      <% if (blog.allowedEdit) { %>
       <button type="submit" class="ui button">Save</button>
       <% } %>
     </form>
@@ -63,7 +63,7 @@ $(function () {
     .dropdown({
       debug: true,
       apiSettings: {
-        url: '/api/search/tags_blog_post/{query}',
+        url: '/api/search/tags_blog/{query}',
         onResponse: function (response) {
           var a = $('#search_tags').val().map(function (x) { return parseInt(x) });
           if (response.results) {

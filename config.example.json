@@ -95,8 +95,8 @@
         "edit_contest_problem_list": 10,
         "edit_problem_tag_list": 10,
         "edit_blog_tag_list": 10,
-        "post": 20,
-        "post_comment": 20
+        "blog": 20,
+        "blog_comment": 20
     },
     "languages": {
         "cpp": {

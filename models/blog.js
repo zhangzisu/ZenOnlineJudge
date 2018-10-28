@@ -1,6 +1,6 @@
 /*
  *  Package  : models
- *  Filename : blog_post.js
+ *  Filename : blog.js
  *  Create   : 2018-02-05
  */
 'use strict';
@@ -10,7 +10,7 @@ let db = zoj.db;
 
 let User = zoj.model('user');
 
-let model = db.define('blog_post',
+let model = db.define('blog',
 	{
 		id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
 
@@ -27,7 +27,7 @@ let model = db.define('blog_post',
 		time: { type: Sequelize.INTEGER }
 	}, {
 		timestamps: false,
-		tableName: 'blog_post',
+		tableName: 'blog',
 		indexes: [
 			{ fields: ['user_id'], }
 		]
@@ -35,9 +35,9 @@ let model = db.define('blog_post',
 );
 
 let Model = require('./common');
-class BlogPost extends Model {
+class Blog extends Model {
 	static async create(val) {
-		return await BlogPost.fromRecord(BlogPost.model.build(Object.assign({
+		return await Blog.fromRecord(Blog.model.build(Object.assign({
 			user_id: '',
 			from: '',
 			problem_id: '',
@@ -71,13 +71,13 @@ class BlogPost extends Model {
 	}
 
 	async getTags() {
-		let blogPostTagMap = zoj.model('blog_post_tag_map');
-		let maps = await blogPostTagMap.query(null, {
-			post_id: this.id
+		let BlogTagMap = zoj.model('blog_tag_map');
+		let maps = await BlogTagMap.query(null, {
+			blog_id: this.id
 		});
 
-		let blogPostTag = zoj.model('blog_post_tag');
-		let res = await maps.mapAsync(async map => await blogPostTag.fromID(map.tag_id));
+		let BlogTag = zoj.model('blog_tag');
+		let res = await maps.mapAsync(async map => await BlogTag.fromID(map.tag_id));
 
 		res.sort((a, b) => {
 			return a.color > b.color ? 1 : -1;
@@ -87,7 +87,7 @@ class BlogPost extends Model {
 	}
 
 	async setTags(newTagIDs) {
-		let blogPostTagMap = zoj.model('blog_post_tag_map');
+		let BlogTagMap = zoj.model('blog_tag_map');
 
 		let oldTagIDs = (await this.getTags()).map(x => x.id);
 
@@ -95,9 +95,9 @@ class BlogPost extends Model {
 		let addTagIDs = newTagIDs.filter(x => !oldTagIDs.includes(x));
 
 		for (let tagID of delTagIDs) {
-			let map = await blogPostTagMap.findOne({
+			let map = await BlogTagMap.findOne({
 				where: {
-					post_id: this.id,
+					blog_id: this.id,
 					tag_id: tagID
 				}
 			});
@@ -106,8 +106,8 @@ class BlogPost extends Model {
 		}
 
 		for (let tagID of addTagIDs) {
-			let map = await blogPostTagMap.create({
-				post_id: this.id,
+			let map = await BlogTagMap.create({
+				blog_id: this.id,
 				tag_id: tagID
 			});
 
@@ -116,14 +116,14 @@ class BlogPost extends Model {
 	}
 
 	async delete() {
-		await db.query('DELETE FROM `blog_post`         WHERE `id`      = ' + this.id);
-		await db.query('DELETE FROM `blog_post_tag_map` WHERE `post_id` = ' + this.id);
-		await db.query('DELETE FROM `blog_comment` WHERE `post_id` = ' + this.id);
+		await db.query('DELETE FROM `blog`         WHERE `id`      = ' + this.id);
+		await db.query('DELETE FROM `blog_tag_map` WHERE `blog_id` = ' + this.id);
+		await db.query('DELETE FROM `blog_comment` WHERE `blog_id` = ' + this.id);
 	}
 
 	getModel() { return model; }
 }
 
-BlogPost.model = model;
+Blog.model = model;
 
-module.exports = BlogPost;
+module.exports = Blog;

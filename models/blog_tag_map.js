@@ -3,15 +3,15 @@
 let Sequelize = require('sequelize');
 let db = zoj.db;
 
-let model = db.define('blog_post_tag_map',
+let model = db.define('blog_tag_map',
 	{
-		post_id: { type: Sequelize.INTEGER, primaryKey: true },
+		blog_id: { type: Sequelize.INTEGER, primaryKey: true },
 		tag_id: { type: Sequelize.INTEGER, primaryKey: true }
 	}, {
 		timestamps: false,
-		tableName: 'blog_post_tag_map',
+		tableName: 'blog_tag_map',
 		indexes: [
-			{ fields: ['post_id'] },
+			{ fields: ['blog_id'] },
 			{ fields: ['tag_id'] }
 		]
 	}
@@ -21,7 +21,7 @@ let Model = require('./common');
 class BlogTagMap extends Model {
 	static async create(val) {
 		return await BlogTagMap.fromRecord(BlogTagMap.model.build(Object.assign({
-			post_id: 0,
+			blog_id: 0,
 			tag_id: 0
 		}, val)));
 	}
