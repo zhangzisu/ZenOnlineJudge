@@ -210,6 +210,8 @@ app.post('/article/:id/comment', async (req, res) => {
 			if (!await article.isAllowedCommentBy(res.locals.user)) throw new ErrorMessage('You do not have permission to do this');
 		}
 
+		if (req.body.comment.trim().length < 1) throw new ErrorMessage('Comment is too short');
+
 		let comment = await ArticleComment.create({
 			content: req.body.comment,
 			article_id: id,
@@ -219,7 +221,7 @@ app.post('/article/:id/comment', async (req, res) => {
 
 		await comment.save();
 
-		res.redirect(zoj.utils.makeUrl(['article', article.id]));
+		res.redirect(zoj.utils.makeUrl(['article', article.id]) + '#$');
 	} catch (e) {
 		zoj.error(e);
 		res.render('error', {

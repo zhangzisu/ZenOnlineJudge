@@ -91,6 +91,11 @@
   <% include page %>
 </div>
 <script>
+document.addEventListener('keydown', function (event) {
+  if (event.keyCode === 39) document.getElementById('page_next').click();
+  else if (event.keyCode === 37) document.getElementById('page_prev').click();
+});
+
 $(function () {
   $('#select_language').dropdown();
   $('#select_status').dropdown();
