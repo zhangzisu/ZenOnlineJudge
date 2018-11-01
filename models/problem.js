@@ -20,7 +20,6 @@ let statisticsStatements = {
 let Sequelize = require('sequelize');
 let db = zoj.db;
 
-let User = zoj.model('user');
 let File = zoj.model('file');
 let Group = zoj.model('group');
 
@@ -511,6 +510,8 @@ class Problem extends Model {
 	}
 
 	async delete() {
+		let User = zoj.model('user');
+
 		let fs = Promise.promisifyAll(require('fs-extra'));
 		let oldTestdataDir = this.getTestdataPath(), oldTestdataZip = oldTestdataDir + '.zip';
 		await fs.removeAsync(oldTestdataDir);
