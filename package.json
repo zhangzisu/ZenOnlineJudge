@@ -34,7 +34,7 @@
 		"file-size": "^1.0.0",
 		"fs-extra": "^7.0.1",
 		"gravatar": "^1.5.2",
-		"jsdom": "^13.0.0",
+		"jsdom": "^15.1.0",
 		"jsonwebtoken": "^8.2.1",
 		"locale": "^0.1.0",
 		"marked": "^0.5.2",
