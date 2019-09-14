@@ -64,6 +64,6 @@
 	},
 	"optionalDependencies": {
 		"sqlite3": "^4.0.0",
-		"tedious": "^3.0.1"
+		"tedious": "^6.4.0"
 	}
 }
