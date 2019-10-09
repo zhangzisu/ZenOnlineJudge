@@ -20,7 +20,7 @@
 		"ansi-to-html": "^0.6.4",
 		"async-lock": "^1.1.2",
 		"body-parser": "^1.15.2",
-		"cli-color": "^1.2.0",
+		"cli-color": "^2.0.0",
 		"codeforces-rating-system": "^1.4.0",
 		"connect-ensure-login": "^0.1.1",
 		"cookie-parser": "^1.4.3",
