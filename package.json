@@ -40,7 +40,7 @@
 		"marked": "^0.5.2",
 		"moment": "^2.22.1",
 		"multer": "^1.2.0",
-		"mysql2": "^1.5.3",
+		"mysql2": "^2.0.2",
 		"node-7z": "^1.0.0",
 		"node-console-input": "^1.1.1",
 		"node-xlsx": "^0.12.0",
