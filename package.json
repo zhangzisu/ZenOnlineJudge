@@ -37,7 +37,7 @@
 		"jsdom": "^13.0.0",
 		"jsonwebtoken": "^8.2.1",
 		"locale": "^0.1.0",
-		"marked": "^0.5.2",
+		"marked": "^0.8.0",
 		"moment": "^2.22.1",
 		"multer": "^1.2.0",
 		"mysql2": "^1.5.3",
